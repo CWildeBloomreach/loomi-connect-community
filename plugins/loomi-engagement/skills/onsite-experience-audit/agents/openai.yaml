@@ -1,0 +1,5 @@
+interface:
+  display_name: "On-site Experience Audit"
+  short_description: "Clean-up and test list for Bloomreach Engagement web layers, in-app messages, surveys and experiments"
+policy:
+  allow_implicit_invocation: true

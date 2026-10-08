@@ -1,0 +1,5 @@
+interface:
+  display_name: "Product Data Audit"
+  short_description: "Find which products need better data for SEO, AEO and AI search"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Campaign Planner"
+  short_description: "Ranked campaign ideas for the next weeks from the retail calendar, last year's data and search demand"
+policy:
+  allow_implicit_invocation: true

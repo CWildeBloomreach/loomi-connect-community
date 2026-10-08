@@ -1,0 +1,5 @@
+interface:
+  display_name: "Trending Searches"
+  short_description: "Rising, new and falling site searches in Bloomreach Discovery"
+policy:
+  allow_implicit_invocation: true

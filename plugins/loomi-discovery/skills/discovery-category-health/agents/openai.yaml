@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Category Health"
+  short_description: "Category page health check for a Bloomreach Discovery account or site"
+policy:
+  allow_implicit_invocation: true

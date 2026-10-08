@@ -1,0 +1,6 @@
+interface:
+  display_name: "Customer 360 Lookup"
+  short_description: "Privacy-first summary of one named customer in Bloomreach Engagement"
+policy:
+  # Reads personal data, so it only runs when called by name.
+  allow_implicit_invocation: false

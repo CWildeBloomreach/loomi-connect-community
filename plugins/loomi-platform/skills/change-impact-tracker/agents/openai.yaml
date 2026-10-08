@@ -1,0 +1,5 @@
+interface:
+  display_name: "Change Impact Tracker"
+  short_description: "Did my rule, synonym, banner or campaign work? Before vs after, controlled for the site-wide trend"
+policy:
+  allow_implicit_invocation: true

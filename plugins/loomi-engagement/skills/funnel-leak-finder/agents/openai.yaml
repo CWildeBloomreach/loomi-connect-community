@@ -1,0 +1,5 @@
+interface:
+  display_name: "Funnel Leak Finder"
+  short_description: "Find where revenue leaks between product view, cart and purchase, and which recovery flows are missing"
+policy:
+  allow_implicit_invocation: true

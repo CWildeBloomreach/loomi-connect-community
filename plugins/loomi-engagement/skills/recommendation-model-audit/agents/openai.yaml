@@ -1,0 +1,5 @@
+interface:
+  display_name: "Recommendation Model Audit"
+  short_description: "Cleanup and improvement list for Bloomreach Engagement recommendation engines and their catalogs"
+policy:
+  allow_implicit_invocation: true

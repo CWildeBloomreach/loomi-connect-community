@@ -1,0 +1,5 @@
+interface:
+  display_name: "Revenue Anomaly Explainer"
+  short_description: "Explain why Bloomreach Discovery revenue, conversion or AOV changed, with causes ranked by evidence"
+policy:
+  allow_implicit_invocation: true

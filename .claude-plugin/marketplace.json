@@ -1,0 +1,58 @@
+{
+  "name": "loomi-connect-community",
+  "description": "Community skills and tools for Bloomreach Loomi Connect.",
+  "owner": {
+    "name": "Bloomreach",
+    "url": "https://github.com/bloomreach/loomi-connect-community"
+  },
+  "plugins": [
+    {
+      "name": "loomi-engagement",
+      "source": "./plugins/loomi-engagement",
+      "description": "Skills for Bloomreach Engagement via Loomi Connect: projects, customers, events, campaigns, analytics.",
+      "category": "marketing",
+      "tags": [
+        "bloomreach",
+        "loomi-connect",
+        "engagement"
+      ]
+    },
+    {
+      "name": "loomi-discovery",
+      "source": "./plugins/loomi-discovery",
+      "description": "Skills for Bloomreach Discovery via Loomi Connect: search and category performance, merchandising.",
+      "category": "marketing",
+      "tags": [
+        "bloomreach",
+        "loomi-connect",
+        "discovery"
+      ]
+    },
+    {
+      "name": "loomi-platform",
+      "source": "./plugins/loomi-platform",
+      "description": "Skills that span Bloomreach products via Loomi Connect: data and feed health, and connecting Discovery search demand to Engagement campaigns.",
+      "category": "marketing",
+      "tags": [
+        "bloomreach",
+        "loomi-connect",
+        "discovery",
+        "engagement",
+        "datahub"
+      ]
+    },
+    {
+      "name": "loomi-product-data",
+      "source": "./plugins/loomi-product-data",
+      "description": "Skills that improve product data for search engines and AI answers (SEO, AEO and GEO) via Loomi Connect: find the products whose data most needs work, then suggest enhancements from their images, attributes and shopper searches.",
+      "category": "marketing",
+      "tags": [
+        "bloomreach",
+        "loomi-connect",
+        "discovery",
+        "product-data",
+        "seo"
+      ]
+    }
+  ]
+}

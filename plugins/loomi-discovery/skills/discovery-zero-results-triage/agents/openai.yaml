@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Zero-Results Triage"
+  short_description: "Find dead-end searches, work out why, and rank the fixes"
+policy:
+  allow_implicit_invocation: true

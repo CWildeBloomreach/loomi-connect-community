@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Campaign Digest"
+  short_description: "Weekly email and SMS campaign performance digest from Bloomreach Engagement"
+policy:
+  allow_implicit_invocation: true

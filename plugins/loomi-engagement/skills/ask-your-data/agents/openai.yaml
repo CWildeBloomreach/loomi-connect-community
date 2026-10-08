@@ -1,0 +1,5 @@
+interface:
+  display_name: "Ask Your Data"
+  short_description: "Answer analytics questions about Bloomreach Engagement data with safe, cost-checked EQL"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Segment Opportunity Finder"
+  short_description: "Find valuable audiences you aren't targeting yet in Bloomreach Engagement, ranked by value and reach"
+policy:
+  allow_implicit_invocation: true

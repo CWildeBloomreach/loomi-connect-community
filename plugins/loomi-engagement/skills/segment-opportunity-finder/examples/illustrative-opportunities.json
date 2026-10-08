@@ -1,0 +1,14 @@
+{
+  "_note": "Illustrative inputs only: every number is invented. Use as a template for scripts/rank_opportunities.py.",
+  "as_of": "2026-10-08",
+  "aov": 95.0,
+  "opportunities": [
+    {"id": "P2", "name": "One-time buyers, last order 31-90 days ago", "size": 14000, "reachable": 13300, "coverage": "none"},
+    {"id": "P6", "name": "Cart abandoners not contacted (7 days)", "size": 6000, "reachable": 300, "onsite": true, "value_per_conversion": 110.0, "period_multiplier": 4.3, "coverage": "none"},
+    {"id": "P7", "name": "New customers, no second purchase (15-30 days)", "size": 5200, "reachable": 4900, "coverage": "none"},
+    {"id": "P3", "name": "VIPs (2+ orders, $300+ lifetime) with no order in 60 days", "size": 2100, "reachable": 2000, "value_per_conversion": 140.0, "coverage": "partial"},
+    {"id": "P5", "name": "Shorts affinity (3+ views in 30 days) while 'shorts' searches rise", "size": 3400, "reachable": 600, "onsite": true, "value_per_conversion": 87.0, "coverage": "none"},
+    {"id": "P1", "name": "Browsed women's clothing, never bought it", "size": 18000, "reachable": 700, "onsite": true, "value_per_conversion": 120.0, "coverage": "none"},
+    {"id": "P4", "name": "2+ discounted orders out of 3 or fewer", "size": 900, "reachable": 860, "value_per_conversion": 14.0, "kind": "margin", "coverage": "none"}
+  ]
+}

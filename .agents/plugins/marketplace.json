@@ -1,0 +1,53 @@
+{
+  "name": "loomi-connect-community",
+  "plugins": [
+    {
+      "name": "loomi-engagement",
+      "source": {
+        "source": "local",
+        "path": "./plugins/loomi-engagement"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "loomi-discovery",
+      "source": {
+        "source": "local",
+        "path": "./plugins/loomi-discovery"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "loomi-platform",
+      "source": {
+        "source": "local",
+        "path": "./plugins/loomi-platform"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "loomi-product-data",
+      "source": {
+        "source": "local",
+        "path": "./plugins/loomi-product-data"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

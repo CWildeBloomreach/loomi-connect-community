@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Asset Cleanup"
+  short_description: "Prioritised cleanup list of stale, test, duplicate and unused Bloomreach Engagement assets"
+policy:
+  allow_implicit_invocation: true

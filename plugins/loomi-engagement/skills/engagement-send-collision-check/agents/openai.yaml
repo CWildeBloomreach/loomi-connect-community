@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Send Collision Check"
+  short_description: "Spot overlapping sends, busy days and over-messaging in Bloomreach Engagement"
+policy:
+  allow_implicit_invocation: true

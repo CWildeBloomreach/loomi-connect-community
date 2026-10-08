@@ -1,0 +1,5 @@
+interface:
+  display_name: "Prediction Activation Check"
+  short_description: "Find Bloomreach Engagement predictions that are built but not used, and how to activate them"
+policy:
+  allow_implicit_invocation: true

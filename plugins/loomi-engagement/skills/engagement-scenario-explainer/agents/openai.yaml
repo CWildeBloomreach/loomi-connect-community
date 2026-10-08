@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Scenario Explainer"
+  short_description: "Explain a Bloomreach scenario in plain English, or audit all scenarios"
+policy:
+  allow_implicit_invocation: true

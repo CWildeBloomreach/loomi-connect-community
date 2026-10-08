@@ -1,0 +1,6 @@
+interface:
+  display_name: "Discovery Experiment Setup"
+  short_description: "Plan, preview and create a Discovery A/B test for a ranking rule (writes, with confirmation)"
+policy:
+  # This skill writes to live Discovery config, so it only runs when called by name.
+  allow_implicit_invocation: false

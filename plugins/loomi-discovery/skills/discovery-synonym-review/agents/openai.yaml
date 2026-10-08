@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Synonym Review"
+  short_description: "Audit search synonyms and find the ones that hurt results"
+policy:
+  allow_implicit_invocation: true

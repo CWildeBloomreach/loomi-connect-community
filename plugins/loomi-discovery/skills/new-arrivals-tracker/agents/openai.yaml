@@ -1,0 +1,5 @@
+interface:
+  display_name: "New Arrivals Tracker"
+  short_description: "Check whether new products are getting seen and selling in Bloomreach Discovery"
+policy:
+  allow_implicit_invocation: true

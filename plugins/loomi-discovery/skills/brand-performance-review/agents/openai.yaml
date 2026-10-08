@@ -1,0 +1,5 @@
+interface:
+  display_name: "Brand Performance Review"
+  short_description: "Brand scorecard for supplier conversations and ranking decisions in Bloomreach Discovery"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Facet Optimizer"
+  short_description: "Find junk, missing and messy filters on search and category pages"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Engagement Segment Builder"
+  short_description: "Turn an audience description into a sized Bloomreach segment definition"
+policy:
+  # This skill can create customer filters and segmentations, so it only runs when called by name.
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Redirect Audit"
+  short_description: "Find broken, conflicting and missing Discovery search redirects"
+policy:
+  allow_implicit_invocation: true

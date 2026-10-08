@@ -1,0 +1,5 @@
+interface:
+  display_name: "Product Opportunity Finder"
+  short_description: "Find products to fix, boost, bury or clear in Bloomreach Discovery"
+policy:
+  allow_implicit_invocation: true

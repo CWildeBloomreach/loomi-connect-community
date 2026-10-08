@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Tracking Health"
+  short_description: "Find stopped events, junk event types, poor fill rates and schema oddities"
+policy:
+  allow_implicit_invocation: true

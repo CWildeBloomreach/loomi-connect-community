@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Dynamic Category Review"
+  short_description: "Find empty, overlapping, fragile and underperforming Bloomreach Discovery dynamic categories"
+policy:
+  allow_implicit_invocation: true

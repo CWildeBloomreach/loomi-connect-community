@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Search Health"
+  short_description: "Search performance health check for a Bloomreach Discovery site"
+policy:
+  allow_implicit_invocation: true

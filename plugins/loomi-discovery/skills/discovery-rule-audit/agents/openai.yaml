@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Rule Audit"
+  short_description: "Find expired, duplicate and unused Discovery merchandising rules and get a cleanup list"
+policy:
+  allow_implicit_invocation: true

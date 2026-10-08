@@ -1,0 +1,5 @@
+interface:
+  display_name: "Data and Feed Health"
+  short_description: "Red/amber/green check of Bloomreach tracking pixel, catalog feeds and Data Hub jobs"
+policy:
+  allow_implicit_invocation: true

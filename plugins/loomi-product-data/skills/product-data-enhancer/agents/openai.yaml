@@ -1,0 +1,5 @@
+interface:
+  display_name: "Product Data Enhancer"
+  short_description: "Suggest better product content, attributes, alt text and schema from images and data"
+policy:
+  allow_implicit_invocation: true

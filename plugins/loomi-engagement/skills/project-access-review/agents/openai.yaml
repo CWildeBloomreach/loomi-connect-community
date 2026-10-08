@@ -1,0 +1,5 @@
+interface:
+  display_name: "Project Access Review"
+  short_description: "Periodic user-access review of Bloomreach Engagement projects, with removals to action"
+policy:
+  allow_implicit_invocation: true

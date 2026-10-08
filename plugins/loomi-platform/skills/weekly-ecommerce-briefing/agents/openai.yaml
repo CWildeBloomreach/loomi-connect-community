@@ -1,0 +1,5 @@
+interface:
+  display_name: "Weekly Ecommerce Briefing"
+  short_description: "One-screen Monday briefing: KPIs, top movers, campaigns, data health and 3 actions"
+policy:
+  allow_implicit_invocation: true

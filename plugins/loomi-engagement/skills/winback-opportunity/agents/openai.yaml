@@ -1,0 +1,5 @@
+interface:
+  display_name: "Win-back Opportunity"
+  short_description: "Revenue at risk from lapsing customers in Bloomreach Engagement, and a win-back plan"
+policy:
+  allow_implicit_invocation: true

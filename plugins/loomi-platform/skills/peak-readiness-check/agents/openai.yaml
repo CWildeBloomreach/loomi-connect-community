@@ -1,0 +1,5 @@
+interface:
+  display_name: "Peak Readiness Check"
+  short_description: "Go/no-go checklist for Black Friday, a sale or a launch across Discovery and Engagement"
+policy:
+  allow_implicit_invocation: true

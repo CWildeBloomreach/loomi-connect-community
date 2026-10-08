@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Experiment Readout"
+  short_description: "Read out Engagement A/B tests: lift, significance and a call / keep running / stop verdict"
+policy:
+  allow_implicit_invocation: true

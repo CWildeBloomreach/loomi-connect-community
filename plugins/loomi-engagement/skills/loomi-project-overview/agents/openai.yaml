@@ -1,0 +1,5 @@
+interface:
+  display_name: "Bloomreach Project Overview"
+  short_description: "Summarise a Bloomreach Engagement project's data via Loomi Connect"
+policy:
+  allow_implicit_invocation: true

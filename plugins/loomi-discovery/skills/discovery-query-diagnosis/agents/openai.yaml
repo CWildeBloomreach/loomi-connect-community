@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Query Diagnosis"
+  short_description: "Find out why a search query underperforms and how to fix it"
+policy:
+  allow_implicit_invocation: true

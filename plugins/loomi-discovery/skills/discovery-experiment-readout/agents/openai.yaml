@@ -1,0 +1,5 @@
+interface:
+  display_name: "Discovery Experiment Readout"
+  short_description: "Read out Discovery A/B tests: results, confidence and a ship / keep running / stop call"
+policy:
+  allow_implicit_invocation: true

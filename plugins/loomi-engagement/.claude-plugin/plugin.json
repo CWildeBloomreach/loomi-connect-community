@@ -1,0 +1,10 @@
+{
+  "name": "loomi-engagement",
+  "version": "0.1.0",
+  "description": "Skills for Bloomreach Engagement via Loomi Connect: projects, customers, events, campaigns, analytics.",
+  "author": { "name": "Bloomreach and contributors" },
+  "homepage": "https://github.com/bloomreach/loomi-connect-community",
+  "repository": "https://github.com/bloomreach/loomi-connect-community",
+  "license": "Apache-2.0",
+  "keywords": ["bloomreach", "loomi-connect", "engagement"]
+}

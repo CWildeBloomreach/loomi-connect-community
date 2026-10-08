@@ -1,0 +1,6 @@
+interface:
+  display_name: "Search Demand to Campaign"
+  short_description: "Turn Discovery search demand into an Engagement campaign brief or draft"
+policy:
+  # This skill can create campaign drafts, so it only runs when called by name.
+  allow_implicit_invocation: false

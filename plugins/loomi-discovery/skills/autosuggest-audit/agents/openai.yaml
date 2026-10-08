@@ -1,0 +1,5 @@
+interface:
+  display_name: "Autosuggest Audit"
+  short_description: "Find autosuggest terms that cost revenue, and the exclusions to add"
+policy:
+  allow_implicit_invocation: true

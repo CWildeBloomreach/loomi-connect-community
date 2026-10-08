@@ -1,0 +1,5 @@
+interface:
+  display_name: "Collection Suggester"
+  short_description: "Suggest new rule-based product collections from search demand and sales in Bloomreach Discovery"
+policy:
+  allow_implicit_invocation: true

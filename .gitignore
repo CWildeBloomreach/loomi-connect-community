@@ -1,0 +1,37 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Secrets and local config: never commit credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local Claude Code / Codex settings
+.claude/settings.local.json
+.claude/worktrees/
+
+# Skill zips built for claude.ai / ChatGPT upload
+*.zip
+
+# Logs and temporary files
+*.log
+tmp/

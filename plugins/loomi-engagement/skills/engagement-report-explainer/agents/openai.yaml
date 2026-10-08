@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Report Explainer"
+  short_description: "Explain a Bloomreach dashboard, report or funnel in plain English, or audit saved analyses"
+policy:
+  allow_implicit_invocation: true
