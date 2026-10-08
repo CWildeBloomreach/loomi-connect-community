@@ -22,7 +22,7 @@ You don't have to write a skill by hand. Usually the best way is to have Claude 
 
 It helps to run the workflow with Claude first, with Loomi Connect connected, and then ask it to turn what worked into a skill. That way the steps are based on real tool calls rather than guesses.
 
-Then treat the draft as yours: read it, run it against a test project, and check it against the [checklist](#checklist) below before you open a PR. The rest of this guide explains what a good skill looks like, so you can judge and refine what Claude produces.
+Then treat the draft as yours: read it, run it against a test project, and check it against the [checklist](#checklist) below before you open a pull request from your fork (see [CONTRIBUTING.md](../CONTRIBUTING.md) for the steps). The rest of this guide explains what a good skill looks like, so you can judge and refine what Claude produces.
 
 ## Folder layout
 

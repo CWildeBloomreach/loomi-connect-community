@@ -85,7 +85,7 @@ The repository does **not** bundle the Loomi Connect server connection. The serv
 
 ## Contribution model
 
-We use the standard GitHub **fork → pull request → review → merge** flow.
+We use the standard GitHub **fork → pull request → review → merge** flow. It is the only way submissions are accepted, for everyone including Bloomreach staff: contributors don't get write access to the repository, and changes sent by email, in issues or as attachments aren't accepted.
 
 1. **Fork** the repository and create a branch.
 2. **Add or change** the contribution, starting from `templates/skill-template/` and following `docs/skill-authoring.md`.

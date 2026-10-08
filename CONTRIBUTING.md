@@ -13,8 +13,15 @@ If you're not sure something fits, [open an issue](../../issues/new/choose) befo
 
 ## How to contribute
 
-1. **Fork** the repository and create a branch, for example `skill/campaign-digest`.
-2. **Copy the template.** Copy [templates/skill-template/](templates/skill-template/) to `plugins/<plugin>/skills/<skill-name>/`. Choose `loomi-engagement` or `loomi-discovery`. If your skill fits neither, propose a new plugin in an issue first.
+**All submissions come in by forking the repository, making your changes in your fork, and opening a pull request.** This applies to everyone, including Bloomreach staff. Contributors don't get write access to this repository, and we can't accept changes sent any other way, such as by email, in an issue, or as a file attachment. Every change is reviewed in its pull request before it's merged.
+
+1. **Fork** the repository on GitHub (the **Fork** button), then clone your fork and create a branch:
+   ```bash
+   git clone https://github.com/<your-username>/loomi-connect-community.git
+   cd loomi-connect-community
+   git checkout -b skill/campaign-digest
+   ```
+2. **Copy the template.** Copy [templates/skill-template/](templates/skill-template/) to `plugins/<plugin>/skills/<skill-name>/`. Choose `loomi-engagement`, `loomi-discovery`, `loomi-platform` (skills that span products) or `loomi-product-data`. If your skill fits none of them, propose a new plugin in an issue first.
 3. **Write the skill**, following [docs/skill-authoring.md](docs/skill-authoring.md).
 4. **Validate it locally:**
    ```bash
@@ -22,7 +29,30 @@ If you're not sure something fits, [open an issue](../../issues/new/choose) befo
    claude plugin validate .        # if you have Claude Code installed
    ```
 5. **Test it** against a real or sandbox Bloomreach project, in at least one Claude client and one OpenAI client if you can. Say which ones you used in the PR.
-6. **Open a pull request** and fill in the template.
+6. **Commit and push** to your fork:
+   ```bash
+   git add plugins/<plugin>/skills/<skill-name>
+   git commit -m "Add <skill-name> skill"
+   git push origin skill/campaign-digest
+   ```
+7. **Open a pull request** from your fork's branch to `main` in `bloomreach/loomi-connect-community`, and fill in the template. GitHub offers a **Compare & pull request** button after you push. With the GitHub CLI you can run `gh pr create` instead.
+8. **Respond to review.** Push further commits to the same branch; the pull request updates automatically.
+
+With the GitHub CLI, `gh repo fork bloomreach/loomi-connect-community --clone` does step 1's fork and clone in one go.
+
+### Keeping your fork up to date
+
+Before you start new work, sync your fork with the main repository:
+
+```bash
+git remote add upstream https://github.com/bloomreach/loomi-connect-community.git   # once
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+```
+
+Or select **Sync fork** on your fork's GitHub page.
 
 ## Review
 

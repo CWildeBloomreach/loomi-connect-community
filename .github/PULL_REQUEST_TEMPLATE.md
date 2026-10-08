@@ -1,3 +1,5 @@
+<!-- Submissions come from a branch in your fork of this repository. See CONTRIBUTING.md for the steps. -->
+
 ## What this adds or changes
 
 <!-- One or two sentences. -->

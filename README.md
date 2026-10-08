@@ -57,9 +57,11 @@ To link every skill into your personal skills folders for Claude Code (`~/.claud
 
 ## Contributing
 
-We welcome contributions. Start with:
+We welcome contributions. **All submissions are handled by forking this repository, making your changes in your fork, and opening a pull request.** Maintainers review every pull request before it's merged. We can't accept changes sent any other way.
 
-- [CONTRIBUTING.md](CONTRIBUTING.md): how to fork, submit and get a pull request reviewed
+Start with:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): the fork and pull request steps, and how review works
 - [docs/skill-authoring.md](docs/skill-authoring.md): how to write a skill that works in Claude and OpenAI
 - [templates/skill-template/](templates/skill-template/): the starting point for a new skill
 
