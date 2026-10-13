@@ -1,0 +1,5 @@
+interface:
+  display_name: "Topic Collection Builder"
+  short_description: "Build a rule-based product collection for one topic or query in Bloomreach Discovery"
+policy:
+  allow_implicit_invocation: true

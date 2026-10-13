@@ -46,6 +46,7 @@ Start with the health check, then go deeper where it points you.
 | "Which products should I boost, fix or clear?" | [product-opportunity-finder](../plugins/loomi-discovery/skills/product-opportunity-finder/) |
 | "How are our brands doing? I have a supplier meeting." | [brand-performance-review](../plugins/loomi-discovery/skills/brand-performance-review/) |
 | "What new collections should we create?" | [collection-suggester](../plugins/loomi-platform/skills/collection-suggester/) |
+| "Build a pickleball collection" or "Which products belong with this search?" | [topic-collection-builder](../plugins/loomi-discovery/skills/topic-collection-builder/) |
 | "Clean up our merchandising rules" | [discovery-rule-audit](../plugins/loomi-discovery/skills/discovery-rule-audit/) |
 | "Are our dynamic categories working?" | [discovery-dynamic-category-review](../plugins/loomi-discovery/skills/discovery-dynamic-category-review/) |
 | "Are our product recommendations set up well?" | [recommendation-model-audit](../plugins/loomi-engagement/skills/recommendation-model-audit/) |

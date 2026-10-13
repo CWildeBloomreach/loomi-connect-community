@@ -23,6 +23,7 @@ Skills for **Bloomreach Discovery** that use Loomi Connect.
 |---|---|---|
 | [discovery-category-health](skills/discovery-category-health/) | Underperforming categories, broken dynamic categories, buried products | Read-only |
 | [discovery-dynamic-category-review](skills/discovery-dynamic-category-review/) | Empty, overlapping, fragile and underperforming dynamic categories, with prioritised fixes | Read-only |
+| [topic-collection-builder](skills/topic-collection-builder/) | Builds one collection for a named topic from search data plus companion products that go with it (shoes, eyewear for pickleball), with tested rules | Read-only |
 | [product-opportunity-finder](skills/product-opportunity-finder/) | Products to fix, boost, bury or clear, with revenue at stake | Read-only |
 | [brand-performance-review](skills/brand-performance-review/) | Brand scorecard comparing revenue share with exposure; range gaps; supplier conversations | Read-only |
 | [new-arrivals-tracker](skills/new-arrivals-tracker/) | Are new products getting seen? Breakout, buried, slow-start and invisible new arrivals | Read-only |

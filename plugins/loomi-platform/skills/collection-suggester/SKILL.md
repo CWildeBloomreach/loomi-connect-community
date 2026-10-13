@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; Bloomreach Engagement optional). Python 3 is optional, for the bundled scripts.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -159,7 +159,7 @@ For each suggestion, say which uses fit and why:
 **Data caveats:** <account-level reporting, synthetic or partial data, co-purchase skipped and why>
 ```
 
-Keep it to 3–6 suggestions. Put the strongest first (by demand at stake, momentum, feasibility and timing). Offer to run `discovery-query-diagnosis` on any underserved query, or `campaign-planner` to time a launch.
+Keep it to 3–6 suggestions. Put the strongest first (by demand at stake, momentum, feasibility and timing). Offer to run `discovery-query-diagnosis` on any underserved query, `campaign-planner` to time a launch, or `topic-collection-builder` to build out one suggestion in depth (product-by-product association, and the rule's precision and recall).
 
 ## Safety
 
