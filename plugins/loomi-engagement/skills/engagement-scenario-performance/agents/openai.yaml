@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Scenario Performance"
+  short_description: "Step-by-step results for one Bloomreach scenario: sends, clicks, purchases after, split assignments"
+policy:
+  allow_implicit_invocation: true

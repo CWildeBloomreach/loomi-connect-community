@@ -23,9 +23,10 @@ The `search_scenarios` list accepts a `trigger_types` filter (`now`, `repeated`,
 |---|---|---|
 | `condition` **(seen)** | "Only customers who ... continue; the others go down the 'no' branch (or stop)" | `customer_filter.filters` (atoms) and `formula` (`F0&F1`, `!F0`, ...). Output `1` = matches, `2` = doesn't match |
 | `condition-raw` **(seen)** | "A custom Jinja check: continues only if ..." | `jinja_filter`. Summarise the logic, such as "if the saved metric is above 5", without pasting long templates |
-| `ab-split` **(seen)** | "Randomly splits customers: 50% Target, 50% Control" | `variants` (`name`, `percentage`); outputs start at `1` in variant order |
+| `ab-split` **(seen)** | "Randomly splits customers: 50% Target, 50% Control" | `variants` (`id`, `name`, `percentage`). Each output is numbered by the variant's `id`, not its position (ids can have gaps). An arrow from a number no variant has is a leftover from a removed variant |
+| `ab-split-contextual` **(seen)** | "Bloomreach picks the variant most likely to work for each customer" | `variants` with ids from `0`; each output is `id + 1`. `optimization_goals_events` and `optimization_target` say what it optimises for |
 | `segmentation-fork` | "Sends each customer down the branch for their segment in segmentation X" | the segmentation ID and its segments |
-| `limit` **(seen)** | "Lets at most N customers through per period (resets daily at ...)" | `steps[].limit`, `reset` schedule |
+| `limit` **(seen)** | "Lets at most N customers through per period (resets daily at ...)" | `steps[].limit` (text; may be Jinja), `reset` schedule (`null` = never resets). Output `1` = within the limit, `2` = over it |
 
 ### Reading filter atoms
 
@@ -40,7 +41,7 @@ The `search_scenarios` list accepts a `trigger_types` filter (`now`, `repeated`,
 |---|---|
 | `wait-action` | "Waits N minutes / hours / days" |
 | `wait-action-dynamic` | "Waits until a date taken from a property or event" |
-| `wait-action-optimal` | "Waits for each customer's predicted best send time" |
+| `wait-action-optimal` **(seen)** | "Waits for each customer's predicted best send time, within `time_range` hours" |
 | `wait-action-silent-hours` | "Holds messages during silent hours" |
 
 ## Actions (channels)

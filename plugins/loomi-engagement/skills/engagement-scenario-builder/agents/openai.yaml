@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engagement Scenario Builder"
+  short_description: "Build or change a Bloomreach scenario from a plain-English description, saved as a draft"
+policy:
+  allow_implicit_invocation: false

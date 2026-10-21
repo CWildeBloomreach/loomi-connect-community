@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.2.0"
   products: engagement
   access: read-only
 ---
@@ -63,7 +63,7 @@ Points to know:
 - The top-level `trigger` field is usually `null`. **Triggers are nodes** whose type ends in `-trigger`. A scenario can have several triggers, each starting its own path.
 - A `now-trigger` with `"active": false` is the manual "run now" entry point and isn't firing on a schedule.
 - `label` nodes are notes the author left on the canvas. Read them: they often state the scenario's purpose, and they're the best source for the explanation.
-- On a `condition` node, output connector `1` is "matches" and `2` is "doesn't match". On an `ab-split`, outputs start at `1`, in the order of `variants`.
+- On a `condition` node, output connector `1` is "matches" and `2` is "doesn't match". On an `ab-split`, each output is numbered by its variant's `id` (ids can have gaps, such as `1`, `2`, `4`); on an `ab-split-contextual`, by `id + 1`. On a `limit`, `1` is within the limit and `2` is over it.
 
 See [references/node-types.md](references/node-types.md) for what each node type means and which fields to read.
 
@@ -95,7 +95,7 @@ Walk the flow from each trigger along the connections, and describe it as a stor
 5. **Channels and consent:** which consent category each message uses, and whether `general_consent` is on.
 6. **Things to check:** see the structural checks in [references/audit-checks.md](references/audit-checks.md).
 
-Optional: estimate how many customers currently qualify for the entry condition with an aggregate EQL count. Use the `engagement-segment-builder` skill's method if it's installed. Always run `estimate_eql_cost` first.
+Optional: estimate how many customers currently qualify for the entry condition with an aggregate EQL count. Use the `engagement-segment-builder` skill's method if it's installed (its "Sizing an existing customer filter" section translates a condition). Conditions that use segments, predictions or aggregates can't be counted this way. For each step's results, hand off to `engagement-scenario-performance`. Always run `estimate_eql_cost` first.
 
 ### 6. Audit mode
 

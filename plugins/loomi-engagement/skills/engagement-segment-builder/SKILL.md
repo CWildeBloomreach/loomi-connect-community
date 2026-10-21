@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.2.0"
   products: engagement
   access: writes
 ---
@@ -112,6 +112,8 @@ Produce three forms:
 3. Add up **all** returned rows, including the `null` and "other" rows. An empty `rows` list means zero.
 4. If it's zero or looks wrong, follow "When the count is zero or surprising" in [references/eql-patterns.md](references/eql-patterns.md). Find out whether it's a definition problem or just no recent data.
 5. Round the number in your answer (for example "about 48,000") and give the time it was computed. Counts change as data arrives.
+
+To size a filter that already exists, such as a condition in a scenario, translate it with "Sizing an existing customer filter" in [references/eql-patterns.md](references/eql-patterns.md). Segments, predictions and aggregates can't be counted in EQL; say so rather than sizing the rest.
 
 Optional, and only if the user wants it: break the audience down by one more property, with `grouping top 10`. Estimate the cost again first.
 

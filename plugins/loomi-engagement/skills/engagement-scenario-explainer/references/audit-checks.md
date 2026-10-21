@@ -32,6 +32,12 @@ Use 90 / 180 / 365 days as defaults, and change them if the user gives other thr
 | A/B split with no branches | an `ab-split` with no outgoing connections | Info: often used only to assign holdout or test groups that other scenarios read. Confirm it's intended |
 | No actions | active scenario with no action node on any connected path | Review |
 
+| Schedule with no days | a `repeated-trigger` with `repeat` `weekly` or `monthly` and `days: []` (Engagement saves it) | Review: it may never run |
+| Hourly schedule with no minutes | `repeat: "hourly"` and `minutes: []` | Review |
+| Split shares don't add up | an `ab-split` whose `variants[].percentage` don't total 100 | Action |
+| Arrow from a removed variant | an `ab-split` connection whose `connector_index` matches no variant's `id` (or `id + 1` on `ab-split-contextual`) | Review: customers may still be routed down an old branch |
+| Condition with no rules | a `condition` with an empty `customer_filter.filters` | Review: everyone goes down "matches" |
+
 `label` nodes never have connections, so never flag them.
 
 ## From node configuration and references

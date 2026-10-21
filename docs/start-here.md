@@ -68,6 +68,8 @@ Start with the health check, then go deeper where it points you.
 | "Which audiences should we be targeting?" | [segment-opportunity-finder](../plugins/loomi-engagement/skills/segment-opportunity-finder/) |
 | "How much revenue are we losing from lapsed customers?" | [winback-opportunity](../plugins/loomi-engagement/skills/winback-opportunity/) |
 | "Build me a segment of…" | [engagement-segment-builder](../plugins/loomi-engagement/skills/engagement-segment-builder/) (**writes**, after you confirm) |
+| "Set up a flow that…" / "Change the wait in our welcome series" | [engagement-scenario-builder](../plugins/loomi-engagement/skills/engagement-scenario-builder/) (**writes** a draft, after you confirm) |
+| "How is our abandoned cart flow doing?" | [engagement-scenario-performance](../plugins/loomi-engagement/skills/engagement-scenario-performance/) |
 | "Turn what people search for into a campaign" | [search-demand-to-campaign](../plugins/loomi-platform/skills/search-demand-to-campaign/) (**writes** a draft, after you confirm) |
 | "Are we sending too much to the same people?" | [engagement-send-collision-check](../plugins/loomi-engagement/skills/engagement-send-collision-check/) |
 | "Are we using our predictions?" | [prediction-activation-check](../plugins/loomi-engagement/skills/prediction-activation-check/) |

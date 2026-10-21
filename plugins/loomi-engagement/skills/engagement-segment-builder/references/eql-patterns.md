@@ -65,3 +65,25 @@ Analytics queries have their own rate limit, about **one every 3 seconds**, whic
 2. Count each condition on its own, one query at a time, to find the one that empties the audience. Estimate the cost of each first.
 3. Check whether the data is recent. In testing, a sandbox had purchases over its lifetime but none in the last 90 days, so every windowed condition returned zero. Compare `exists[event X]` with `exists[event X in last N days]`.
 4. Say which it is: a definition problem, or simply no recent data.
+
+## Sizing an existing customer filter
+
+To size a filter that already exists, such as a scenario condition's `customer_filter`, translate each atom into a `customers matching` condition, then join them with its `formula`. Checked against a demo project.
+
+| Atom | EQL |
+|---|---|
+| `attribute` / `property` with a string constraint | `customer."<property>" = "<value>"` (`equals`), `!=` (`does not equal`), `contains`, `does not contain`, `starts with`, `ends with` |
+| same, number constraint | `=` (`equal to`), `!=`, `>`, `>=`, `<`, `<=` |
+| same, boolean constraint (`operator: is`) | `= true` or `= false` (the value is the string `"true"` / `"false"`) |
+| same, date constraint `more than` / `less than` with `amount`, `units`, `tense` | `more than <amount> <units> ago` (or `ahead`) |
+| any constraint `has value` / `is set` | `has value`; `has no value` / `is not set` → `has no value` |
+| `attribute` / `consent` with `category` | `has consent "<category>"`; with the value `"false"`, `not has consent "<category>"` |
+| `attribute` / `id` with `id` (the identifier name) | `id "<identifier>" <comparison>` |
+| `funnel_steps` with one step | `exists[event "<type>" where .<p> <cmp> and ... in last <n> <units>]` (drop `in last` when `date_filter.enabled` is false) |
+| `funnel_steps` with several steps | `funnel("<a>" where ... followed by "<b>" ... in last <n> <units>)` |
+
+Then rewrite the formula: each `F<n>` becomes `(<atom n>)`, `&` → `and`, `|` → `or`, `!` → `not`. An empty formula or `1` means everyone.
+
+Some atoms **can't be sized in EQL**, because they point at saved definitions by ID: `segmentation`, `prediction`, `aggregate`, `expression` and `embedded_aggregate` (an inline calculation). Event steps whose filters compare with another attribute can't either. For those, say the filter can't be counted outside Engagement and name which kinds of rule stop it. Don't size the rest of the filter on its own and present that as the answer: it would overstate the audience.
+
+Quote names with double quotes, and strip any `"` or `\` from values first.

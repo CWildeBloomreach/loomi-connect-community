@@ -1,0 +1,362 @@
+{
+  "about": "Starting outlines for new scenarios, in create_scenario payload format. Event names (registration, cart_update, purchase) are common defaults: check them against the project's event schema and swap in the project's own names. Replace the limit step's placeholder id with a new random 24-character hex string.",
+  "templates": [
+    {
+      "id": "welcome",
+      "label": "Welcome series",
+      "description": "After someone registers, wait a day; if they haven't bought yet and have an email address, send the welcome email.",
+      "scenario": {
+        "name": "Welcome series",
+        "nodes": [
+          {
+            "id": 0,
+            "type": "on-event-trigger",
+            "name": null,
+            "x": 80,
+            "y": 120,
+            "event": {
+              "type": "registration",
+              "filter": []
+            },
+            "delay_seconds": 30
+          },
+          {
+            "id": 1,
+            "type": "wait-action",
+            "name": null,
+            "x": 280,
+            "y": 120,
+            "units": "days",
+            "count": 1
+          },
+          {
+            "id": 2,
+            "type": "condition",
+            "name": "Not bought yet",
+            "x": 480,
+            "y": 120,
+            "customer_filter": {
+              "filters": [
+                {
+                  "type": "funnel_steps",
+                  "steps": [
+                    {
+                      "type": "purchase",
+                      "name": "purchase",
+                      "filter": []
+                    }
+                  ],
+                  "date_filter": {
+                    "absolute": false,
+                    "duration": {
+                      "count": 2,
+                      "units": "days"
+                    },
+                    "enabled": true,
+                    "from_date": null,
+                    "offset": null,
+                    "to_date": null
+                  },
+                  "duration_filter": {
+                    "duration": null,
+                    "enabled": false
+                  },
+                  "independent_if_reused": true
+                },
+                {
+                  "type": "attribute",
+                  "attribute": {
+                    "type": "property",
+                    "property": "email"
+                  },
+                  "constraint": {
+                    "type": "string",
+                    "operator": "has value",
+                    "operands": []
+                  }
+                }
+              ],
+              "formula": "!F0&F1"
+            }
+          },
+          {
+            "id": 3,
+            "type": "label",
+            "name": null,
+            "x": 480,
+            "y": 260,
+            "text": "Add the welcome email after “Not bought yet”.\nCopy an email from another flow, or write it in Engagement.",
+            "width": 220,
+            "height": 70
+          }
+        ],
+        "connections": [
+          {
+            "source": {
+              "node_id": 0,
+              "connector_index": 0
+            },
+            "destination": {
+              "node_id": 1,
+              "connector_index": 0
+            }
+          },
+          {
+            "source": {
+              "node_id": 1,
+              "connector_index": 1
+            },
+            "destination": {
+              "node_id": 2,
+              "connector_index": 0
+            }
+          }
+        ],
+        "last_node_id": 3
+      }
+    },
+    {
+      "id": "cart",
+      "label": "Abandoned cart",
+      "description": "When a cart changes, wait 4 hours; if they still haven't bought and have an email address, send the cart reminder.",
+      "scenario": {
+        "name": "Abandoned cart",
+        "nodes": [
+          {
+            "id": 0,
+            "type": "on-event-trigger",
+            "name": null,
+            "x": 80,
+            "y": 120,
+            "event": {
+              "type": "cart_update",
+              "filter": []
+            },
+            "delay_seconds": 30
+          },
+          {
+            "id": 1,
+            "type": "wait-action",
+            "name": null,
+            "x": 280,
+            "y": 120,
+            "units": "hours",
+            "count": 4
+          },
+          {
+            "id": 2,
+            "type": "condition",
+            "name": "Still not bought",
+            "x": 480,
+            "y": 120,
+            "customer_filter": {
+              "filters": [
+                {
+                  "type": "funnel_steps",
+                  "steps": [
+                    {
+                      "type": "purchase",
+                      "name": "purchase",
+                      "filter": []
+                    }
+                  ],
+                  "date_filter": {
+                    "absolute": false,
+                    "duration": {
+                      "count": 1,
+                      "units": "days"
+                    },
+                    "enabled": true,
+                    "from_date": null,
+                    "offset": null,
+                    "to_date": null
+                  },
+                  "duration_filter": {
+                    "duration": null,
+                    "enabled": false
+                  },
+                  "independent_if_reused": true
+                },
+                {
+                  "type": "attribute",
+                  "attribute": {
+                    "type": "property",
+                    "property": "email"
+                  },
+                  "constraint": {
+                    "type": "string",
+                    "operator": "has value",
+                    "operands": []
+                  }
+                }
+              ],
+              "formula": "!F0&F1"
+            }
+          },
+          {
+            "id": 3,
+            "type": "label",
+            "name": null,
+            "x": 480,
+            "y": 260,
+            "text": "Add the cart reminder after “Still not bought”.\nCopy an email from another flow, or write it in Engagement.",
+            "width": 220,
+            "height": 70
+          }
+        ],
+        "connections": [
+          {
+            "source": {
+              "node_id": 0,
+              "connector_index": 0
+            },
+            "destination": {
+              "node_id": 1,
+              "connector_index": 0
+            }
+          },
+          {
+            "source": {
+              "node_id": 1,
+              "connector_index": 1
+            },
+            "destination": {
+              "node_id": 2,
+              "connector_index": 0
+            }
+          }
+        ],
+        "last_node_id": 3
+      }
+    },
+    {
+      "id": "winback",
+      "label": "Win-back",
+      "description": "Every Monday, find customers with an email address who haven't bought in 90 days, let a set number through, and send the win-back offer.",
+      "scenario": {
+        "name": "Win-back",
+        "nodes": [
+          {
+            "id": 0,
+            "type": "repeated-trigger",
+            "name": null,
+            "x": 80,
+            "y": 120,
+            "repeat": "weekly",
+            "days": [
+              1
+            ],
+            "times": [
+              {
+                "hour": 9,
+                "minute": 0
+              }
+            ],
+            "minutes": [],
+            "timezone": "UTC",
+            "from_date": null,
+            "to_date": null
+          },
+          {
+            "id": 1,
+            "type": "condition",
+            "name": "Lapsed 90 days",
+            "x": 280,
+            "y": 120,
+            "customer_filter": {
+              "filters": [
+                {
+                  "type": "funnel_steps",
+                  "steps": [
+                    {
+                      "type": "purchase",
+                      "name": "purchase",
+                      "filter": []
+                    }
+                  ],
+                  "date_filter": {
+                    "absolute": false,
+                    "duration": {
+                      "count": 90,
+                      "units": "days"
+                    },
+                    "enabled": true,
+                    "from_date": null,
+                    "offset": null,
+                    "to_date": null
+                  },
+                  "duration_filter": {
+                    "duration": null,
+                    "enabled": false
+                  },
+                  "independent_if_reused": true
+                },
+                {
+                  "type": "attribute",
+                  "attribute": {
+                    "type": "property",
+                    "property": "email"
+                  },
+                  "constraint": {
+                    "type": "string",
+                    "operator": "has value",
+                    "operands": []
+                  }
+                }
+              ],
+              "formula": "!F0&F1"
+            }
+          },
+          {
+            "id": 2,
+            "type": "limit",
+            "name": null,
+            "x": 480,
+            "y": 120,
+            "reset": null,
+            "steps": [
+              {
+                "group": "",
+                "id": "000000000000000000000000",
+                "limit": "1000"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "type": "label",
+            "name": null,
+            "x": 480,
+            "y": 260,
+            "text": "Add the win-back offer after “Within limit”.\nCopy an email from another flow, or write it in Engagement.",
+            "width": 220,
+            "height": 70
+          }
+        ],
+        "connections": [
+          {
+            "source": {
+              "node_id": 0,
+              "connector_index": 0
+            },
+            "destination": {
+              "node_id": 1,
+              "connector_index": 0
+            }
+          },
+          {
+            "source": {
+              "node_id": 1,
+              "connector_index": 1
+            },
+            "destination": {
+              "node_id": 2,
+              "connector_index": 0
+            }
+          }
+        ],
+        "last_node_id": 3
+      }
+    }
+  ]
+}
