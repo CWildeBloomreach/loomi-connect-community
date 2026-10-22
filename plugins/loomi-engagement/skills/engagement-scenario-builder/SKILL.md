@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: writes
 ---
@@ -86,6 +86,7 @@ Follow [references/node-config.md](references/node-config.md) for each step's fi
 - Connections are `{"source": {"node_id", "connector_index"}, "destination": {"node_id", "connector_index": 0}}`. Triggers output on `0`; most other steps on `1`; conditions on `1` (yes) and `2` (no).
 - Lay steps out left to right: about 200 units between columns and 100 between rows.
 - `last_node_id` is the highest `id`. Conditions need a `name`.
+- Flow-level settings (description, hourly cap, conversion goal) aren't kept when saved this way. Say they're set in the Engagement UI.
 - Never put `customer_filter` at the top level of the scenario: it's silently dropped and the flow then reaches everyone. Conditions go on `condition` nodes.
 
 ### 5. Check it

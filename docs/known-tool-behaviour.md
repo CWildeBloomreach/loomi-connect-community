@@ -183,6 +183,7 @@ Items marked **(bug?)** are worth reporting to the Loomi Connect team. <!-- TODO
 - Engagement saves a weekly or monthly `repeated-trigger` with `days: []` without complaint. Treat it as a warning, not an invalid scenario.
 - Webhook nodes keep request headers in plain text, in both `headers` and `parametrized_parts.headers`, and they often hold API tokens. Never repeat them. A full `update_scenario` must send them back unchanged, so start from the stored node.
 - `search_segmentations`, `search_aggregates`, `search_running_aggregates`, `search_predictions` and `search_expressions` list archived items too, flagged `archived: true`. They take no `archived` parameter. Conditions in live scenarios can still point at archived ones.
+- `create_scenario` / `update_scenario` accept `description` and `max_customers` without error but don't keep them (tested with an update; the read-back had no description and `max_customers: null`). Set flow-level settings in the Engagement UI.
 - `search_api_triggers` can return an empty list: then no scenario in the project can start from an API call yet.
 - Every message a scenario sends records a `campaign` event with `campaign_id` (the scenario's ID) and `action_id` (the node's `id`), so per-step results come from one cross-tab of `action_id` by `status`. Split assignments are `campaign` events with `action_type = "split"` and the variant's name in `variant`.
 

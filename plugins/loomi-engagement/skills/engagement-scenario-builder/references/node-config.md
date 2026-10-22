@@ -63,4 +63,6 @@ A weekly or monthly schedule saved with `days: []` is accepted by the backend (i
 
 ## Scenario-level fields
 
-`name`, `nodes`, `connections`, `last_node_id`. Optional: `description`, `max_customers` (most customers to start it per hour, or `null`), `conversion_goal: {type: <event>, filter: []}`.
+`name`, `nodes`, `connections`, `last_node_id`.
+
+The tool documentation also lists `description`, `max_customers` and `conversion_goal`, but in testing an `update_scenario` with `description` and `max_customers` set saved successfully and neither was kept. Don't promise them: tell the user to set the description, hourly cap and conversion goal in the Engagement UI.
