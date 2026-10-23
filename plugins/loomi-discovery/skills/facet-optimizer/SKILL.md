@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -44,6 +44,10 @@ You need the account, and optionally a site and a date range (default: the last 
 - **Keep product grid responses small, but keep facets on.** This skill needs `data.facet_counts.facets`, so **don't** pass `extra_params={"facet": "false"}`. Pass `fl="pid,title"` and `rows=1`. A response is then 25,000–60,000 characters; most of it is the debug block, and the brand facet alone can list about 200 values. Don't pass `simple_debug=false`; it returns HTTP 500.
 - **If the client saves a response to a file**, run `python3 scripts/facet_summary.py <file> [<file> ...] --attributes <saved list_facet_attributes response>`. It prints each facet with its value count, top values, coverage and flags, and the facet rules that applied. Otherwise read only `data.response.numFound`, `data.facet_counts.facets` and the `ruleType: "facet"` entries in `data.debug["customizations.explain"]`.
 - **Personal data:** `get_facet_rule` returns the name or email address of the person who last edited the rule (`user`). Never repeat it.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/facet_summary.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled inventory script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -59,6 +59,10 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 - The other list tools return everything in one response.
 - If a response is too large to read, save it to a file and use [scripts/cleanup_inventory.py](scripts/cleanup_inventory.py) to reduce it.
 - When one type has more than about 15 findings, **group them** in the report ("42 scenario drafts not edited for 180+ days, mostly named 'Copy of …'") rather than listing each, and offer the full list as a follow-up.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/cleanup_inventory.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

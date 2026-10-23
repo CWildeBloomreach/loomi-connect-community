@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -56,6 +56,10 @@ You need the account, and optionally a site and a date range. The default traffi
 - **Keep product grid responses small.** Pass `rows=1` and `fl="pid"`. Leave facets on: the category facet is what shows overlaps. Don't pass `simple_debug=false`; it caused HTTP 500 errors in testing.
 - **Save responses to files** when the client offers to, and keep them for the script below.
 - **Never repeat personal data.** Dynamic category records include `createdBy` and `lastModifiedBy`, which are often email addresses. Grid debug output includes internal URLs with keys. Leave all of these out of the report.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/review_dynamic_categories.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 
@@ -113,9 +117,7 @@ Note:
 Run [scripts/review_dynamic_categories.py](scripts/review_dynamic_categories.py) on the saved files:
 
 ```
-python3 scripts/review_dynamic_categories.py \
-  --definitions def_*.json --grids grid_*.json \
-  --table category_table.json --categories list_categories.json --today <YYYY-MM-DD>
+python3 scripts/review_dynamic_categories.py --definitions def_*.json --grids grid_*.json --table category_table.json --categories list_categories.json --today <YYYY-MM-DD>
 ```
 
 Name grid files after the category ID (for example `grid_brg_dyn_abc123.json`, `grid_70300.json`) so the script can match them. It prints an inventory table and a findings table with a priority for each finding. If you can't run scripts, apply the checks in [references/checks.md](references/checks.md) by hand.

@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; Bloomreach Engagement optional). Python 3 is optional, for the bundled scripts.
 metadata:
   author: bloomreach
-  version: "0.1.1"
+  version: "0.1.2"
   products: discovery,engagement
   access: read-only
 ---
@@ -44,6 +44,10 @@ Ask the user for (or default):
 - **Keep product grid responses small.** Always pass `fl` (`pid`, or `pid,title,brand` for previews). Use `rows=1` for counts and attribute profiles, and `rows=10` for previews (24 at most). Add `extra_params={"facet": "false"}` when you only need a count. **Never pass `simple_debug=false`** (HTTP 500).
 - **Large responses** are often saved to a file by the client. Read only the fields you need, or pass the file to the scripts below.
 - **EQL** (optional): call `estimate_eql_cost` first, tell the user the level, and leave at least 3 seconds between EQL calls.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/preview_summary.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

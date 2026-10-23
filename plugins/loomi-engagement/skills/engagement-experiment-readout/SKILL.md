@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled statistics script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -47,6 +47,10 @@ You need the project, and either a test name or ID, or a scope ("running tests",
 - **Aggregate only.** Never call `list_customers`, `list_customers_in_segment`, `get_customer_properties` or `list_customer_events`.
 - **Large responses.** `get_event_schema` can exceed 200,000 characters, and scenario details can be large. If the client saves a response to a file, extract only what you need.
 - **Never repeat personal data or content.** Lists include editors' names and email addresses; email designs and webhook bodies can hold real addresses. Describe variants by name and by what differs ("subject line with the discount", "no email: holdout"), never by pasting content.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/ab_stats.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

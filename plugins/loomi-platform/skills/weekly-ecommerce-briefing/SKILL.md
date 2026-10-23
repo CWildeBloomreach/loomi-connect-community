@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery and/or Bloomreach Engagement). Python 3 is optional, for the bundled numbers script.
 metadata:
   author: bloomreach
-  version: "0.2.0"
+  version: "0.2.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -61,6 +61,10 @@ Ask, unless the user has already said:
 - **Large tables are saved to files.** A 100-row table is 60,000 to 90,000 characters. Keep the files for the script in step 3, or extract only the fields you need.
 - **Personal data:** never repeat email addresses or names from `lastModifiedBy`, `edited_by` or `user` fields, or anything from customer records. Use only aggregate Engagement queries.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/briefing_numbers.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 ### 1. Resolve the account and project
@@ -100,11 +104,7 @@ Make these calls with the same window, one at a time:
 Then run:
 
 ```bash
-python3 scripts/briefing_numbers.py --overall overall.json --search search.json --category category.json \
-  --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json \
-  --queries queries.json --categories categories.json --products products.json --brands brands.json \
-  --dead-ends no_results.json,no_revenue.json \
-  [--min-visits 100] [--min-sessions 30] [--top 3] [--list-top 10] [--issue-top 5]
+python3 scripts/briefing_numbers.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --queries queries.json --categories categories.json --products products.json --brands brands.json --dead-ends no_results.json,no_revenue.json [--min-visits 100] [--min-sessions 30] [--top 3] [--list-top 10] [--issue-top 5]
 ```
 
 It prints the KPI table values, the top and issue lists, and the movers.

@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled check script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -43,6 +43,10 @@ If one of them isn't available, find it with the Loomi Connect `search_tools` to
 - **Aggregate only.** Never call `list_customers`, `get_customer_properties`, `list_customer_events` or `list_customers_in_segment`. Never break down by free-text, URL, email, phone or ID properties: the values can contain personal data.
 - **Schemas are large.** On big projects `get_event_schema` can exceed 200,000 characters. If the client saves it to a file, extract what you need with `jq` or Python rather than reading it all.
 - Read [references/eql-patterns.md](references/eql-patterns.md) before writing any EQL. It has tested queries, their costs and the syntax traps.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/tracking_checks.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

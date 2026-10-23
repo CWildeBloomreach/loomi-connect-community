@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; optionally Engagement catalogs). Python 3 is optional, for the bundled script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -58,6 +58,10 @@ Ask the user for (or default):
 - **Large responses** are usually saved to a file by the client. Don't read them into the conversation: pass the files to the script, or extract fields with `jq` or Python.
 - **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/audit_products.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 ### 1. Resolve the account and site
@@ -106,7 +110,7 @@ Run [scripts/audit_products.py](scripts/audit_products.py) on the saved files:
 
 ```
 python3 scripts/audit_products.py top_p*.json --performance products.json --queries queries.json --jsonl audit_results.jsonl --markdown
-python3 scripts/audit_products.py "men/pants=pants_p1.json" "women/dresses=dresses_p1.json" --performance products.json --jsonl audit_results.jsonl > audit_summary.json
+python3 scripts/audit_products.py "men/pants=pants_p1.json" "women/dresses=dresses_p1.json" --performance products.json --jsonl audit_results.jsonl --out audit_summary.json
 ```
 
 It reads grid pages, catalog records or Engagement items (one saved response per file), or `.jsonl` files and stdin with one product record per line. It streams: products are read one at a time, malformed lines are reported with their line numbers and skipped, and with `--jsonl` it writes **one result line per product** (`"schema": "loomi-product-audit"`, `"version": "1"`, `pid`, `score`, `priority`, `gaps`) as it goes, so a whole catalog never has to fit in memory and results from several runs can be concatenated. It applies [references/audit-rubric.md](references/audit-rubric.md): title, description, attributes, identifiers and offer, image counts and shopper vocabulary. Each product starts at 100 and loses points per gap. It then weights by revenue and visits, and returns the catalog summary, the categories and the prioritised products. Add account-specific term groups with `--synonyms` (a JSON list of lists). If you can't run scripts, apply the rubric by hand to the top 50 products.

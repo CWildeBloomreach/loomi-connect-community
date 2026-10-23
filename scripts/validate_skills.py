@@ -44,6 +44,36 @@ def parse_frontmatter(text):
     return fields, body
 
 
+FENCE_RE = re.compile(r"```[^\n]*\n(.*?)```", re.S)
+PY_RE = re.compile(r"\bpython3?\s")
+COMMAND_RULES = [
+    (re.compile(r"\\$|\\ "), "continues over several lines"),
+    (re.compile(r"python3?\s+-"), "passes flags to Python before the script"),
+    (re.compile(r"[;`]|\$\(|\$\w"), "uses ;, backticks, $(...) or a shell variable"),
+    (re.compile(r"(^|\s)\w+=\S*\s*(;|&&)"), "sets a shell variable"),
+    (re.compile(r"(^|\s)[<>]{1,2}\s*\S"), "uses a redirect"),
+    (re.compile(r"\|\|"), "uses ||"),
+]
+
+
+def documented_commands(body):
+    """Script commands a SKILL.md tells the assistant to run: fenced lines and inline code that call python."""
+    cmds = []
+    for block in FENCE_RE.findall(body):
+        cmds += [line.strip() for line in re.sub(r"\\\n\s*", "\\ ", block).splitlines() if PY_RE.search(line.strip())]
+    outside = FENCE_RE.sub("", body)
+    cmds += [m.strip() for m in re.findall(r"`([^`\n]*\bpython3?\s[^`\n]*)`", outside)]
+    # <placeholders> are fine in the docs; they aren't shell redirects.
+    return [re.sub(r"<[^<>]+>", "x", c) for c in cmds]
+
+
+def command_problem(cmd):
+    for rule, problem in COMMAND_RULES:
+        if rule.search(cmd):
+            return problem
+    return None
+
+
 def check_skill(path):
     errors = []
     rel = path.relative_to(ROOT)
@@ -97,6 +127,13 @@ def check_skill(path):
         if f.is_file() and f.suffix in {".md", ".yaml", ".yml", ".py", ".sh", ".json"}:
             if "mcp__" in f.read_text(encoding="utf-8", errors="ignore"):
                 errors.append(f"{f.relative_to(path.parent)} hard-codes an `mcp__` tool prefix; use plain tool names")
+
+    for cmd in documented_commands(body):
+        problem = command_problem(cmd)
+        if problem:
+            errors.append(f"script command {cmd[:80]!r} {problem}; see docs/skill-authoring.md#scripts")
+    if (path.parent / "scripts").is_dir() and "### Running the scripts" not in body:
+        errors.append("has scripts/ but no 'Running the scripts' subsection; see docs/skill-authoring.md#scripts")
 
     if not (path.parent / "README.md").exists():
         errors.append("missing README.md")

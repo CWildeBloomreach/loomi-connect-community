@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: writes
 ---
@@ -53,6 +53,10 @@ You need the account, the query or category, and what the rule should do. Ask fo
 
 - **Make calls one at a time.** Discovery allows 3 requests per second. If a call returns HTTP 429, wait a few seconds and retry. Product grid calls can return HTTP 500 under load; wait and retry once.
 - **Keep product grid responses small:** always pass `fl=pid,title,brand,price`. If the client saves a large response to a file, read only the fields you need.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/simulate_rerank.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

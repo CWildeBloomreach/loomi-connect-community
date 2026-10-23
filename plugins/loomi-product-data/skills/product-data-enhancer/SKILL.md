@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; optionally Engagement catalogs) and a client whose model can view images (vision); falls back to text-only when images can't be viewed. Python 3 is optional, for the bundled script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -52,6 +52,10 @@ Ask the user for:
 - **One call at a time.** Discovery allows 3 requests per second per user. On a 429 or 500, wait a few seconds and retry once.
 - **Product grid**: always pass `fl` and `extra_params={"facet":"false"}`, keep `rows` small, never pass `simple_debug=false` (HTTP 500). Fields that don't exist are silently skipped by `fl`.
 - **Never repeat** `auth_key` URLs (`feUrl`, `sqApiUrl`), editor emails in synonym lists (`lastModifiedBy`), or internal fields such as `margin` and `cost`.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/suggestions_to_files.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

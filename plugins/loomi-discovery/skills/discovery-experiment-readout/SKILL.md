@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -37,6 +37,10 @@ You need the account, and either an experiment name or ID, or a status ("running
 
 - **Make calls one at a time.** Discovery allows 3 requests per second. If a call returns HTTP 429, wait a few seconds and retry.
 - **The report response is very large** (150,000 to 400,000 characters for a few months), because it includes a day-by-day series for every metric. If the client saves it to a file, don't read the file in full. Run `scripts/summarise_report.py` on it (see step 4), or read only `data.overalldata.buckets`.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/summarise_report.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

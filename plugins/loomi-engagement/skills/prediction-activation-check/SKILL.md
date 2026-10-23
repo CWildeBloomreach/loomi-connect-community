@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement) and an account allowed to read predictions. Python 3 is optional, for the bundled reference-scanning script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -46,6 +46,10 @@ This skill uses these Loomi Connect tools:
 - **Errors come back in a wrapper**, not as a failed call: for example `{"result": {"success": false, "error": "[ACCESS_DENIED] ... (HTTP 403)."}}`. Check `success` on every response.
 - **Large responses.** Scenario, campaign and banner details can be big. Fetch scenarios with `include_node_designs=false` and email campaigns with `include_design=false` (the defaults). If the client saves a response to a file, search it with `jq`, `grep` or Python rather than reading it whole.
 - **No personal data in the answer.** Lists include editors' names (`created_by_display_name`, `edited_by_display_name`), and banner and campaign details include message content. Never repeat either.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/find_prediction_refs.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

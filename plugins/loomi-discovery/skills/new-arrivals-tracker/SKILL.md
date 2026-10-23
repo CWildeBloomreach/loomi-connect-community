@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery). Python 3 is optional, for the bundled scripts.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -55,6 +55,10 @@ Ask the user for (or default):
 - **Filters (`fq`).** One condition per string. To AND several, pass a list: `extra_params={"fq": ["days_since_release:[0 TO 30]", "category:\"10600\""]}`. **AND inside one `fq` string returns 0.** OR inside one string works. Facet counts for the field you filter on ignore the filter; every other facet is filtered.
 - **Large responses** (the product table is about 900 characters per product; a keyword grid with 200 rows can pass 1 million characters) are usually saved to a file by the client. Don't read them into the conversation: pass the files to the scripts, or extract only the fields you need with `jq` or Python.
 - **Personal data.** `search_dynamic_categories` returns editor names and email addresses (`createdBy`, `lastModifiedBy`). Never repeat them.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/new_arrivals.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

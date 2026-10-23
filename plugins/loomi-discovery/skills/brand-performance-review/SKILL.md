@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -43,6 +43,10 @@ You need the account, and optionally a site, a date range (default 30 days) and 
 - **Expect large responses** and let the client save them to files. The brand table is about 640 characters per brand, the product table about 900 per product, and a product grid row carries a long debug explanation (24 rows can exceed 600,000 characters). Pass files to the scripts; don't read them into the conversation.
 - **Keep product grid requests small.** Always pass `fl` (`pid,brand` for shelf counts; `pid,title,brand,price` for ranking checks). Pass `extra_params={"facet":"false"}` unless you need the brand facet. Don't pass `simple_debug=false`; it causes HTTP 500 errors.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/brand_scorecard.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 ### 1. Resolve the account and site
@@ -71,8 +75,7 @@ Take the top 10 queries by sessions from the query table. For each, one call at 
 Run [scripts/brand_scorecard.py](scripts/brand_scorecard.py):
 
 ```
-python3 scripts/brand_scorecard.py --brands brands.json --products products.json \
-  --queries queries.json --shelf shelf/*.json --ignore "AND,Basics" --markdown
+python3 scripts/brand_scorecard.py --brands brands.json --products products.json --queries queries.json --shelf shelf/*.json --ignore "AND,Basics" --markdown
 ```
 
 Use `--ignore` for brand names that are also everyday words, so "black and white dress" isn't counted as a search for the brand "AND". Run it once, read the brand-search matches, and add any false matches to `--ignore`.

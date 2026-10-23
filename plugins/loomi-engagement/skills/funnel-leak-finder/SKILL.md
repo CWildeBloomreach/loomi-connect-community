@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -48,6 +48,10 @@ Ask the user for the **window** (default: last 30 days) and the **conversion win
 - **Large responses.** `get_event_schema` can exceed 200,000 characters on large projects. If the client saves it to a file, extract event names and the few property names and types you need.
 - **Prefer a test project for trying queries**, but measure the funnel in the project the user cares about (usually production): a sandbox often has no purchases.
 - Read [references/eql-patterns.md](references/eql-patterns.md) before writing any EQL. It has the tested funnel and value queries and the syntax traps.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/funnel_leaks.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

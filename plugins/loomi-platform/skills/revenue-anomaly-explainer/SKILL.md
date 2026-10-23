@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery). Python 3 is optional, for the bundled breakdown script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -47,6 +47,10 @@ This skill uses these Loomi Connect tools:
 - **Large tables are saved to files.** A 100-row table is 60,000 to 90,000 characters. Keep the saved files: the script in step 4 reads them directly. Otherwise extract only the fields you need.
 - **The cards don't say which dates they cover.** Data usually ends a day or two before today. Read the dates from `get_discovery_trend` (step 3) and quote them.
 - **Never repeat people's email addresses.** Rule and experiment lists include `lastModifiedBy` and `user`. Refer to "the rule's last editor (shown in the app)", not the address.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/decompose_change.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 
@@ -99,11 +103,7 @@ Every row has current and `prev_*` values for revenue, visits and conversions. *
 Then run the breakdown script. Pass every file you saved; several files for one table are merged:
 
 ```bash
-python3 scripts/decompose_change.py --overall overall.json --search search.json --category category.json \
-  --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json \
-  --table queries=queries.json --table categories=categories.json \
-  --table products=products_rev.json,products_prev.json --table brands=brands.json \
-  --trend trend.json --top 8
+python3 scripts/decompose_change.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --table queries=queries.json --table categories=categories.json --table products=products_rev.json,products_prev.json --table brands=brands.json --trend trend.json --top 8
 ```
 
 It prints JSON with:

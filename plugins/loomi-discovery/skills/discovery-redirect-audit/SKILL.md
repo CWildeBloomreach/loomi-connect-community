@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -48,6 +48,10 @@ You need the account, and optionally a site. The default traffic window is the l
 - **Keep product grid responses small:** `fl="pid,title"`, `rows=5`, `extra_params={"facet": "false"}`. Don't pass `simple_debug=false` (it returns HTTP 500).
 - **If the client saves responses to files, keep them.** `scripts/redirect_checks.py` reads them.
 - **Never repeat personal data.** Redirect lists and details include editor email addresses (`lastModifiedBy`, `user`). Leave them out of the output.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/redirect_checks.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 
@@ -95,8 +99,7 @@ How well the destination page performs (exits, bounces) isn't available here. Su
 Run:
 
 ```
-python3 scripts/redirect_checks.py --redirects <list file> --redirects <detail file> [...] \
-  --queries <query file> [...] --synonyms <file> [...] --rules <file> [...] [--min-sessions 50]
+python3 scripts/redirect_checks.py --redirects <list file> --redirects <detail file> [...] --queries <query file> [...] --synonyms <file> [...] --rules <file> [...] [--min-sessions 50]
 ```
 
 It prints a findings table and a list of navigational searches without a redirect. If you can't run scripts, apply the checks in [references/redirect-checks.md](references/redirect-checks.md) by hand.

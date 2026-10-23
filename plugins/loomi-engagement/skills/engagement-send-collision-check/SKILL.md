@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -42,6 +42,10 @@ Ask the user for the window if they didn't give one, and for the project's timez
 
 - **One call at a time.** Engagement allows about 3 requests per second per user. On HTTP 429, wait 3–5 seconds and retry.
 - **Keep responses small.** Prefer `search_scenario_nodes` (graph map, then single nodes) to a full `search_scenarios` detail call: full scenarios can contain large templates. Never pass `include_design` or `include_node_designs`. `search_segmentations` and `get_frequency_policies` responses can exceed 50,000 characters; if the client saves them to a file, extract only the fields named below.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/find_collisions.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

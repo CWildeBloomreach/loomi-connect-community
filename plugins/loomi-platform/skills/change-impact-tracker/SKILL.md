@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; Bloomreach Engagement for campaign and scenario launches). Python 3 is optional, for the bundled calculation script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -51,6 +51,10 @@ If one of them isn't available, find it with the Loomi Connect `search_tools` to
 - **Data ends about 2 days before today.** Read the last available date from `get_discovery_trend` (step 4) and never set an end date after it.
 - **Large responses get saved to files.** A 100-row table is 60,000 to 80,000 characters, and a product grid response is far bigger. Extract only the fields you need (for example with `jq`).
 - **Never repeat people's names or email addresses.** Rule, synonym and experiment lists include `lastModifiedBy` and `user`. Say "the rule's last editor (shown in the app)".
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/did_effect.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

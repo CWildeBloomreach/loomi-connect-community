@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.1"
+  version: "0.1.2"
   products: engagement
   access: writes
 ---
@@ -53,6 +53,10 @@ This skill uses these Loomi Connect tools:
 If a tool isn't listed, find it with `search_tools` and run it with `call_tool`. Read the Loomi Connect guide `scenario-write-best-practices` (`get_guide`) once before the first write in a session.
 
 Call tools **one at a time**. Engagement allows about 3 requests a second, and EQL about one query every 3 seconds. On HTTP 429, wait and retry once.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/check_scenario.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

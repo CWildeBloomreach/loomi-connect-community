@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled result-summary script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -42,6 +42,10 @@ If one of these isn't available in the client, find it with the Loomi Connect `s
 - **Always estimate first.** Call `estimate_eql_cost` before every `execute_analytics_eql`. See step 5 for what to do with each level.
 - **Aggregate only.** Never call `list_customers`, `list_customers_in_segment`, `get_customer_properties` or `list_customer_events`. Never break down by email, phone, name, address, IP, cookie or ID properties, or by free-text or URL properties, even if asked: the values are personal data or huge. Say why and offer a safer breakdown.
 - **Large responses.** `get_event_schema` can exceed 200,000 characters on big projects. If the client saves it to a file, extract only the event types and the properties you need with `jq` or Python.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/summarise_eql.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

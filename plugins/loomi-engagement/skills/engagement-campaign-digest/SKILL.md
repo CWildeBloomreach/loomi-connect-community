@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -38,6 +38,10 @@ Ask the user for the period if they didn't give one, or use the default and say 
 - **One call at a time.** Engagement allows about 3 requests per second per user, and EQL has a stricter shared limit (about 1 query every 3 seconds). On HTTP 429 or "Too many requests", wait 3–5 seconds and retry; after three failures, wait 20 seconds before trying again.
 - **Always run `estimate_eql_cost` before `execute_analytics_eql`.** On large projects every query over the `campaign` event scores at least `high`, whatever the date range, because the score scales with project size. Accept `high` for single-breakdown queries with a bounded date range. If a query scores `very_high`, don't run it: split it (see [references/eql-campaign-metrics.md](references/eql-campaign-metrics.md)). Tell the user how many queries you plan to run.
 - **Expect large responses.** `get_event_schema` and `search_reports` can exceed 50,000 characters. If the client saves a response to a file, extract only the fields you need.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/summarise_campaign_counts.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

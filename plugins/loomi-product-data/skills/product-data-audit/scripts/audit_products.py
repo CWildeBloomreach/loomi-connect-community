@@ -426,7 +426,10 @@ def main():
     ap.add_argument("--top", type=int, default=50)
     ap.add_argument("--min-desc", type=int, default=150)
     ap.add_argument("--markdown", action="store_true")
+    ap.add_argument("--out", help="write the output to this file instead of printing it (for clients that refuse shell redirects)")
     a = ap.parse_args()
+    if a.out:
+        sys.stdout = open(a.out, "w", encoding="utf-8")
 
     specs, spooled = [], []
     for spec in a.files:

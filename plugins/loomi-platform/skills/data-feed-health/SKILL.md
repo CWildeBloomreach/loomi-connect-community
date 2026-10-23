@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; optionally Data Hub and Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,datahub,engagement
   access: read-only
 ---
@@ -48,6 +48,10 @@ Ask the user which parts to check. By default, check the Discovery pixel and cat
 - **Never look at individual customer records.** This skill needs status, counts and configuration only. Don't call customer or event-listing tools. `get_pixel_event_details` returns one event's raw parameters, including a masked user ID and IP address: use it only to see which parameter is wrong, and **never copy user IDs, cookies, IP addresses or segment values into the report**.
 - **Prefer sandbox or test projects** when the user has a choice. In production, read only job and catalog status.
 - **Don't trigger anything.** If a job has failed, report it and say who can re-run it. Never call tools that start, re-run, import or update.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/discovery_jobs_summary.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

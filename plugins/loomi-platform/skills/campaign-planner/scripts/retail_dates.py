@@ -282,7 +282,10 @@ def main():
     p.add_argument("--to", dest="end", help="window end, YYYY-MM-DD")
     p.add_argument("--weeks", type=int, help="window length in weeks from --from (instead of --to)")
     p.add_argument("--json", action="store_true", help="print JSON instead of Markdown")
+    p.add_argument("--out", help="write the output to this file instead of printing it (for clients that refuse shell redirects)")
     a = p.parse_args()
+    if a.out:
+        sys.stdout = open(a.out, "w", encoding="utf-8")
 
     markets = [m.strip().upper() for m in a.market.split(",") if m.strip()]
     markets = ["UK" if m == "GB" else m for m in markets]

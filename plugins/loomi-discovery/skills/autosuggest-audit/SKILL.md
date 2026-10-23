@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -46,6 +46,10 @@ You need the account, and optionally a site and a date range (default: the last 
 - **Make every call one at a time.** Discovery allows about 3 requests per second per user, shared with anything else the user is running. Autosuggest calls are quick, which makes it easy to fire several at once and hit HTTP 429. On a 429 or a 500, wait 2–5 seconds and retry once with default parameters.
 - **Keep product grid responses small.** Always pass `fl="pid,title"`, `rows` of 1–5 and `extra_params={"facet": "false"}`. Even then a response can be 15,000–60,000 characters, because the debug block explains every product's score. Don't pass `simple_debug=false`; it returns HTTP 500.
 - **Stay within a call budget.** A full audit should take roughly 25–40 calls: about 15–20 autosuggest calls, 4–6 query-performance calls, 1–2 exclusion-rule calls and 5–10 product grid calls. Tell the user if you need more, and why.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/autosuggest_check.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

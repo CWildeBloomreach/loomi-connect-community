@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -40,6 +40,10 @@ You need the account, and optionally a site and a date range. The default is the
 - **Keep product grid responses small.** Always pass `fl` (for example `pid,title,brand,price`). Each result row carries a long debug explanation, so 200 rows is about 400,000 characters. Use `rows=1` when you only need the product count.
 - **Don't pass `simple_debug=false`** to the product grid. In testing, it made category requests fail with HTTP 500.
 - **Large responses.** The category table, the product table and large grids are often saved to a file by the client. Read only the fields you need, or pass the files to the scripts below.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/category_baseline.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

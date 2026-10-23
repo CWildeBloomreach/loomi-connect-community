@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled review script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -51,6 +51,10 @@ All are normally listed directly. If one isn't available, find it with the Loomi
 - **One call at a time.** Engagement allows about 3 requests per second per user. The organisation and project tools (`list_cloud_organizations`, `list_projects`, `get_cloud_organization_details`) hit a separate, stricter limit of about **1 request per second**. On HTTP 429 ("Too many requests"), wait at least 3 seconds and retry; if it happens again, wait 10 seconds. For an organisation-wide review, pause about a second between projects.
 - **Treat the output as confidential.** It lists people's names and email addresses. Show them only in the review the user asked for, never in examples, logs or anything shared outside it.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/access_review.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 ### 1. Agree the scope
@@ -76,8 +80,7 @@ Key every user by lower-cased **email**. The same person in several projects has
 If you can run Python, save each response to a file and run:
 
 ```bash
-python3 scripts/access_review.py --company-domain example.com --vendor-domain partner.example \
-    "Prod=users_prod.json" "Sandbox=users_sandbox.json"
+python3 scripts/access_review.py --company-domain example.com --vendor-domain partner.example "Prod=users_prod.json" "Sandbox=users_sandbox.json"
 ```
 
 Add `--show-created` for the inferred account-creation column, and `--many-projects N` to change the threshold. It prints the access-review table, a per-project summary and the flag counts. Otherwise apply the checks by hand.

@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery). Python 3 is optional, for the bundled ranking script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -22,6 +22,10 @@ Shows which search queries are **rising, new or falling** over a recent period, 
 - If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
 - **Choose the period.** The default is the **last 7 days compared with the 7 days before**, which is best for spotting trends. Use 30 days if the user asks for monthly trends. Tell the user which period you used.
 - Make calls one at a time. If a call returns HTTP 429 or 500, wait and retry once.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/rank_trends.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

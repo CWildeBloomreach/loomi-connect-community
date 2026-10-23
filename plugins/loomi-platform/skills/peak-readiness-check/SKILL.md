@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery and Engagement; either one alone gives a partial check).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -57,6 +57,10 @@ Several of these are not listed directly (`search_discovery_catalog_jobs`, `list
 - **Never read individual customers.** Segment sizes come from aggregate counts only. Don't call `list_customers`, `list_customers_in_segment`, `get_customer_properties` or `list_customer_events`.
 - **Don't fetch banner or scenario details you don't need.** Banner details include the full HTML and script, and webhook nodes can contain personal data. Never quote template or script content.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/check_rule_windows.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 Work through the areas in order. If the user only has Discovery or only Engagement, run the parts you can and mark the rest NOT CHECKED.
@@ -83,9 +87,7 @@ Owner types: pixel → **web developers**; feed → **feed or catalog owner**.
 2. If you can run scripts:
 
    ```
-   python3 scripts/check_rule_windows.py --rules <file> [--rules <file> ...] \
-     --start <ISO start> --end <ISO end> [--keywords "black friday,bf,cyber,sale"] \
-     [--experiments <experiments file>]
+   python3 scripts/check_rule_windows.py --rules <file> [--rules <file> ...] --start <ISO start> --end <ISO end> [--keywords "black friday,bf,cyber,sale"] [--experiments <experiments file>]
    ```
 
    Otherwise apply the checks in [references/readiness-checks.md](references/readiness-checks.md) by hand. The checks:

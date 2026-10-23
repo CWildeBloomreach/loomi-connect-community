@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -47,6 +47,10 @@ You need the account, and optionally a site and a date range. The default is the
 - **Expect large responses.** The full product table is about 900 characters per product (6,600 products is about 6 million characters), and a product grid row carries a long debug explanation (24 rows can exceed 600,000 characters). The client usually saves them to a file. Don't read them into the conversation: pass the files to the scripts below, or extract only the fields you need.
 - **Keep product grid requests small.** Always pass `fl` (for example `pid,title,brand,price`). Pass `extra_params={"facet":"false"}` unless you need the brand facet. Don't pass `simple_debug=false`; it causes HTTP 500 errors.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/product_opportunities.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 ### 1. Resolve the account and site
@@ -67,7 +71,7 @@ Run [scripts/product_opportunities.py](scripts/product_opportunities.py) on the 
 
 ```
 python3 scripts/product_opportunities.py products.json --markdown
-python3 scripts/product_opportunities.py products.json --catalog-pids catalog_pids.txt > groups.json
+python3 scripts/product_opportunities.py products.json --catalog-pids catalog_pids.txt --out groups.json
 ```
 
 It works out the typical (median) product's ATC rate, conversion rate and RPV, then places each product with at least 30 visits in one group, the one with the most revenue at stake:

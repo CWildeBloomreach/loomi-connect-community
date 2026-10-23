@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled audit script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -49,6 +49,10 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 - **Placement definitions are large and contain content.** Email designs, scenario node designs and web layer variants hold full HTML, Jinja and JavaScript. Never paste it into the answer. Only look for engine IDs in it. If the client saves responses to files, use [scripts/audit_engines.py](scripts/audit_engines.py), which prints only the matches.
 - **Never repeat personal data.** Engine, catalog and scenario records include `created_by_display_name` and `edited_by_display_name`. Never repeat them. Describe things by name, type and status only.
 - **Aggregate only.** Never call `list_customers`, `get_customer_properties` or `list_customer_events`. Don't pick a customer for the smoke test yourself.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/audit_engines.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

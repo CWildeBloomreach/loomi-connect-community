@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -41,6 +41,10 @@ You need the account, and optionally a site and a rule type. The default traffic
 - **Fetch every page.** Pass `limit=100` to the ranking, media and redirect lists. If `meta.pagination.total` is more than 100, fetch `page=1`, `2` and so on. Facet lists return everything in one call.
 - **Large responses.** If the client saves a response to a file, keep the file. `scripts/audit_rules.py` reads the saved files directly.
 
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/audit_rules.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
+
 ## Steps
 
 ### 1. Resolve the account and site
@@ -75,9 +79,7 @@ Save each response.
 Run:
 
 ```
-python3 scripts/audit_rules.py --rules <file> [--rules <file> ...] \
-  --queries <query file> --categories <category file> --experiments <experiments file> \
-  --today <YYYY-MM-DD>
+python3 scripts/audit_rules.py --rules <file> [--rules <file> ...] --queries <query file> --categories <category file> --experiments <experiments file> --today <YYYY-MM-DD>
 ```
 
 It prints a summary and a cleanup table. If you can't run scripts, apply the checks in [references/audit-checks.md](references/audit-checks.md) by hand.

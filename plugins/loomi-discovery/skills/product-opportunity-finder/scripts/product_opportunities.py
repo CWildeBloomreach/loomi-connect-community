@@ -109,7 +109,10 @@ def main():
     ap.add_argument("--gap", type=float, default=0.15)
     ap.add_argument("--limit", type=int, default=15)
     ap.add_argument("--markdown", action="store_true")
+    ap.add_argument("--out", help="write the output to this file instead of printing it (for clients that refuse shell redirects)")
     a = ap.parse_args()
+    if a.out:
+        sys.stdout = open(a.out, "w", encoding="utf-8")
 
     rows, seen = [], set()
     for p in a.products:

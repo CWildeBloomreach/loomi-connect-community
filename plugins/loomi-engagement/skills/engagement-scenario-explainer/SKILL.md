@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.2.0"
+  version: "0.2.1"
   products: engagement
   access: read-only
 ---
@@ -40,6 +40,10 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 - **One call at a time.** Engagement allows about 3 requests per second per user, and analytics (EQL) queries have their own, stricter limit of roughly one query every 3 seconds. On HTTP 429, wait a few seconds and retry once.
 - **Large responses.** A full scenario can be large, especially webhook and email nodes. If the client saves a response to a file, extract only what you need. [scripts/scenario_graph.py](scripts/scenario_graph.py) reads a saved `search_scenarios` detail response and prints the triggers, the flow outline, the references and the structural warnings.
 - **Never repeat sensitive node content.** Webhook bodies, headers and URLs can hold email addresses, tokens or internal endpoints. Describe what a webhook does ("posts a JSON event to an external tracking API"), never paste its payload.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/scenario_graph.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

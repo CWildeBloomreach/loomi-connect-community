@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; Bloomreach Engagement optional, for a co-purchase check). Python 3 is optional, for the bundled script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: read-only
 ---
@@ -51,6 +51,10 @@ Ask the user for (or default):
 - **Keep product grid responses small.** Always pass `fl` (`pid,title,brand`). Use `rows=1` for counts and attribute profiles, and at most `rows=200` (500 returns HTTP 500). Add `extra_params={"facet": "false"}` when you don't need facets. **Never pass `simple_debug=false`** (HTTP 500).
 - **Large responses** are often saved to a file by the client. Keep those files: the script in step 5 reads them. Never repeat the `debug.feUrl` or `sqApiUrl` values; they contain an `auth_key`.
 - Responses can contain editors' names and email addresses (`createdBy`, `lastModifiedBy`). Never repeat them.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/score_association.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

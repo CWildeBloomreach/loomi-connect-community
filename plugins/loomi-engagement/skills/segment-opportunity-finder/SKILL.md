@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server with Bloomreach Engagement, and optionally Bloomreach Discovery for trending searches. Python 3 is optional, for the bundled ranking script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement,discovery
   access: read-only
 ---
@@ -48,6 +48,10 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 - **Large responses.** `get_event_schema` can exceed 200,000 characters, and `search_segmentations` tens of kilobytes. If the client saves them to a file, extract only names, types and `used_by` with `jq` or Python. Event schemas can contain junk event types from security scanners: ignore them.
 - **No personal data in the answer.** Object lists include editors' names and emails (`created_by_display_name`). Never repeat them, and never quote message content.
 - `search_predictions` and `search_sms_campaigns` can return HTTP 403. Say which check was skipped and carry on.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/rank_opportunities.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

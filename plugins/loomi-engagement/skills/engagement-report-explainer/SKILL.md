@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled summary script.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: engagement
   access: read-only
 ---
@@ -45,6 +45,10 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 - **Estimate every EQL query first** and only run it if the estimate is `low` or `medium`, or the user agrees to a `high` one. Never run `very_high`.
 - **Never repeat personal data.** List and detail responses include `created_by_display_name` and `edited_by_display_name`. Say "last edited <date>", never who edited it. HTML and text dashboard components can contain names, email addresses or internal links: summarise them, don't paste them.
 - **Aggregate only.** Never call `list_customers`, `list_customers_in_segment`, `get_customer_properties` or `list_customer_events`.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/analysis_summary.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## Steps
 

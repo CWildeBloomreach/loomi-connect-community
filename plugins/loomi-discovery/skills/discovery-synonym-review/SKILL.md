@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery
   access: read-only
 ---
@@ -43,6 +43,10 @@ You need the account, and optionally a site. If the user names specific queries 
 - **Make every call one at a time.** Discovery allows 3 requests per second per user, shared with anything else the user is running. Parallel product grid calls can return HTTP 500 errors. On a 429 or a 500, wait 2–5 seconds and retry once.
 - **Keep product grid responses small.** Always pass `fl="pid,title"`, `rows` of 5–10 and `extra_params={"facet": "false"}`. A response can still be 70,000–260,000 characters. **Don't** pass `simple_debug=false`: in testing, that returned HTTP 500 every time, and the synonym data is in the debug block anyway.
 - **If the client saves a response to a file**, run `python3 scripts/grid_summary.py <file>`. It prints `numFound`, the top titles and every synonym chain with its type and direction.
+
+### Running the scripts
+
+Run each script as one plain command, as the steps show it: `python3 scripts/grid_summary.py` and its arguments, from this skill's folder (`cd` there first, joined with `&&`, or give the script's full path). Pass saved tool results by their full path. Don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands and refuse the rest, and then the sums have to be done by hand. To save a script's output to a file, use its `--out` option where the step shows one; otherwise read what it prints. Piping the output to `jq` or `head` is fine.
 
 ## How to read synonyms
 
