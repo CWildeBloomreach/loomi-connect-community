@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server with both Bloomreach Discovery and Bloomreach Engagement.
 metadata:
   author: bloomreach
-  version: "0.1.0"
+  version: "0.1.1"
   products: discovery,engagement
   access: writes
 ---

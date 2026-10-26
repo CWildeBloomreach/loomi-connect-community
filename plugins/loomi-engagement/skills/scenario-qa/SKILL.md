@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Live link checks need a client that can make web requests.
 metadata:
   author: jeffbird13-bloomreach
-  version: "1.2.0"
+  version: "1.2.1"
   products: engagement
   access: read-only
 ---
