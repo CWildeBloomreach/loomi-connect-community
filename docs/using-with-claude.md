@@ -12,6 +12,8 @@ This repository is a Claude Code plugin marketplace.
 /plugin marketplace add bloomreach/loomi-connect-community
 /plugin install loomi-engagement@loomi-connect-community
 /plugin install loomi-discovery@loomi-connect-community
+/plugin install loomi-platform@loomi-connect-community
+/plugin install loomi-product-data@loomi-connect-community
 ```
 
 From a shell:
@@ -19,6 +21,9 @@ From a shell:
 ```bash
 claude plugin marketplace add bloomreach/loomi-connect-community
 claude plugin install loomi-engagement@loomi-connect-community
+claude plugin install loomi-discovery@loomi-connect-community
+claude plugin install loomi-platform@loomi-connect-community
+claude plugin install loomi-product-data@loomi-connect-community
 ```
 
 To get new versions:

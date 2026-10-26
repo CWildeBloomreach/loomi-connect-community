@@ -16,7 +16,7 @@ Skills here follow the open [Agent Skills](https://agentskills.io/specification)
 |---|---|
 | [`loomi-engagement`](plugins/loomi-engagement/) | Skills for Bloomreach Engagement: projects, customers, events, campaigns, scenarios, analytics |
 | [`loomi-discovery`](plugins/loomi-discovery/) | Skills for Bloomreach Discovery: search and category performance, merchandising rules |
-| [`loomi-platform`](plugins/loomi-platform/) | Skills that span products: data and feed health, and turning search demand into campaigns |
+| [`loomi-platform`](plugins/loomi-platform/) | Skills that span products: weekly briefing, revenue anomalies, peak readiness, data and feed health, campaign planning, collections and change impact, and turning search demand into campaigns |
 | [`loomi-product-data`](plugins/loomi-product-data/) | Product data for search engines and AI answers (SEO, AEO and GEO): find weak product data and suggest enhancements from images, attributes and shopper searches |
 
 Each plugin is a folder of skills under `skills/<skill-name>/SKILL.md`, plus a manifest for Claude (`.claude-plugin/`) and one for Codex (`.codex-plugin/`).
@@ -54,6 +54,8 @@ To link every skill into your personal skills folders for Claude Code (`~/.claud
 ```bash
 ./scripts/install-skills.sh
 ```
+
+The script symlinks the skills in your clone rather than copying them, so a `git pull` changes your installed skills straight away.
 
 ## Contributing
 

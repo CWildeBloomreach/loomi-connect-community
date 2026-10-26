@@ -55,7 +55,7 @@ Start with the health check, then go deeper where it points you.
 
 ## Testing changes and checking they worked
 
-1. [discovery-experiment-setup](../plugins/loomi-discovery/skills/discovery-experiment-setup/) (**writes**): set up an A/B test for a ranking change, with a preview first.
+1. [discovery-experiment-setup](../plugins/loomi-discovery/skills/discovery-experiment-setup/) (**writes**, after you confirm): set up an A/B test for a ranking change, with a preview first.
 2. [discovery-experiment-readout](../plugins/loomi-discovery/skills/discovery-experiment-readout/): what the test showed. Ship it, keep running, or stop.
    For A/B tests in Engagement scenarios and campaigns, use [engagement-experiment-readout](../plugins/loomi-engagement/skills/engagement-experiment-readout/).
 3. [change-impact-tracker](../plugins/loomi-platform/skills/change-impact-tracker/): "Did my change work?" Before vs after, adjusted for the site-wide trend, for changes made outside a test.

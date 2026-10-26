@@ -22,6 +22,14 @@ One short paragraph: the job this skill does and what the user gets back.
 - If a tool you need isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
 - Ask the user for anything you can't work out yourself, such as the date range. Don't guess.
 
+<!--
+If the skill has scripts, keep this subsection and change the script name. If it has none, delete it.
+
+### Running the scripts
+
+Run each script as one plain command from your own working folder, giving the script's full path: `python3 <this skill's folder>/scripts/<name>.py` and its arguments. Pass saved tool results, and any files a script writes (`--out`, `--jsonl`, `--out-dir`), by paths in your working folder, never inside the skill's folder; a bare file name lands in the folder you run from. Don't `cd` into the skill's folder, and don't add `-I`, shell variables, `;`, redirects (`>`), `$(...)` or line breaks: some apps only allow plain commands, refuse the rest and keep skill folders read-only, and then the sums have to be done by hand. Piping the output to `jq` or `head` is fine. Some apps run no scripts at all, so the steps still work by hand.
+-->
+
 ## Steps
 
 1. **Resolve the project.** Call `list_cloud_organizations`, then `list_projects`. If there's more than one organisation or project, list them and ask the user which to use.

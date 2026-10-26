@@ -23,20 +23,22 @@ If you're not sure something fits, [open an issue](../../issues/new/choose) befo
    ```
 2. **Copy the template.** Copy [templates/skill-template/](templates/skill-template/) to `plugins/<plugin>/skills/<skill-name>/`. Choose `loomi-engagement`, `loomi-discovery`, `loomi-platform` (skills that span products) or `loomi-product-data`. If your skill fits none of them, propose a new plugin in an issue first.
 3. **Write the skill**, following [docs/skill-authoring.md](docs/skill-authoring.md).
-4. **Validate it locally:**
+4. **List it** in `plugins/<plugin>/README.md` with the right **Access**, and in [docs/start-here.md](docs/start-here.md).
+5. **Validate it locally**, and run the unit tests:
    ```bash
    python3 scripts/validate_skills.py
+   python3 -m unittest discover -s tests -t .
    claude plugin validate .        # if you have Claude Code installed
    ```
-5. **Test it** against a real or sandbox Bloomreach project, in at least one Claude client and one OpenAI client if you can. Say which ones you used in the PR.
-6. **Commit and push** to your fork:
+6. **Test it** against a real or sandbox Bloomreach project, in at least one Claude client and one OpenAI client if you can. Say which ones you used in the PR.
+7. **Commit and push** to your fork. Add `tests/` as well if you added or changed scripts:
    ```bash
-   git add plugins/<plugin>/skills/<skill-name>
+   git add plugins/<plugin>/skills/<skill-name> plugins/<plugin>/README.md docs/start-here.md
    git commit -m "Add <skill-name> skill"
    git push origin skill/campaign-digest
    ```
-7. **Open a pull request** from your fork's branch to `main` in `bloomreach/loomi-connect-community`, and fill in the template. GitHub offers a **Compare & pull request** button after you push. With the GitHub CLI you can run `gh pr create` instead.
-8. **Respond to review.** Push further commits to the same branch; the pull request updates automatically.
+8. **Open a pull request** from your fork's branch to `main` in `bloomreach/loomi-connect-community`, and fill in the template. GitHub offers a **Compare & pull request** button after you push. With the GitHub CLI you can run `gh pr create` instead.
+9. **Respond to review.** Push further commits to the same branch; the pull request updates automatically.
 
 With the GitHub CLI, `gh repo fork bloomreach/loomi-connect-community --clone` does step 1's fork and clone in one go.
 
@@ -59,7 +61,7 @@ Or select **Sync fork** on your fork's GitHub page.
 - Every PR needs **one maintainer approval**.
 - A skill that **writes** data needs **two approvals**. That covers creating campaigns or scenarios, changing Discovery rules, starting experiments, and similar actions.
 - Reviewers check correctness, safety, clarity, and that the skill works across clients.
-- CI runs `scripts/validate_skills.py` on every PR. It must pass.
+- CI runs `scripts/validate_skills.py` and the unit tests on every PR. Both must pass.
 
 Once a PR is merged, the contributor is credited in the skill's `metadata.author` and README.
 
