@@ -34,7 +34,7 @@ This skill uses these Loomi Connect tools:
 | Definitions and audiences | `search_scenarios`, `search_scenario_nodes`, `search_email_campaigns`, `search_sms_campaigns`, `search_segmentations` |
 | Frequency caps | `get_frequency_policies` |
 
-`search_scenario_nodes` and `get_frequency_policies` may not be listed directly. Find them with the Loomi Connect `search_tools` tool and run them with `call_tool`.
+`search_scenario_nodes` and `get_frequency_policies` may not be listed directly. Find them with the Loomi Connect `search_tools` tool and run them with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 Ask the user for the window if they didn't give one, and for the project's timezone if they want local times (calendar times are UTC Unix timestamps).
 

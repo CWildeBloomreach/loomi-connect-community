@@ -2,4 +2,5 @@ interface:
   display_name: "Engagement Scenario Builder"
   short_description: "Build or change a Bloomreach scenario from a plain-English description, saved as a draft"
 policy:
+  # This skill can create and update draft scenarios, so it only runs when called by name.
   allow_implicit_invocation: false

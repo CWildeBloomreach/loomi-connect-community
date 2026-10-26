@@ -36,7 +36,7 @@ This skill uses these Loomi Connect tools:
 | Event names and properties | `get_event_schema` (large; only if a definition needs checking) |
 | Optional numbers for funnels, trends and segmentations | `estimate_eql_cost`, then `execute_analytics_eql` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools. There is no read tool for saved **metrics** (dashboard KPI tiles); see step 4.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them. There is no read tool for saved **metrics** (dashboard KPI tiles); see step 4.
 
 ### Rules for calling the tools
 

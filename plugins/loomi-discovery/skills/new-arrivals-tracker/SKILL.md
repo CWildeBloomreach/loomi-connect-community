@@ -41,7 +41,7 @@ This skill uses these Loomi Connect tools:
 | Main query for a product | `get_discovery_query_performance` |
 | Rankings | `search_discovery_product_grid_insights` with `search_by="category"` and `"query"` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it. Don't guess parameter names.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it. Don't guess parameter names.
 
 Ask the user for (or default):
 
@@ -215,3 +215,4 @@ This skill is **read-only**. It never creates, changes or deletes rules, categor
 
 - No Loomi Connect tool creates Discovery dynamic categories. If the user wants a new-arrivals collection, give the rule and hand off to `collection-suggester` for the preview and dashboard steps.
 - If the user asks to boost a product, hand off to `discovery-experiment-setup`, which confirms every write. Never use a write tool from this skill.
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.

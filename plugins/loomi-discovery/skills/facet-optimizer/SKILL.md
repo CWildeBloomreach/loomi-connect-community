@@ -34,7 +34,7 @@ This skill uses these Loomi Connect tools:
 | Facet rules | `list_facets_global`, `list_site_search_facets`, `list_category_facets`, `get_facet_rule` |
 | Facetable attributes | `list_facet_attributes` (usually not listed: find it with `search_tools`, run it with `call_tool`) |
 
-If any tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Don't rely on reading the `loomi://guides/*` resources; not every client can.
+If any tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Don't rely on reading the `loomi://guides/*` resources; not every client can.
 
 You need the account, and optionally a site and a date range (default: the last 30 days).
 
@@ -143,10 +143,11 @@ Note what the API can and can't do. The facet-rule write tools support boost, bu
 
 This skill is **read-only**. It never creates, changes or deletes facet rules or anything else.
 
-If the user asks to apply a change:
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 
-1. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test that includes the rule is running.
-2. Point out that a global rule affects every search and category page.
-3. Show exactly what will change: the rule (new or existing ID), its scope (global, query, category ID), the facets and positions for each action, any audience, and whether it's enabled.
-4. Wait for an explicit "yes" before using any write tool, and ask again for each separate rule. Suggest creating new rules disabled first where the tool allows it.
-5. Afterwards, re-run the product grid for an affected page and check the facet order.
+If the user asks to apply a change, hand it off. This skill never uses a write tool, even if asked.
+
+1. Give the exact change for them to make in the Bloomreach Discovery dashboard: the rule (new or existing ID), its scope (global, query, category ID), the facets and positions for each action, any audience, and whether it's enabled. Suggest creating new rules disabled first.
+2. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs.
+3. Point out that a global rule affects every search and category page.
+4. Once they've made the change, re-run the product grid for an affected page and check the facet order.

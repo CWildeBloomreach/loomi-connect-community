@@ -31,7 +31,7 @@ This skill uses these Loomi Connect tools:
 
 Plus: `list_discovery_accounts`, `list_discovery_sites`, `search_discovery_experiments`, `get_discovery_query_performance`, `get_discovery_category_performance_table`, and for detail `get_ranking_rule`, `get_discovery_media_rule` and `get_facet_rule`.
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 You need the account, and optionally a site and a rule type. The default traffic window is the last 90 days.
 
@@ -92,7 +92,7 @@ The script flags candidates. Confirm the ones that matter before you recommend a
   - different audiences → personalisation, which is fine. Note it, but don't flag it;
   - same audience, or none → a real conflict. Note which products or attributes they disagree on, such as one rule boosting a product that another buries.
 - **No-traffic rules.** Check `matchType`. A `PHRASE_MATCH` rule for "backpack" still fires for "berry backpack", so check the longer queries with `get_discovery_query_performance` and `search=<query>`. Often the rule targets the wrong wording, for example "backpack" when shoppers type "backpacks". Recommend retargeting rather than deleting.
-- **Redirects.** Redirected searches never reach a results page, so they don't appear in query performance. Don't call them "no traffic". Instead, check each destination with `search_redirects` and `rule_id`, and flag destinations that look wrong or out of date.
+- **Redirects.** Redirected searches never reach a results page, so they don't appear in query performance. Don't call them "no traffic". Instead, check each destination with `search_redirects` and `rule_id`, and flag destinations that look wrong or out of date. For a full redirect review, use `discovery-redirect-audit`.
 - **Global rules.** Several enabled rules on `*` for the same query type must each target an audience (only one un-targeted global rule is allowed). Confirm with `get_ranking_rule`.
 - **Experiments.** For a DRAFT experiment, call `get_ranking_rule` on its bucket rules. A 404 means the rule was deleted and the draft can't be started. For a COMPLETED test, check that the losing variant's rule is disabled.
 
@@ -131,9 +131,8 @@ Group the findings into **Fix now**, **Clean up** and **Review**, using the prio
 
 This skill is **read-only**. It never creates, changes, disables or deletes rules, redirects, facets or experiments.
 
-If the user asks to apply the cleanup:
+If the user asks to apply the cleanup, hand it off. This skill never uses a write tool, even if asked.
 
-1. Warn them that **Discovery changes go live immediately**, and that deletes can't be undone.
-2. Check for running A/B tests. Rules in a running test can't be changed or deleted.
-3. Show exactly which rules will change, and how (disable, delete or reschedule), one rule per line.
-4. Wait for an explicit "yes" before using any write tool. Prefer disabling to deleting.
+1. Give the exact changes for them to make in the Bloomreach Discovery dashboard: which rules change, and how (disable, delete or reschedule), one rule per line. Prefer disabling to deleting.
+2. Warn them that **Discovery changes go live immediately**, and that deletes can't be undone.
+3. Check for running A/B tests. Rules in a running test can't be changed or deleted.

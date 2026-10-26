@@ -32,7 +32,7 @@ This skill uses these Loomi Connect tools:
 | Organisation and projects | `list_cloud_organizations`, `list_projects`, optionally `get_cloud_organization_details` |
 | Users | `list_project_users` |
 
-All are normally listed directly. If one isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools. Don't use `list_project_variables` or any other project-configuration tool: this review is about user access only.
+All are normally listed directly. If one isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them. Don't use `list_project_variables` or any other project-configuration tool: this review is about user access only.
 
 ### What the data does and doesn't contain
 

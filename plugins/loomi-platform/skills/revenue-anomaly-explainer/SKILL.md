@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Tests | `search_discovery_experiments` |
 | Data health | `get_pixel_health_status`, `search_discovery_catalogs`, `search_discovery_catalog_jobs` |
 
-`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it.
+`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it. Use read tools only: `search_tools` also returns write tools; never call them.
 
 **You need:** the account (and site, if it has sites), the metric (default revenue), and the period. If the user says "last week" or "this week", use the **last 7 days** (`days=7`); for "this month", `days=30`. For specific dates, pass `start_date` and `end_date` (`YYYY-MM-DD`); the tools compare with the equal-length period just before. To compare with a different period (for example the same week last year), also pass `compare_start_date` and `compare_end_date`.
 
@@ -99,6 +99,8 @@ Make these calls one at a time with the same period, and save each response:
 | Brands | `get_discovery_brand_performance`, `sort="revenue"`, `page_size=100` | brand mix |
 
 Every row has current and `prev_*` values for revenue, visits and conversions. **Don't sort by `change_*`:** that puts tiny rows first.
+
+**Brands over 30 days:** `get_discovery_brand_performance` with `days=30` has returned a wrong previous period, which inflates brand trends. For monthly periods, work out brand changes from the product table (group products by brand) instead. With `days=7` the figures matched.
 
 Then run the breakdown script. Pass every file you saved; several files for one table are merged:
 
@@ -196,6 +198,6 @@ Keep the whole answer to about one screen. Round money to the nearest thousand, 
 
 This skill is **read-only**. It never creates, changes, enables, disables or deletes rules, experiments, catalogs or anything else, and it never re-runs jobs.
 
-If the user asks to fix something (for example roll back a rule), hand over to the relevant skill. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs. Show exactly what would change and wait for an explicit "yes" before any write tool is used.
+This skill never uses a write tool, even if asked. If the user asks to fix something (for example roll back a rule), give the exact change (what, where and the values) for them to make in the Bloomreach Discovery dashboard, or hand off to a skill that writes, such as `discovery-experiment-setup` to test a ranking change. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs.
 
 Don't repeat email addresses from rule or experiment lists, or user IDs, cookies or IP addresses from pixel samples.

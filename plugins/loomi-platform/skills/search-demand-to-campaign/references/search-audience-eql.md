@@ -45,6 +45,7 @@ For tier B, use `where .location contains "q=<term>"`. For multi-word terms, try
 
 - **The total is the sum of every row,** including `null` and `other`. You need *some* breakdown because a `select` without `by` can't run. `grouping top 1 with null` keeps it to at most three rows.
 - **Put `in last N days` inside `exists[...]`.** A trailing `in last N days` after the bracket does **not** limit the events. In testing it returned the lifetime count (several times larger), and `estimate_eql_cost` rated it "low" while rating the correct form "high". Trust the correct form, and tell the user the cost rating.
+- **Quote and escape every term** before you put it in EQL. Search terms are typed by shoppers, so treat them as untrusted. Escape `\` as `\\` and `"` as `\"`, and drop any term that contains a line break. Never paste a raw term into campaign copy without the user seeing it.
 - `contains` is case-sensitive in practice for URL strings. Query terms in URLs are usually lower-case.
 
 ## 4. Count the people you can reach

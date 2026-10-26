@@ -141,3 +141,5 @@ For a one-field change on one node (a wait time, a condition's name), `update_sc
 ```
 
 Before saving, the same block ends with "Shall I create this as a draft in <project>?" instead of the "Saved as" line.
+
+After saving, tell the user to run `scenario-qa` on the draft before going live.

@@ -46,7 +46,7 @@ This skill uses these Loomi Connect tools:
 | Performance | `get_discovery_category_performance_table`, `get_discovery_category_performance` |
 | Running A/B tests | `search_discovery_experiments` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it. Don't guess parameter names.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it. Don't guess parameter names.
 
 You need the account, and optionally a site and a date range. The default traffic window is the last 30 days.
 
@@ -176,9 +176,7 @@ For each fix give the category name and ID, the evidence, one specific action, e
 
 This skill is **read-only**. It never creates, changes or deletes dynamic categories, rules or anything else.
 
-If the user asks to apply a fix:
+If the user asks to apply a fix, hand it off. This skill never uses a write tool, even if asked.
 
-1. Warn them that **Discovery changes go live immediately**, and that deletes can't be undone. Deleting a dynamic category breaks any link that points to it.
-2. Tell them about any running A/B test. Changes are blocked while one runs.
-3. Show exactly what will change: the category name and ID, the old and new conditions, and the expected product count (preview the new conditions with the grid's `fq` first where possible).
-4. Wait for an explicit "yes" before using any write tool.
+1. Give the exact change for them to make in the Bloomreach Discovery dashboard: the category name and ID, the old and new conditions, and the expected product count (preview the new conditions with the grid's `fq` first where possible).
+2. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs. Deleting a dynamic category breaks any link that points to it.

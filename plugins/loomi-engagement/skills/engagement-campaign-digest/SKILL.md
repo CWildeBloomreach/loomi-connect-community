@@ -18,6 +18,8 @@ Produces a short digest of how email and SMS campaigns performed in one Bloomrea
 
 Every number comes from aggregate data: the `campaign` event counted by status, saved reports, and the campaign calendar. It never reads individual customers.
 
+For one scenario's step-by-step results, use `engagement-scenario-performance`. For where shoppers drop off between view, cart and purchase, use `funnel-leak-finder`.
+
 ## Before you start
 
 This skill uses these Loomi Connect tools:
@@ -29,7 +31,7 @@ This skill uses these Loomi Connect tools:
 | Metrics | `search_reports`, `calculate_report`, `estimate_eql_cost`, `execute_analytics_eql` |
 | Data model check | `get_event_schema` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. There is no dedicated "campaign stats" tool: metrics come from the `campaign` event, through EQL or saved reports.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. There is no dedicated "campaign stats" tool: metrics come from the `campaign` event, through EQL or saved reports.
 
 Ask the user for the period if they didn't give one, or use the default and say so. Work in UTC unless the user names a timezone.
 

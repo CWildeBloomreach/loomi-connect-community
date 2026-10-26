@@ -39,7 +39,7 @@ This skill uses these Loomi Connect tools:
 | Health | `get_pixel_health_status`, `search_discovery_catalogs`, `search_discovery_catalog_jobs` |
 | Marketing | `list_cloud_organizations`, `list_projects`, `get_campaign_calendar`, `estimate_eql_cost`, `execute_analytics_eql` |
 
-`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it.
+`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it. Use read tools only: `search_tools` also returns write tools; never call them.
 
 ### Agree the scope
 
@@ -98,7 +98,7 @@ Make these calls with the same window, one at a time:
 | Queries | `get_discovery_query_performance` with `sort="browse_sessions"`, `page_size=100` |
 | Categories | `get_discovery_category_performance_table` with `sort="revenue"`, `page_size=100` |
 | Products | `get_discovery_product_performance_table` with `sort="revenue"`, `page_size=100` |
-| Brands | `get_discovery_brand_performance` with `sort="revenue"`, `page_size=100` |
+| Brands | `get_discovery_brand_performance` with `sort="revenue"`, `page_size=100`. If the window is 30 days rather than a week, work out brand changes from the product table instead: with `days=30` this tool has returned a wrong previous period |
 | Dead-end searches | `get_discovery_query_performance` with `filter_preset="no_search_results"`, then `"no_revenue"`, each with `sort="browse_sessions"`, `page_size=20`. You need both presets: `no_search_results` misses many dead ends. |
 
 Then run:

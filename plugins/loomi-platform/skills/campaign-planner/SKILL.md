@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Discovery account | `list_discovery_accounts`, `list_discovery_sites` |
 | Demand | `get_discovery_search_performance`, `get_discovery_query_performance`, `get_discovery_trend`, `get_discovery_category_performance_table` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use `call_tool` for **read** tools only.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use `call_tool` for **read** tools only: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 

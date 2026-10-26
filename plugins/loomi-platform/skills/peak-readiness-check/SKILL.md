@@ -40,7 +40,7 @@ This skill uses these Loomi Connect tools:
 | Marketing | `get_campaign_calendar`, `search_scenarios`, `search_scenario_nodes`, `search_email_campaigns`, `search_segmentations`, `get_frequency_policies`, `estimate_eql_cost`, `execute_analytics_eql` |
 | On-site | `search_banners`, `search_in_app_messages` |
 
-Several of these are not listed directly (`search_discovery_catalog_jobs`, `list_site_search_media_rules`, `list_category_media_rules`, `search_scenario_nodes`, `get_frequency_policies`). Find them with the Loomi Connect `search_tools` tool and run them with `call_tool`. Check each tool's parameters before calling it. Only ever use read tools.
+Several of these are not listed directly (`search_discovery_catalog_jobs`, `list_site_search_media_rules`, `list_category_media_rules`, `search_scenario_nodes`, `get_frequency_policies`). Find them with the Loomi Connect `search_tools` tool and run them with `call_tool`. Check each tool's parameters before calling it. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Ask first
 
@@ -204,3 +204,4 @@ This skill is **read-only**. It never creates, schedules, enables, disables or d
 
 - Discovery changes go live immediately, and changes are blocked during a running A/B test. If the user asks you to fix something, describe the exact change for them to make, or hand off to a skill that writes, which must show the change and wait for an explicit "yes".
 - Use aggregate counts only. Never read or quote individual customers, and never repeat template, script or webhook content.
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.

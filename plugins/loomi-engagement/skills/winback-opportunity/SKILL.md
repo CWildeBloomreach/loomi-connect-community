@@ -36,7 +36,7 @@ This skill uses these Loomi Connect tools:
 | Existing models and audiences | `search_predictions`, `search_segmentations`, `search_aggregates` |
 | Existing coverage | `search_scenarios`, `search_scenario_nodes` (via `search_tools` and `call_tool`), `search_email_campaigns`, `search_sms_campaigns`, optionally `get_campaign_calendar` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
