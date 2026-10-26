@@ -47,8 +47,8 @@ When the organisation has `SSO_LOGIN` enabled, note that external and vendor use
 
 | Check | Rule | Severity |
 |---|---|---|
-| Shared or generic | local part (before @) is a function rather than a person: admin, administrator, api, automation, bot, crm, data, demo, dev, digital, ecommerce, email, hello, info, integration, it, mail, marketing, newsletter, noreply, ops, qa, sales, sandbox, service, shared, support, team, tech, test, user, web, webmaster, possibly followed by a number or suffix | Action (production), Review (sandbox) |
-| Test or alias | local part contains test, qa, dev, demo, sandbox, tmp, temp, dummy as a separate word, or a `+tag` | Review (Action in production) |
+| Shared or generic | local part (before @) is a function rather than a person: admin, administrator, api, automation, bot, crm, data, demo, dev, digital, ecommerce, email, hello, info, integration, it, mail, marketing, newsletter, noreply, ops, qa, sales, sandbox, service, shared, support, team, tech, test, user, web, webmaster, alone or followed by a number (`test1`, `qa_2`) or a `+tag`. A word then a name (`dev.patel`, `tech.nguyen`) is a person, not a shared account | Action (production), Review (sandbox) |
+| Test or alias | local part contains test, qa, dev, demo, sandbox, tmp, temp, dummy as a separate word (but `dev` as the first word is a given name: `dev.patel`), or a `+tag` | Review (Action in production) |
 | Single-word local part | a first name only, such as `sam@` | Info: often a real person at a small company; don't flag as shared on its own |
 
 Shared logins mean nobody can tell who changed what, and the password is usually known to people who've left. API access should use project API keys, not a user login.

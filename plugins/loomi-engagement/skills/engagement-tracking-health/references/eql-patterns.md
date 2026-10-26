@@ -28,7 +28,7 @@ execution_time = now − 7 × 86400
 select count any event by any event type grouping top 200 in last 90 days
 ```
 
-Cost: medium. Divide by 13 for an average week. A type with a healthy 90-day count but nothing in the last 7 days has **stopped**. A type with no events in 90 days is historical or abandoned.
+Cost: medium. For an average earlier week, take away the last 7 days' count and divide by 83 ÷ 7 (about 11.9). A type with a healthy 90-day count but nothing in the last 7 days has **stopped**. A type with no events in 90 days is historical or abandoned.
 
 ### Avoid
 

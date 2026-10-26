@@ -1,0 +1,12 @@
+{
+  "aov": "$80.00",
+  "currency": "$",
+  "aov_source": "synthetic",
+  "bands": [
+    {"band": "0–30", "total": 25000, "tier_2_3": 6000, "tier_4_plus": 3000},
+    {"band": "31–90", "total": "18,000", "tier_2_3": "4,000", "tier_4_plus": 1500, "coverage": "covered"},
+    {"band": "91 – 180", "total": 10000, "tier_2_3": 2200, "tier_4_plus": 800},
+    {"band": "181-365", "total": 15000, "tier_2_3": 2500, "tier_4_plus": 600},
+    {"band": "365+", "total": 60000, "tier_2_3": 7000, "tier_4_plus": 1200}
+  ]
+}

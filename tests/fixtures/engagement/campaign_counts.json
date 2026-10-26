@@ -1,0 +1,9 @@
+{
+  "current": {
+    "Weekly newsletter": {"sent": "10,000", "delivered": "9,800", "clicked": 196, "unsubscribed": 80},
+    "Flash sale SMS": {"sent": 2000, "delivered": 1990, "clicked": "N/A", "unsubscribe": 3}
+  },
+  "previous": {
+    "Weekly newsletter": {"sent": 9000, "delivered": 8800, "clicked": 220, "unsubscribe": 20}
+  }
+}

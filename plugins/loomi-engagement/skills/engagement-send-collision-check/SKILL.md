@@ -104,10 +104,10 @@ A frequency policy stops a customer receiving too many messages, but the later s
 
 ### 6. Find collisions and busy days
 
-Save the merged calendar entries as JSON, and the audiences from step 4 as a small JSON map, then run:
+Save each calendar response as JSON (give several files, one per week, and the script merges them), and the audiences from step 4 as a small JSON map, then run:
 
 ```
-python3 <this skill's folder>/scripts/find_collisions.py calendar.json --audiences audiences.json --utc-offset <hours>
+python3 <this skill's folder>/scripts/find_collisions.py calendar_week1.json calendar_week2.json --audiences audiences.json --utc-offset <hours>
 ```
 
 The script's docstring describes the audience file. By default it flags:
@@ -119,7 +119,7 @@ The script's docstring describes the audience file. By default it flags:
 
 Change the thresholds with `--same-channel-hours`, `--cross-channel-hours` and `--busy-day` if the user has their own rules. If you can't run scripts, apply the same rules by hand.
 
-Weigh each collision by `results.reach` or `potential_reach` where available: a clash between two sends of 50,000 matters more than one between two sends of 200.
+The script prints each send's `results.reach` (or `potential_reach`) and lists the largest combined reach first. Weigh each collision by it: a clash between two sends of 50,000 matters more than one between two sends of 200.
 
 ## Output
 

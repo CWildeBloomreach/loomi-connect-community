@@ -1,0 +1,8 @@
+{
+  "window": "last 30 days",
+  "steps": ["Viewed a product", "Added to cart", "Purchased"],
+  "counts": [28500, 4100, 40],
+  "aov": 82.0,
+  "avg_cart_value": 95.0,
+  "purchasers_in_window": 1300
+}

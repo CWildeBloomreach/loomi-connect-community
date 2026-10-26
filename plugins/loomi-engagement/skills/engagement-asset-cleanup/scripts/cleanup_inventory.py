@@ -42,7 +42,11 @@ REFERENCE = re.compile(r"\[(ref|template)\]|\btemplate\b", re.I)
 NORMALISE = re.compile(r"(\[[^\]]*\]|\(\d+\)|\bv\d+\b|\bnew\b|\bcopy of\b|\bcopy\b|\btest\b|\bold\b)", re.I)
 
 
-def records(obj):
+def records(obj, path):
+    for o in (obj, obj.get("result") if isinstance(obj, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
     if isinstance(obj, dict) and "result" in obj:
         obj = obj["result"]
     if isinstance(obj, dict) and "data" in obj:
@@ -68,6 +72,9 @@ def base(name):
 def main(argv):
     now, draft_d, inactive_d, active_d = time.time(), 90, 180, 365
     args, files = argv[1:], []
+    if "-h" in args or "--help" in args:
+        print(__doc__)
+        return 0
     i = 0
     while i < len(args):
         flag = args[i]
@@ -96,7 +103,7 @@ def main(argv):
             continue
         kind, path = f.split(":", 1)
         with open(path, encoding="utf-8") as fh:
-            for r in records(json.load(fh)):
+            for r in records(json.load(fh), path):
                 rid = r.get("_id") or r.get("id") or r.get("name")
                 items.setdefault(kind, {})[str(rid)] = r
 

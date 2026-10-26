@@ -104,7 +104,7 @@ Save the counts as JSON and run:
 python3 <this skill's folder>/scripts/ab_stats.py counts.json
 ```
 
-(`python3 <this skill's folder>/scripts/ab_stats.py --example` prints the input format.) It prints the per-variant table, a sample ratio mismatch check, absolute and relative lift with confidence intervals, the p-value, the chance each variant beats the control, the customers needed and the days remaining, a novelty check, duration and peeking warnings, and a statistical verdict.
+(`python3 <this skill's folder>/scripts/ab_stats.py --example` prints the input format.) It prints the per-variant table, a sample ratio mismatch check, absolute and relative lift with confidence intervals, the p-value, the chance each variant beats the control, the customers needed and the days remaining, a novelty check, duration and peeking warnings, and a statistical verdict. Put the mixed-customer count in `mixed`, and set `"mixed_excluded": true` only when the per-variant counts already leave them out: the script reports them but never removes them itself. A variant with no customers or a missing count is listed and left out of the tests.
 
 If you can't run scripts, follow [references/statistics.md](references/statistics.md) by hand, and show the working for at least one variant.
 

@@ -28,14 +28,27 @@ GENERIC_LOCAL = re.compile(
     r"digital|ecom|ecommerce|email|emails|hello|info|integration|integrations|"
     r"it|mail|marketing|news|newsletter|no-?reply|ops|qa|sales|sandbox|service|"
     r"shared|support|sysadmin|team|tech|test|testing|tester|user|web|webmaster)"
-    r"([._+-]?\d*|[._+-].*)?$",
+    r"(\d*|[._-]\d+|\+.*)$",  # marketing@, test1@, qa_2@, api+x@; not dev.patel@
     re.I,
 )
-TEST_MARKER = re.compile(r"(^|[._+-])(test|qa|dev|demo|sandbox|tmp|temp|dummy)\d*([._+-]|$)", re.I)
+TEST_WORD = re.compile(r"(test|qa|dev|demo|sandbox|tmp|temp|dummy)\d*", re.I)
+NAME_LIKE = {"dev"}  # also a given name: "dev.patel" is a person
 
 
-def unwrap(obj):
+def looks_like_test(local):
+    tokens = [t for t in re.split(r"[._+-]", local) if t]
+    if not tokens:
+        return False
+    first_counts = len(tokens) == 1 or tokens[0].lower() not in NAME_LIKE
+    return any(TEST_WORD.fullmatch(t) for t in (tokens if first_counts else tokens[1:]))
+
+
+def unwrap(obj, path):
     """Return the list of user records from a list_project_users response."""
+    for o in (obj, obj.get("result") if isinstance(obj, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
     for key in ("result", "data"):
         if isinstance(obj, dict) and key in obj:
             obj = obj[key]
@@ -78,7 +91,8 @@ def main():
     p.add_argument("files", nargs="+", help='"<project label>=<file>" or a file path')
     p.add_argument("--company-domain", action="append", default=[], help="your organisation's email domain (repeatable)")
     p.add_argument("--vendor-domain", action="append", default=[], help="known vendor or agency domain (repeatable)")
-    p.add_argument("--many-projects", type=int, default=3, help="flag users in at least this many projects (default 3)")
+    p.add_argument("--many-projects", type=int, default=3,
+                   help="flag users in at least this many projects (default 3, or every project when fewer are reviewed)")
     p.add_argument("--show-created", action="store_true", help="add the inferred account-creation date column")
     args = p.parse_args()
 
@@ -95,7 +109,7 @@ def main():
             label, path = spec, spec
         project_order.append(label)
         with open(path, encoding="utf-8") as fh:
-            records = unwrap(json.load(fh))
+            records = unwrap(json.load(fh), path)
         for r in records:
             email = (r.get("email") or r.get("username") or "").strip().lower()
             if not email:
@@ -104,6 +118,7 @@ def main():
                                           "last": r.get("last_name"), "id": r.get("_id")})
             u["projects"][label] = r.get("role") or "(no role)"
 
+    many = max(2, min(args.many_projects, len(project_order)))  # works with fewer projects than the threshold
     rows, flags = [], {"external": [], "vendor": [], "unknown": [], "generic": [], "test": [],
                        "incomplete": [], "many": []}
     for email in sorted(users):
@@ -117,7 +132,7 @@ def main():
         if GENERIC_LOCAL.match(local):
             flags["generic"].append(email)
             notes.append("generic")
-        elif TEST_MARKER.search(local) or "+" in local:
+        elif looks_like_test(local) or "+" in local:
             flags["test"].append(email)
             notes.append("test/alias")
         first, last = (u["first"] or "").strip(), (u["last"] or "").strip()
@@ -125,7 +140,7 @@ def main():
             flags["incomplete"].append(email)
             notes.append("no name")
         n = len(u["projects"])
-        if len(project_order) > 1 and n >= args.many_projects:
+        if len(project_order) > 1 and n >= many:
             flags["many"].append(email)
             notes.append(f"{n} projects")
         roles = sorted(set(u["projects"].values()))
@@ -160,7 +175,7 @@ def main():
     for key, title in [("external", "External domains"), ("vendor", "Vendor domains"),
                        ("generic", "Shared or generic accounts"), ("test", "Test or alias accounts"),
                        ("incomplete", "No first or last name"),
-                       ("many", f"In {args.many_projects}+ projects")]:
+                       ("many", f"In {many}+ projects")]:
         print(f"{title}: {len(flags[key])}")
 
 

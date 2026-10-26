@@ -1,0 +1,6 @@
+{"success": true, "data": {"rows": [
+  {"headers": [{"type": "single", "value": "view_item"}], "values": [13000]},
+  {"headers": [{"type": "single", "value": "purchase"}], "values": [900]},
+  {"headers": [{"type": "single", "value": "quiz_completed"}], "values": [700]},
+  {"headers": [{"type": "others"}], "values": [5]}
+]}}

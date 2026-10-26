@@ -1,0 +1,4 @@
+{"success": true, "data": [
+  {"_id": "5f0000000000000000000001", "email": "dev.patel@acme.example", "username": "dev.patel@acme.example", "first_name": "Dev", "last_name": "Patel", "role": "Developer"},
+  {"_id": "5f0000000000000000000007", "email": "sam@agency.example", "username": "sam@agency.example", "first_name": "Sam", "last_name": "Lee", "role": "Developer"}
+]}

@@ -4,13 +4,15 @@
 Standard library only. No network access.
 
 Usage:
-  python3 find_collisions.py calendar.json [--audiences audiences.json]
+  python3 find_collisions.py calendar.json [calendar_week2.json ...] [--audiences audiences.json]
          [--utc-offset HOURS] [--same-channel-hours 24] [--cross-channel-hours 4]
          [--busy-day N] [--include-inactive] [--include-webhooks]
 
 calendar.json is the get_campaign_calendar response, either the whole
-object ({"success": ..., "campaigns": [...]}) or just the campaigns list.
-Several responses (one per week) can be merged into one list first.
+object ({"success": ..., "campaigns": [...]}, optionally inside {"result": ...})
+or just the campaigns list. Give several files (one per week) to merge them.
+Collisions are listed with each send's reach (results.reach, or
+results.potential_reach when reach is missing), largest combined reach first.
 
 audiences.json is optional and maps campaign_id to an audience description
 that you worked out from the scenario or campaign definition:
@@ -30,15 +32,54 @@ Rules for comparing two audiences:
 import argparse
 import datetime as dt
 import json
+import math
+import sys
 from collections import defaultdict
 
 INACTIVE = {"draft", "inactive", "finished", "stopped"}
 
+NA = {"", "na", "n/a", "-", "—", "null"}
 
-def load_entries(path, include_inactive, include_webhooks):
-    data = json.load(open(path))
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
+def read_calendar(path):
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    for o in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    if isinstance(data, dict) and isinstance(data.get("result"), (dict, list)):
+        data = data["result"]
     if isinstance(data, dict):
-        data = data.get("campaigns", [])
+        data = data.get("campaigns") or (data.get("data") or {}).get("campaigns") or []
+    return data
+
+
+def load_entries(paths, include_inactive, include_webhooks):
+    data = [c for path in paths for c in read_calendar(path)]
     sends = []
     skipped = defaultdict(int)
     for c in data:
@@ -59,12 +100,22 @@ def load_entries(path, include_inactive, include_webhooks):
                 "action": c.get("action_name") or "",
                 "channel": channel,
                 "status": c.get("status"),
-                "reach": (c.get("results") or {}).get("reach"),
+                "reach": reach_of(c),
                 "ts": int(start),
             })
     # The same action can be listed more than once when windows overlap.
     unique = {(s["campaign_id"], s["action"], s["ts"]): s for s in sends}
     return sorted(unique.values(), key=lambda s: s["ts"]), dict(skipped)
+
+
+def reach_of(c):
+    results = c.get("results") or {}
+    reach = num(results.get("reach"))
+    return num(results.get("potential_reach")) if reach is None else reach
+
+
+def fmt_reach(r):
+    return "?" if r is None else f"{r:,.0f}"
 
 
 def compare(a, b, audiences):
@@ -83,8 +134,8 @@ def compare(a, b, audiences):
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("calendar")
+    p = argparse.ArgumentParser(description="Find busy days and possible send collisions in a campaign calendar.")
+    p.add_argument("calendar", nargs="+", help="saved get_campaign_calendar response(s), one per week if needed")
     p.add_argument("--audiences")
     p.add_argument("--utc-offset", type=float, default=0.0, help="hours to add to UTC for the project's timezone")
     p.add_argument("--same-channel-hours", type=float, default=24)
@@ -95,7 +146,10 @@ def main():
     args = p.parse_args()
 
     sends, skipped = load_entries(args.calendar, args.include_inactive, args.include_webhooks)
-    audiences = json.load(open(args.audiences)) if args.audiences else {}
+    audiences = {}
+    if args.audiences:
+        with open(args.audiences, encoding="utf-8") as f:
+            audiences = json.load(f)
     tz = dt.timezone(dt.timedelta(hours=args.utc_offset))
 
     def local(ts):
@@ -127,8 +181,8 @@ def main():
             flag.append("email + SMS")
         print(f"| {day:%a %d %b} | {len(items)} | {ch['email']} | {ch['sms']} | {ch['other']} | {', '.join(flag)} |")
 
-    print("\n**Possible collisions:**")
-    found = 0
+    print("\n**Possible collisions** (largest combined reach first):")
+    found = []
     for i, a in enumerate(sends):
         for b in sends[i + 1:]:
             gap_h = (b["ts"] - a["ts"]) / 3600
@@ -141,13 +195,14 @@ def main():
             verdict = compare(a, b, audiences)
             if not verdict:
                 continue
-            found += 1
             kind = f"same channel ({a['channel']})" if same_channel else f"{a['channel']} + {b['channel']}"
-            print(
-                f"- {local(a['ts']):%a %d %b %H:%M} {a['campaign']} / {a['action']} -> "
-                f"{local(b['ts']):%a %d %b %H:%M} {b['campaign']} / {b['action']}: "
-                f"{gap_h:.1f} h apart, {kind}, {verdict}"
-            )
+            found.append(((a["reach"] or 0) + (b["reach"] or 0),
+                          f"- {local(a['ts']):%a %d %b %H:%M} {a['campaign']} / {a['action']} -> "
+                          f"{local(b['ts']):%a %d %b %H:%M} {b['campaign']} / {b['action']}: "
+                          f"{gap_h:.1f} h apart, {kind}, {verdict}; "
+                          f"reach {fmt_reach(a['reach'])} / {fmt_reach(b['reach'])}"))
+    for _, line in sorted(found, key=lambda x: -x[0]):
+        print(line)
     if not found:
         print("- None within the thresholds.")
 

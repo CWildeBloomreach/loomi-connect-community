@@ -103,7 +103,7 @@ Call `search_funnels`. If a saved funnel covers these steps, fetch it with `funn
 
 ### 5. Size abandoned carts and order value
 
-1. **Abandoned carts:** customers at the cart step minus customers at the next step, from step 4 (if the purchase step is reliable).
+1. **Abandoned carts:** customers at the cart step minus customers at the next step, from step 4 (if the purchase step is reliable, or the next step is checkout). The script takes the first step named "cart" or "basket"; set `cart_step` (its index) in the JSON if yours is named differently.
 2. **Average cart value** (pattern V2): `select avg event cart_update.total_price where .action = "add" by event cart_update.action grouping top 3 with null in last 30 days`. Read the `add` row.
 3. **Average order value** (pattern V3): `select avg event purchase.total_price by event purchase.<low-cardinality property> grouping top 5 with null in last 30 days`. Weight the rows by their counts if there's more than one.
 4. If a value property is empty (all rows 0 or null), try the other value fields, and say which you used. In testing, `price` on `cart_update` was empty while `total_price` was filled.

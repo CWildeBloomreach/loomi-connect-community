@@ -1,0 +1,2 @@
+{"result": {"success": true, "data": {"name": "High churn risk", "status": "active",
+  "segments": [{"name": "Risky", "customer_filter": {"filters": [{"type": "attribute", "attribute": {"type": "property", "property": "churn_probability"}}]}}]}}}

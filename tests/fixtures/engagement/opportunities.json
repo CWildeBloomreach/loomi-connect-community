@@ -1,0 +1,15 @@
+{
+  "as_of": "2026-10-01",
+  "aov": "$100.00",
+  "opportunities": [
+    {"id": "P1", "name": "Browsed shoes, never bought", "size": 1000, "reachable": 1000, "category_aov": 80},
+    {"id": "P2", "name": "One-time buyers", "size": 1000, "reachable": 1000},
+    {"id": "P3", "name": "VIP slowdown", "size": 1000, "reachable": 1000},
+    {"id": "P4", "name": "Discount-led", "size": 1000, "reachable": 1000, "discount_depth": "20%", "kind": "margin"},
+    {"id": "P4", "name": "Discount-led, no depth", "size": 1000, "reachable": 1000, "kind": "margin"},
+    {"id": "P5", "name": "Affinity x trend", "size": 1000, "reachable": 1000},
+    {"id": "P6", "name": "Cart abandoners", "size": "1,000", "reachable": "1000", "avg_cart_value": "$120"},
+    {"id": "P7", "name": "New, no second order", "size": 1000, "reachable": 1000},
+    {"id": "P8", "name": "No consent", "size": 1000, "reachable": 1000, "kind": "long_term"}
+  ]
+}

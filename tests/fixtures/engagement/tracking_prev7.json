@@ -1,0 +1,4 @@
+{"success": true, "data": {"rows": [
+  {"headers": [{"type": "single", "value": "view_item"}], "values": [12000]},
+  {"headers": [{"type": "single", "value": "purchase"}], "values": [880]}
+]}}

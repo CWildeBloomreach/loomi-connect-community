@@ -28,8 +28,12 @@ PREFIX = re.compile(r"^\s*(\[[^\]]*\]\s*)+")
 POPUP_TYPES = re.compile(r"pop|overlay|slide|modal|bar|notification", re.I)
 
 
-def unwrap(obj):
+def unwrap(obj, path):
     """Return a list of records from a list or detail response."""
+    for o in (obj, obj.get("result") if isinstance(obj, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
     if isinstance(obj, dict) and "result" in obj:
         obj = obj["result"]
     if isinstance(obj, dict) and "data" in obj:
@@ -134,6 +138,9 @@ def main(argv):
     stale = 90
     files = []
     args = argv[1:]
+    if "-h" in args or "--help" in args:
+        print(__doc__)
+        return 0
     i = 0
     while i < len(args):
         if args[i] == "--now":
@@ -151,7 +158,7 @@ def main(argv):
         if ":" in f and f.split(":", 1)[0] in KINDS:
             kind, path = f.split(":", 1)
         with open(path, encoding="utf-8") as fh:
-            for r in unwrap(json.load(fh)):
+            for r in unwrap(json.load(fh), path):
                 rid = r.get("_id") or r.get("id")
                 if not rid:
                     continue

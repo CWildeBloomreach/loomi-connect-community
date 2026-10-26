@@ -13,9 +13,16 @@ the EQL patterns in references/eql-campaign-metrics.md):
 }
 
 "previous" is optional. Status keys that are missing count as zero.
+"unsubscribed" and "unsubscribe" are the same status. Counts may be strings
+("1,000"); a value that isn't a number counts as zero and is listed.
+
+Usage:
+    python3 summarise_campaign_counts.py counts.json
 """
 
+import argparse
 import json
+import math
 import sys
 
 BOUNCE_KEYS = ("hard_bounce", "soft_bounce")
@@ -28,6 +35,45 @@ THRESHOLDS = {
     "failure_rate": (0.01, "Failed sends"),
 }
 SWING = 0.25
+ALIASES = {"unsubscribed": "unsubscribe"}
+
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
+def normalise(name, counts, problems):
+    """Numbers per status, with status aliases merged."""
+    out = {}
+    for key, value in (counts or {}).items():
+        v = num(value)
+        if v is None:
+            problems.append(f"{name}: {key} = {value!r} isn't a number; counted as 0")
+            v = 0
+        k = ALIASES.get(str(key).lower(), str(key).lower())
+        out[k] = out.get(k, 0) + int(round(v))
+    return out
 
 
 def sends(c):
@@ -68,10 +114,22 @@ def change(cur, prev):
 
 
 def main():
-    raw = open(sys.argv[1]).read() if len(sys.argv) > 1 else sys.stdin.read()
-    data = json.loads(raw)
-    current = data.get("current", {})
-    previous = data.get("previous", {})
+    ap = argparse.ArgumentParser(description="Turn campaign event counts into rates, period changes and flags "
+                                 "(prints Markdown). Input format is in the script's docstring.")
+    ap.add_argument("counts", nargs="?", help="JSON file of counts (read from stdin when left out)")
+    args = ap.parse_args()
+    if args.counts:
+        with open(args.counts, encoding="utf-8") as f:
+            data = json.load(f)
+    else:
+        data = json.load(sys.stdin)
+    for o in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            sys.exit(f"{args.counts or 'stdin'}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    problems = []
+    current = {k: normalise(k, v, problems) for k, v in (data.get("current") or {}).items()}
+    previous = {k: normalise(f"{k} (previous)", v, problems) for k, v in (data.get("previous") or {}).items()}
 
     rows, flags = [], []
     for name, counts in current.items():
@@ -113,6 +171,8 @@ def main():
     print("\n**Flags:**")
     for f in flags or ["None above the thresholds."]:
         print(f"- {f}")
+    for msg in problems:
+        print(f"- Missing value: {msg}")
 
 
 if __name__ == "__main__":
