@@ -20,7 +20,7 @@ Usage:
       [--device mobile=mobile.json --device desktop=desktop.json --device tablet=tablet.json] \
       [--table queries=q1.json,q2.json] [--table categories=cats.json] \
       [--table products=p_by_rev.json,p_by_prev_rev.json] [--table brands=brands.json] \
-      [--trend trend.json] [--top 8]
+      [--trend trend.json --offset-days 7] [--top 8]
 
 Inputs:
   overall / search / category / device files: get_discovery_overall_performance,
@@ -53,17 +53,42 @@ PARENT = {"queries": "search", "categories": "category", "products": "overall", 
 
 
 def num(v):
-    if v is None:
-        return 0.0
+    """A number from a tool value, or None when it is missing or not a number."""
+    if v is None or isinstance(v, bool):
+        return None
     if isinstance(v, (int, float)):
-        return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
-    return float(s) if s else 0.0
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip().translate({ord(c): None for c in "$£€,"})
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        x = float(s)
+    except ValueError:
+        return None
+    return x if math.isfinite(x) else None
+
+
+MISSING = set()
+
+
+def val(v, where):
+    """num(v), counting a missing value as 0 and noting where it was."""
+    x = num(v)
+    if x is None:
+        MISSING.add(where)
+        return 0.0
+    return x
 
 
 def load(path):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
+    for d in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            print(json.dumps({"ok": False, "error": f"{path}: Loomi Connect returned an error: "
+                              f"{d.get('error') or d.get('message') or 'no error text'}. This check couldn't run; "
+                              "don't treat it as 'nothing found'."}))
+            sys.exit(1)
     # Some tools wrap the payload in {"result": {...}}.
     if isinstance(data, dict) and "result" in data and "data" not in data:
         data = data["result"]
@@ -75,8 +100,8 @@ def card(path):
     out = {}
     for period in ("current", "previous"):
         p = d[period]
-        out[period] = {"revenue": num(p.get("revenue")), "visits": num(p.get("visits")),
-                       "orders": num(p.get("conversions"))}
+        out[period] = {k: val(p.get(src), f"{path} {period}.{src}")
+                       for k, src in (("revenue", "revenue"), ("visits", "visits"), ("orders", "conversions"))}
     return out
 
 
@@ -149,9 +174,10 @@ def table_report(name, rows, parent_delta, top):
     key = KEYS[name]
     items = []
     for r in rows:
-        r0, r1 = num(r.get("prev_revenue")), num(r.get("revenue"))
-        v0, v1 = num(r.get("prev_visits")), num(r.get("visits"))
-        o0, o1 = num(r.get("prev_conversions")), num(r.get("conversions"))
+        where = f"{name} row {r.get(key)!r}"
+        r0, r1 = val(r.get("prev_revenue"), where), val(r.get("revenue"), where)
+        v0, v1 = val(r.get("prev_visits"), where), val(r.get("visits"), where)
+        o0, o1 = val(r.get("prev_conversions"), where), val(r.get("conversions"), where)
         delta = r1 - r0
         item = {
             "name": r.get(key),
@@ -207,10 +233,13 @@ def trend_report(path, offset_days=None):
     if not cur or not prev:
         return {"error": "empty trend"}
     if offset_days is None:
-        candidates = {(min(cur) - min(prev)).days, (max(cur) - max(prev)).days,
-                      (max(cur) - min(cur)).days + 1}
+        # A missing first or last day makes neighbouring offsets match equally well. Break
+        # ties toward the period length (the longer of the two spans), then a whole number
+        # of weeks, so each day is still compared with the same weekday.
+        length = max((max(cur) - min(cur)).days, (max(prev) - min(prev)).days) + 1
+        candidates = {(min(cur) - min(prev)).days, (max(cur) - max(prev)).days, length}
         offset_days = max(candidates, key=lambda o: (
-            sum(1 for c in cur if c - datetime.timedelta(days=o) in prev), o))
+            sum(1 for c in cur if c - datetime.timedelta(days=o) in prev), o == length, o % 7 == 0, -o))
     off = datetime.timedelta(days=offset_days)
     start, end = min(min(cur), min(prev) + off), max(max(cur), max(prev) + off)
     days, gaps_in_data = [], []
@@ -378,6 +407,9 @@ def main():
 
     if a.trend:
         out["trend"] = trend_report(a.trend, a.offset_days)
+    if MISSING:
+        out["missing_values"] = {"counted_as_zero": sorted(MISSING),
+                                 "note": "these values were missing or not numbers (e.g. NA) and were counted as 0"}
 
     json.dump(out, sys.stdout, indent=2)
     print()

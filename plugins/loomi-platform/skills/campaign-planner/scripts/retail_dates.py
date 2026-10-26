@@ -260,6 +260,9 @@ def build(markets, years, start, end):
                 continue
             d, status = resolve(fn, year)
             if d is None:
+                # No date to test against the window: keep it only for a year the window covers.
+                if start and end and not start.year <= year <= end.year:
+                    continue
                 rows.append({"id": mid, "name": name, "markets": sorted(mk), "rule": rule, "year": year,
                              "date": None, "promote_from": None, "status": status,
                              "lead_days": lead, "categories": cats})

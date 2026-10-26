@@ -10,9 +10,11 @@ items.json is a JSON list. Each item:
      "evidence": "auto-corrected to 'black frisky'", "fix": "Add a redirect",
      "owner": "Merchandiser", "lead_time": "same day"}
 
-status is RED, AMBER, GREEN or NOT CHECKED. lead_time is optional.
+status is RED, AMBER, GREEN or NOT CHECKED (any case). lead_time is optional.
 Blockers (RED) come first, then AMBER, by area order: Data, Merchandising,
-Search, Marketing, On-site. Prints a Markdown checklist and a verdict.
+Search, Marketing, On-site (area matched in any case). Prints a Markdown checklist and a
+verdict: NO-GO, GO WITH FIXES, INCOMPLETE (nothing failed, but something wasn't
+checked) or GO (everything checked and GREEN).
 Standard library only; no network access.
 """
 import argparse
@@ -28,6 +30,12 @@ def area_key(a):
     return AREAS.index(a) if a in AREAS else len(AREAS)
 
 
+def canonical_area(a):
+    """The area as named in AREAS, whatever its case; other areas unchanged."""
+    text = str(a or "").strip()
+    return next((x for x in AREAS if x.lower() == text.lower()), text)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("items")
@@ -40,7 +48,8 @@ def main():
     with open(a.items, encoding="utf-8") as f:
         items = json.load(f)
     for i in items:
-        i["status"] = (i.get("status") or "NOT CHECKED").upper()
+        i["status"] = str(i.get("status") or "NOT CHECKED").strip().upper()
+        i["area"] = canonical_area(i.get("area"))
 
     red = sorted([i for i in items if i["status"] == "RED"], key=lambda i: area_key(i.get("area")))
     amber = sorted([i for i in items if i["status"] == "AMBER"], key=lambda i: area_key(i.get("area")))
@@ -52,6 +61,8 @@ def main():
         verdict = "NO-GO"
     elif red or amber:
         verdict = "GO WITH FIXES"
+    elif unchecked or not green:
+        verdict = "INCOMPLETE"
     else:
         verdict = "GO"
 

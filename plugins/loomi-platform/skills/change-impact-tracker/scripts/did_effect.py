@@ -34,7 +34,7 @@ are both before the change) and pass it with --placebo.
 
 Usage:
   python3 did_effect.py input.json [--placebo placebo.json] [--json]
-  python3 did_effect.py --template
+  python3 did_effect.py --template [--out change.json]
 
 Standard library only; no network access.
 """
@@ -75,17 +75,31 @@ LABELS = {"visits": "Visits", "orders": "Orders", "revenue": "Revenue",
 
 
 def num(v):
-    if v is None:
-        return 0.0
+    """A number from a value ("$6,471.00", "12%"), or None when missing or not a number."""
+    if v is None or isinstance(v, bool):
+        return None
     if isinstance(v, (int, float)):
-        return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
-    return float(s) if s else 0.0
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip().translate({ord(c): None for c in "$£€,"})
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        x = float(s)
+    except ValueError:
+        return None
+    return x if math.isfinite(x) else None
 
 
-def cell(d):
-    return {"visits": num(d.get("visits")), "orders": num(d.get("orders", d.get("conversions"))),
-            "revenue": num(d.get("revenue"))}
+def cell(d, where, missing):
+    """Counts for one window. A missing count is taken as 0 and noted in `missing`."""
+    out = {}
+    for k, v in (("visits", d.get("visits")), ("orders", d.get("orders", d.get("conversions"))),
+                 ("revenue", d.get("revenue"))):
+        x = num(v)
+        if x is None:
+            missing.append(f"{where} {k}")
+        out[k] = x or 0.0
+    return out
 
 
 def derived(c):
@@ -202,14 +216,14 @@ def incremental_revenue(treated, effects, days_b, days_a):
             "per_30_days_range": [round(inc_lo * per30, 2), round(inc_hi * per30, 2)]}
 
 
-def warnings_for(spec, treated):
-    w = []
+def warnings_for(spec, treated, missing=()):
+    w = [f"No number for {m} (missing or not a number); counted as 0." for m in missing]
     db, da = spec["days_before"], spec["days_after"]
     if db != da:
         w.append(f"Windows differ in length ({db} vs {da} days). Use equal-length windows.")
     if da < MIN_DAYS:
         w.append(f"After window is {da} days (under {MIN_DAYS}). Weekday mix and one-off days can dominate.")
-    if da % 7 and db % 7:
+    if da % 7 or db % 7:
         w.append("Windows are not whole weeks, so the weekday mix may differ. Prefer 7, 14 or 28 days.")
     for when in ("before", "after"):
         c = treated[when]
@@ -254,10 +268,11 @@ def analyse(spec):
     db, da = int(spec["days_before"]), int(spec["days_after"])
     db_eff = int(spec.get("days_with_data_before") or db)
     da_eff = int(spec.get("days_with_data_after") or da)
-    treated = {w: cell(spec["treated"][w]) for w in ("before", "after")}
+    missing = []
+    treated = {w: cell(spec["treated"][w], f"treated {w}", missing) for w in ("before", "after")}
     controls = []
     for c in spec.get("controls", []):
-        ctl = {w: cell(c[w]) for w in ("before", "after")}
+        ctl = {w: cell(c[w], f"control '{c.get('label', 'control')}' {w}", missing) for w in ("before", "after")}
         if c.get("subtract_treated"):
             ctl = subtract(ctl, treated)
         controls.append({"label": c.get("label", "control"), "data": ctl,
@@ -270,7 +285,7 @@ def analyse(spec):
     signs = {(c["effects"].get(metric) or {}).get("effect_pct", 0) > 0 for c in controls
              if c["effects"].get(metric)}
     controls_agree = len(signs) <= 1
-    warns = warnings_for(spec, treated)
+    warns = warnings_for(spec, treated, missing)
     too_little = any(treated[w]["orders"] < MIN_ORDERS for w in treated) or da < MIN_DAYS
     return {"treated": treated, "controls": controls, "metric": metric, "primary": primary,
             "controls_agree": controls_agree, "too_little": too_little, "warnings": warns,
@@ -389,10 +404,18 @@ def main():
     ap.add_argument("--placebo", help="JSON input for two pre-change windows (same format)")
     ap.add_argument("--json", action="store_true", help="print JSON instead of text")
     ap.add_argument("--template", action="store_true", help="print an example input file and exit")
+    ap.add_argument("--out", help="with --template: write the example to this file instead of printing it")
     a = ap.parse_args()
     if a.template:
-        print(json.dumps(TEMPLATE, indent=2))
+        if a.out:
+            with open(a.out, "w", encoding="utf-8") as f:
+                f.write(json.dumps(TEMPLATE, indent=2) + "\n")
+            print(f"Wrote an example input to {a.out}: replace its numbers with yours.")
+        else:
+            print(json.dumps(TEMPLATE, indent=2))
         return
+    if a.out:
+        ap.error("--out only works with --template")
     if not a.input:
         ap.error("give an input file, or --template")
     with open(a.input, encoding="utf-8") as f:

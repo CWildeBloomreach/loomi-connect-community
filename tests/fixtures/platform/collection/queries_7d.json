@@ -1,0 +1,14 @@
+{
+ "data": {
+  "rows": [
+   {
+    "query": "cargo pants",
+    "browse_sessions": 120,
+    "prev_browse_sessions": 90,
+    "revenue": "$1,000.00",
+    "conversion_rate": "2.00%",
+    "bounce_rate": "30.00%"
+   }
+  ]
+ }
+}

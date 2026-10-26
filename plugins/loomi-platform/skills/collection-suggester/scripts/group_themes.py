@@ -25,29 +25,54 @@ Standard library only; no network access.
 """
 import argparse
 import json
+import math
 import statistics
 import sys
 
 
-def money(v):
-    if v is None:
-        return 0.0
-    return float(str(v).replace("$", "").replace(",", "") or 0)
-
-
-def pct(v):
-    if v is None:
+def num(v):
+    """A number from a tool value ("$1,000.00", "2.50%"), or None when missing or not a number."""
+    if v is None or isinstance(v, bool):
         return None
-    return float(str(v).replace("%", "") or 0)
+    if isinstance(v, (int, float)):
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip().translate({ord(c): None for c in "$£€,"})
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        x = float(s)
+    except ValueError:
+        return None
+    return x if math.isfinite(x) else None
+
+
+def fail(msg):
+    print(json.dumps({"ok": False, "error": msg}))
+    sys.exit(1)
 
 
 def load_queries(paths):
-    rows = {}
+    """Rows by query. Files from different windows (7 and 30 days) can't be mixed: the same
+    query would have different numbers in each, and one would silently replace the other."""
+    rows, origin = {}, {}
     for path in paths:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
+        for d in (data, data.get("result") if isinstance(data, dict) else None):
+            if isinstance(d, dict) and d.get("success") is False:
+                fail(f"{path}: Loomi Connect returned an error: {d.get('error') or d.get('message') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+        if isinstance(data, dict) and isinstance(data.get("result"), dict) and "data" not in data:
+            data = data["result"]
         for r in (data.get("data") or data).get("rows", []):
-            rows[r["query"].strip().lower()] = r
+            q = r["query"].strip().lower()
+            if q in rows:
+                old = rows[q]
+                if any(num(old.get(k)) != num(r.get(k)) for k in ("browse_sessions", "prev_browse_sessions")):
+                    fail(f"query {r['query'].strip()!r} has different session counts in {origin[q]} and {path}: "
+                         "these look like different windows (for example 7 and 30 days). Pass the query files "
+                         "from one window only, the one that matches --baseline.")
+            rows[q], origin[q] = r, path
     return rows
 
 
@@ -95,8 +120,12 @@ def main():
     growth = 1 + a.baseline / 100
 
     top = sorted(rows.values(), key=lambda r: r.get("browse_sessions") or 0, reverse=True)[:20]
-    med_cr = statistics.median([pct(r.get("conversion_rate")) or 0 for r in top]) if top else 0
-    med_br = statistics.median([pct(r.get("bounce_rate")) or 0 for r in top]) if top else 0
+    crs = [x for x in (num(r.get("conversion_rate")) for r in top) if x is not None]
+    brs = [x for x in (num(r.get("bounce_rate")) for r in top) if x is not None]
+    med_cr = statistics.median(crs) if crs else 0
+    med_br = statistics.median(brs) if brs else 0
+    missing = sorted(r["query"].strip() for r in rows.values()
+                     if any(num(r.get(k)) is None for k in ("revenue", "conversion_rate", "bounce_rate")))
 
     names = [q for q, r in rows.items() if max(r.get("browse_sessions") or 0, r.get("prev_browse_sessions") or 0) >= a.min_sessions]
     sigs = {q: signature(profiles[q], set(a.ignore)) for q in names if q in profiles}
@@ -128,14 +157,21 @@ def main():
         cur = sum(rows[q].get("browse_sessions") or 0 for q in members)
         prev = sum(rows[q].get("prev_browse_sessions") or 0 for q in members)
         expected = prev * growth
-        revenue = sum(money(rows[q].get("revenue")) for q in members)
-        cr = sum((pct(rows[q].get("conversion_rate")) or 0) * (rows[q].get("browse_sessions") or 0) for q in members) / cur if cur else None
-        br = sum((pct(rows[q].get("bounce_rate")) or 0) * (rows[q].get("browse_sessions") or 0) for q in members) / cur if cur else None
+        revenue = sum(num(rows[q].get("revenue")) or 0.0 for q in members)
+
+        def weighted(key, members=members):
+            """Session-weighted rate over the members that report it; None if none do."""
+            pairs = [(num(rows[q].get(key)), rows[q].get("browse_sessions") or 0) for q in members]
+            pairs = [(x, w) for x, w in pairs if x is not None]
+            total = sum(w for _, w in pairs)
+            return sum(x * w for x, w in pairs) / total if total else None
+
+        cr, br = weighted("conversion_rate"), weighted("bounce_rate")
         underserved = []
         for q in members:
             r = rows[q]
-            qcr, qbr = pct(r.get("conversion_rate")) or 0, pct(r.get("bounce_rate")) or 0
-            if (med_cr and qcr < 0.75 * med_cr) or (med_br and qbr > 1.5 * med_br):
+            qcr, qbr = num(r.get("conversion_rate")), num(r.get("bounce_rate"))
+            if (med_cr and qcr is not None and qcr < 0.75 * med_cr) or (med_br and qbr is not None and qbr > 1.5 * med_br):
                 underserved.append({"query": r["query"], "sessions": r.get("browse_sessions"),
                                     "conversion_rate": r.get("conversion_rate"), "bounce_rate": r.get("bounce_rate")})
         themes.append({
@@ -157,6 +193,9 @@ def main():
         "top20_median_conversion": med_cr,
         "top20_median_bounce": med_br,
         "themes": themes,
+        "missing_values": {"queries": missing[:30], "note": "revenue, conversion or bounce missing (e.g. NA): "
+                                                             "revenue counted as 0; rates left out of medians and averages"}
+        if missing else None,
         "unprofiled": sorted((q for q in names if q not in profiles), key=lambda q: -(rows[q].get("browse_sessions") or 0))[:30],
     }, sys.stdout, indent=2, ensure_ascii=False)
     print()

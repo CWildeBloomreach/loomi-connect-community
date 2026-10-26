@@ -1,0 +1,72 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 200,
+    "docs": [
+     {
+      "pid": "P-1",
+      "title": "Example cargo trousers",
+      "brand": "Acme"
+     }
+    ]
+   },
+   "debug": {
+    "feUrl": "https://example.invalid/api/v1/core/?q=cargo+pants&search_type=keyword&fq="
+   },
+   "facet_counts": {
+    "facets": [
+     {
+      "name": "category",
+      "value": [
+       {
+        "cat_id": "c-men",
+        "cat_name": "Men",
+        "crumb": "/c-men",
+        "count": 190
+       },
+       {
+        "cat_id": "c-pants",
+        "cat_name": "Pants",
+        "crumb": "/c-men/c-pants",
+        "count": 180
+       },
+       {
+        "cat_id": "brg_dyn_x1",
+        "cat_name": "Utility edit",
+        "count": 120
+       }
+      ]
+     },
+     {
+      "name": "colors",
+      "value": [
+       {
+        "name": "khaki",
+        "count": 100
+       },
+       {
+        "name": "black",
+        "count": 40
+       }
+      ]
+     },
+     {
+      "name": "brand",
+      "value": [
+       {
+        "name": "Acme",
+        "count": 150
+       }
+      ]
+     }
+    ]
+   },
+   "category_map": {
+    "c-men": "men",
+    "c-pants": "pants"
+   }
+  }
+ }
+}

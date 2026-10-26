@@ -1,0 +1,14 @@
+[
+ {
+  "area": "Data",
+  "check": "Pixel",
+  "status": "GREEN",
+  "evidence": "events in the last hour"
+ },
+ {
+  "area": "Search",
+  "check": "\"big sale\" query",
+  "status": "green",
+  "evidence": "48 results"
+ }
+]

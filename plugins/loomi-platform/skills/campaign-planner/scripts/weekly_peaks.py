@@ -30,11 +30,14 @@ before grouping, which handles that.
 
 A week's "index" is its total divided by the median week in the input
 (1.00 = a typical week). Partial weeks at either end are flagged, and are
-not used for the median.
+not used for the median or the peaks. A week in the middle with days missing
+(no row, or a value such as "NA") is still used, and its missing days are
+shown; missing values are never counted as 0.
 """
 
 import argparse
 import json
+import math
 import statistics
 import sys
 from datetime import date, datetime, timedelta, timezone
@@ -43,15 +46,19 @@ WEEKDAYS = {"mon": 0, "sun": 6, "sat": 5}
 
 
 def to_number(v):
+    """A number from a tool value ("$1,149,791.88"), or None when missing or not a number."""
+    if v is None or isinstance(v, bool):
+        return None
     if isinstance(v, (int, float)):
-        return float(v)
-    if v is None:
-        return 0.0
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip().translate({ord(c): None for c in "$£€,"})
+    if s.endswith("%"):
+        s = s[:-1].strip()
     try:
-        return float(s)
+        x = float(s)
     except ValueError:
-        return 0.0
+        return None
+    return x if math.isfinite(x) else None
 
 
 def nearest_date(ts):
@@ -59,7 +66,16 @@ def nearest_date(ts):
     return dt.date()
 
 
-def parse(data, metric, series):
+def tool_error(data):
+    """The error text when a saved response says success: false, else None."""
+    for d in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            return str(d.get("error") or d.get("message") or "no error text")
+    return None
+
+
+def parse(data, metric, series, missing):
+    """Daily totals by date. Days whose value is missing or not a number go in `missing`."""
     if isinstance(data, dict) and "result" in data and isinstance(data["result"], dict):
         data = data["result"]
     if isinstance(data, dict) and "data" in data and isinstance(data["data"], dict):
@@ -72,13 +88,21 @@ def parse(data, metric, series):
             if v is None or h[0].get("type") == "other":
                 continue
             d = nearest_date(v)
-            daily[d] = daily.get(d, 0.0) + to_number((row.get("values") or [0])[0])
+            x = to_number((row.get("values") or [None])[0])
+            if x is None:
+                missing.add(d)
+                continue
+            daily[d] = daily.get(d, 0.0) + x
         return daily, "EQL"
     if isinstance(data, dict) and series in data:
         for row in data[series]:
             d = datetime.strptime(str(row["cdate"]), "%Y%m%d").date()
             key = metric or next(k for k in row if k != "cdate")
-            daily[d] = daily.get(d, 0.0) + to_number(row.get(key))
+            x = to_number(row.get(key))
+            if x is None:
+                missing.add(d)
+                continue
+            daily[d] = daily.get(d, 0.0) + x
         return daily, "Discovery trend"
     raise SystemExit("Unrecognised input: expected EQL 'rows' or a Discovery trend 'current' series.")
 
@@ -96,7 +120,19 @@ def main():
     a = p.parse_args()
 
     with open(a.file) as fh:
-        daily, source = parse(json.load(fh), a.metric, a.series)
+        data = json.load(fh)
+    err = tool_error(data)
+    if err:
+        msg = (f"{a.file}: Loomi Connect returned an error: {err}. "
+               "This check couldn't run; don't treat it as 'nothing found'.")
+        if a.json:
+            print(json.dumps({"ok": False, "error": msg}))
+        else:
+            print(msg, file=sys.stderr)
+        return 1
+    missing = set()
+    daily, source = parse(data, a.metric, a.series, missing)
+    missing -= set(daily)
     if not daily:
         print("No data in the window (empty rows). Treat last year's evidence as unavailable.")
         return
@@ -117,7 +153,14 @@ def main():
         with open(a.moments) as fh:
             moments = [m for m in json.load(fh).get("moments", []) if m.get("date")]
 
-    full = [w["total"] for w in weeks.values() if w["days"] == 7] or [w["total"] for w in weeks.values()]
+    # Only the first and last weeks can be cut off by the window. A short week in the middle
+    # has missing days (no row, or a value that isn't a number): it still counts, and is flagged.
+    edge = {min(weeks), max(weeks)}
+
+    def is_partial(start):
+        return start in edge and weeks[start]["days"] < 7
+
+    full = [w["total"] for s, w in weeks.items() if not is_partial(s)] or [w["total"] for w in weeks.values()]
     median = statistics.median(full) if full else 0
     rows = []
     for start in sorted(weeks):
@@ -128,7 +171,8 @@ def main():
             "week_start": start.isoformat(),
             "total": round(w["total"], 2),
             "days": w["days"],
-            "partial": w["days"] < 7,
+            "partial": is_partial(start),
+            "missing_days": 0 if is_partial(start) else 7 - w["days"],
             "index": round(w["total"] / median, 2) if median else None,
             "peak_day": w["peak_day"].isoformat(),
             "moments": tags,
@@ -137,6 +181,7 @@ def main():
 
     if a.json:
         print(json.dumps({"source": source, "first_day": first.isoformat(), "last_day": last.isoformat(),
+                          "days_without_a_number": sorted(d.isoformat() for d in missing),
                           "median_week": median, "weeks": rows, "peaks": [r["week_start"] for r in peaks]}, indent=2))
         return
 
@@ -144,9 +189,11 @@ def main():
     print(f"| Week starting | {a.label} | Index | Peak day | Moments that week |")
     print("|---|---|---|---|---|")
     for r in rows:
-        flag = " (partial)" if r["partial"] else ""
+        flag = " (partial)" if r["partial"] else (f" ({r['missing_days']} day(s) missing)" if r["missing_days"] else "")
         idx = "-" if r["index"] is None else f"{r['index']:.2f}"
         print(f"| {r['week_start']}{flag} | {r['total']:,.0f} | {idx} | {r['peak_day']} | {', '.join(r['moments']) or '-'} |")
+    if missing:
+        print(f"\n**No number for:** {', '.join(sorted(d.isoformat() for d in missing))} (left out, not counted as 0).")
     if peaks:
         print("\n**Peak weeks:** " + "; ".join(f"{r['week_start']} (index {r['index']:.2f})" for r in peaks))
 

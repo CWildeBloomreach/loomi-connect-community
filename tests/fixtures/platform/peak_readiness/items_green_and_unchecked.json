@@ -1,0 +1,14 @@
+[
+ {
+  "area": "Data",
+  "check": "Pixel",
+  "status": "GREEN",
+  "evidence": "events in the last hour"
+ },
+ {
+  "area": "Marketing",
+  "check": "Event sends",
+  "status": "NOT CHECKED",
+  "evidence": "no Engagement access"
+ }
+]

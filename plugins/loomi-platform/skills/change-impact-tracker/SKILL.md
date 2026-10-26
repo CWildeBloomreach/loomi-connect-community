@@ -136,7 +136,7 @@ Things to get right:
 
 ### 6. Calculate the effect
 
-Put the numbers into a JSON file (run `python3 <this skill's folder>/scripts/did_effect.py --template` to see the format) and run:
+Put the numbers into a JSON file (run `python3 <this skill's folder>/scripts/did_effect.py --template --out change.json` to start from an example, then replace its numbers) and run:
 
 ```bash
 python3 <this skill's folder>/scripts/did_effect.py change.json [--placebo placebo.json]

@@ -1,0 +1,36 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 3,
+    "docs": [
+     {
+      "pid": "EX-1",
+      "title": "Example Brand cotton crew neck t-shirt in navy",
+      "brand": "Example Brand",
+      "price": true,
+      "description": "A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. A soft cotton t-shirt. ",
+      "large_image": "https://example.invalid/1.jpg"
+     },
+     {
+      "pid": "EX-2",
+      "title": "Example Brand linen shirt in white for summer",
+      "brand": "Example Brand",
+      "description": "A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. A light linen shirt. ",
+      "large_image": "https://example.invalid/2.jpg"
+     },
+     {
+      "pid": "EX-3",
+      "title": "Example Brand wool jumper in grey for winter",
+      "brand": "Example Brand",
+      "price": "$49.00",
+      "sale_price": "NA",
+      "description": "A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. A warm wool jumper. ",
+      "large_image": "https://example.invalid/3.jpg"
+     }
+    ]
+   }
+  }
+ }
+}

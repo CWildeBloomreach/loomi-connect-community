@@ -107,7 +107,7 @@ Then run:
 python3 <this skill's folder>/scripts/briefing_numbers.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --queries queries.json --categories categories.json --products products.json --brands brands.json --dead-ends no_results.json,no_revenue.json [--min-visits 100] [--min-sessions 30] [--top 3] [--list-top 10] [--issue-top 5]
 ```
 
-It prints the KPI table values, the top and issue lists, and the movers.
+It prints the KPI table values, the top and issue lists, and the movers. If any value was missing or `NA`, `missing_values` lists it (counted as 0): say so next to the affected numbers.
 
 **Top and issues** (`top_and_issues` in the output), for searches and for categories:
 

@@ -1,0 +1,25 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "rows": [
+    {
+     "query": "cargo pants",
+     "browse_sessions": 500,
+     "prev_browse_sessions": 300,
+     "revenue": "$1,000.00",
+     "conversion_rate": "2.00%",
+     "bounce_rate": "30.00%"
+    },
+    {
+     "query": "utility trousers",
+     "browse_sessions": 200,
+     "prev_browse_sessions": 150,
+     "revenue": "NA",
+     "conversion_rate": "NA",
+     "bounce_rate": "45.00%"
+    }
+   ]
+  }
+ }
+}
