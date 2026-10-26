@@ -5,9 +5,13 @@ Reads JSON the assistant has already fetched with Loomi Connect. It never calls
 the network. Standard library only.
 
 Usage:
-    python3 scripts/analysis_summary.py dashboard DASHBOARD_JSON
-    python3 scripts/analysis_summary.py result CALCULATE_REPORT_JSON
-    python3 scripts/analysis_summary.py windows DEFINITION_JSON [--today YYYY-MM-DD]
+    python3 scripts/analysis_summary.py dashboard DASHBOARD_JSON [--tz ZONE]
+    python3 scripts/analysis_summary.py result CALCULATE_REPORT_JSON [--tz ZONE]
+    python3 scripts/analysis_summary.py windows DEFINITION_JSON [--today YYYY-MM-DD] [--tz ZONE]
+
+--tz       the project's IANA time zone (for example Pacific/Auckland), used to
+           turn timestamps into dates. Without it, daily buckets are read
+           correctly for any zone from UTC-10 to UTC+13, and other dates are UTC.
 
 dashboard  a saved `search_dashboards` response fetched with a dashboard_id.
            Prints components in display order (by y, then x), skipping spacer
@@ -25,9 +29,17 @@ Editor names and email addresses in the responses are never printed.
 import argparse
 import datetime as dt
 import json
+import math
 import sys
 
 STALE_DAYS = 30
+TZ = None  # set from --tz
+# Daily buckets start at local midnight. Adding 13 hours before taking the UTC
+# date gives the local date for any offset above UTC-11 up to UTC+13. No single
+# shift covers UTC-11 to UTC+14 (that span is 25 hours), so those need --tz.
+BUCKET_SHIFT = 13 * 3600
+NO_TZ_NOTE = ("Dates assume the project's time zone is between UTC-10 and UTC+13 "
+              "(pass --tz with its IANA name otherwise).")
 
 
 def unwrap(obj):
@@ -40,22 +52,51 @@ def unwrap(obj):
     return obj
 
 
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    for o in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    return data
 
 
 def bucket_date(ts):
-    """Date of a bucket that starts at local midnight in the project's time zone.
-
-    Adding 12 hours before taking the UTC date gives the right local date for
-    any offset between UTC-12 and UTC+12, without knowing the time zone.
-    """
-    return dt.datetime.fromtimestamp(int(float(ts)) + 43200, tz=dt.timezone.utc).date()
+    """Date of a bucket that starts at local midnight in the project's time zone."""
+    if TZ:
+        return dt.datetime.fromtimestamp(int(float(ts)), tz=TZ).date()
+    return dt.datetime.fromtimestamp(int(float(ts)) + BUCKET_SHIFT, tz=dt.timezone.utc).date()
 
 
 def fmt_date(ts):
-    return dt.datetime.fromtimestamp(int(float(ts)), tz=dt.timezone.utc).strftime("%Y-%m-%d")
+    return dt.datetime.fromtimestamp(int(float(ts)), tz=TZ or dt.timezone.utc).strftime("%Y-%m-%d")
 
 
 # ---------------------------------------------------------------- dashboard
@@ -121,9 +162,6 @@ def is_timestamp_rows(defn):
 def cmd_result(args):
     raw = load(args.file)
     data = unwrap(raw)
-    if not data.get("success", True) and data.get("error"):
-        print(f"calculate_report error: {data['error']}")
-        return 1
     as_dict = data.get("as_dict")
     defn = data.get("definition") or {}
     names = metric_names(defn)
@@ -143,6 +181,7 @@ def cmd_result(args):
     print(" | ".join(header))
     totals = None
     nested = False
+    missing = 0
     for k, v in rows:
         label = bucket_date(k).isoformat() if ts_rows else k
         vals = v if isinstance(v, list) else [v]
@@ -151,18 +190,24 @@ def cmd_result(args):
             print(f"{label} | {json.dumps(vals)[:120]}")
             continue
         print(" | ".join([str(label)] + [str(x) for x in vals]))
-        nums = [x if isinstance(x, (int, float)) else 0 for x in vals]
+        nums = [num(x) for x in vals]
+        missing += sum(1 for x in nums if x is None)
+        nums = [x or 0 for x in nums]
         totals = nums if totals is None else [a + b for a, b in zip(totals, nums)]
     if nested:
         print("\nNested values (rows and columns): read the shape manually.")
     elif totals is not None:
-        print(" | ".join(["TOTAL (sum; not meaningful for rates or averages)"] + [str(round(t, 4)) for t in totals]))
-        zero = sum(1 for _, v in rows if all((x or 0) == 0 for x in (v if isinstance(v, list) else [v])))
+        print(" | ".join(["TOTAL (sum; not meaningful for rates or averages)"] + [str(int(t) if t == int(t) else round(t, 4)) for t in totals]))
+        zero = sum(1 for _, v in rows if all((num(x) or 0) == 0 for x in (v if isinstance(v, list) else [v])))
         print(f"\n{len(rows)} rows, {zero} all-zero.")
+        if missing:
+            print(f"{missing} value(s) were empty or not numbers and count as 0 in the totals.")
         if ts_rows:
             last = bucket_date(rows[-1][0])
-            if last >= dt.date.today():
+            today = dt.datetime.now(TZ).date() if TZ else dt.date.today()
+            if last >= today:
                 print("The last bucket is today, so it is incomplete.")
+            print(f"Dates in {TZ.key}." if TZ else NO_TZ_NOTE)
     return 0
 
 
@@ -181,7 +226,7 @@ def describe_window(df, today):
         f, t = df.get("from_date"), df.get("to_date")
         text = f"fixed: {fmt_date(f) if f else 'start'} to {fmt_date(t) if t else 'now'}"
         if t:
-            age = (today - dt.datetime.fromtimestamp(int(t), tz=dt.timezone.utc).date()).days
+            age = (today - dt.datetime.fromtimestamp(int(t), tz=TZ or dt.timezone.utc).date()).days
             if age > STALE_DAYS:
                 return text + f" (ended {age} days ago)", "stale"
         return text, None
@@ -229,20 +274,28 @@ def cmd_windows(args):
             flags += 1
         print(f"{path}: {text}{mark}")
     print(f"\n{flags} window(s) to mention as caveats.")
+    print(f"Dates in {TZ.key}." if TZ else "Fixed dates are shown in UTC (pass --tz for the project's time zone).")
     return 0
 
 
 def main():
+    global TZ
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    d = sub.add_parser("dashboard")
-    d.add_argument("file")
-    r = sub.add_parser("result")
-    r.add_argument("file")
-    w = sub.add_parser("windows")
-    w.add_argument("file")
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("file")
+    common.add_argument("--tz", help="the project's IANA time zone, for example Europe/London")
+    sub.add_parser("dashboard", parents=[common])
+    sub.add_parser("result", parents=[common])
+    w = sub.add_parser("windows", parents=[common])
     w.add_argument("--today")
     args = ap.parse_args()
+    if args.tz:
+        try:
+            from zoneinfo import ZoneInfo
+            TZ = ZoneInfo(args.tz)
+        except Exception:  # unknown name, or no time zone data on this machine
+            sys.exit(f"Unknown time zone {args.tz!r}: use an IANA name such as Europe/London, or leave --tz out.")
     fn = {"dashboard": cmd_dashboard, "result": cmd_result, "windows": cmd_windows}[args.cmd]
     sys.exit(fn(args) or 0)
 

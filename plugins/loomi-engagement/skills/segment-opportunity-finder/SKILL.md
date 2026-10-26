@@ -136,7 +136,7 @@ Use [references/value-and-ranking.md](references/value-and-ranking.md):
     reachable value = value × (reachable share + on-site share for the rest)
     score           = reachable value × coverage factor
 
-If you can run Python, save the inputs as JSON and run:
+If you can run Python, save the inputs as JSON (format in the script's docstring; give `discount_depth` for P4, and `avg_cart_value` for P6 or `category_aov` for P1 and P5 when you have them) and run:
 
 ```bash
 python3 <this skill's folder>/scripts/rank_opportunities.py opportunities.json

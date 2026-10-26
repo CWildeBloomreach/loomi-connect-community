@@ -1,0 +1,18 @@
+{
+  "name": "Synthetic messy test",
+  "metric": "conversion",
+  "control": "Control",
+  "days_run": "14",
+  "mixed": "40",
+  "variants": [
+    {"name": "Control", "n": "5000", "conversions": "0", "revenue": "$0.00", "planned_share": 0.5},
+    {"name": "Variant A", "n": "5,000", "conversions": "60", "revenue": "$1,234.00", "planned_share": 0.5},
+    {"name": "Variant B", "n": 0, "conversions": 0}
+  ],
+  "periods": [
+    {"label": "week 1", "Variant A": [100, 5]},
+    {"label": "week 2", "Control": [2500, "0"], "Variant A": [2500, 30]},
+    {"label": "week 3", "Control": ["2500", "10"], "Variant A": [2500, 30]},
+    {"label": "week 4", "Control": [2500, 12], "Variant A": ["2,500", "N/A"]}
+  ]
+}

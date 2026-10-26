@@ -8,10 +8,12 @@ Usage:
 Standard library only. No network. It only reshapes a response the assistant
 already fetched. Handles the usual traps: rows sorted by header rather than value,
 `null` / "" / "other" rows that must be counted in the total, empty rows meaning
-zero, and funnel step counts.
+zero, and funnel step counts. Numbers sent as strings ("1,234", "$5.00", "12%")
+are counted; values that aren't numbers are left out of totals and said so.
 """
 import argparse
 import json
+import math
 import sys
 
 
@@ -29,8 +31,30 @@ def header_label(h):
     return str(v)
 
 
-def num(v):
-    return v if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
 
 
 def fmt(v):
@@ -57,12 +81,15 @@ def summarise_report(data, top):
         name = metrics[i] if i < len(metrics) else f"metric_{i}"
         items = [(label, num(vals[i]) if i < len(vals) else None) for label, vals in parsed]
         total = sum(v for _, v in items if v is not None)
+        missing = sum(1 for _, v in items if v is None)
         print(f"Metric: {name}")
         is_additive = not any(k in name.lower() for k in ("avg", "average", "mean", "min", "max", "median"))
         if is_additive:
             print(f"  Total (all rows, including null/empty/other): {fmt(total)}")
         else:
             print("  Not additive (average/min/max): don't add rows; weight by counts if combining.")
+        if missing:
+            print(f"  {missing} row(s) had no numeric value and are left out of the total.")
         items.sort(key=lambda x: (x[1] is None, -(x[1] or 0)))
         for label, v in items[:top]:
             share = f"  {100 * v / total:5.1f}%" if is_additive and v is not None and total else ""
@@ -75,7 +102,7 @@ def summarise_report(data, top):
 
 def summarise_funnel(data):
     total = data.get("total") or {}
-    counts = total.get("counts") or []
+    counts = [num(c) for c in total.get("counts") or []]
     times = total.get("times") or []
     if not counts:
         print("Funnel returned no counts: treat as zero.")
@@ -85,11 +112,13 @@ def summarise_funnel(data):
     prev = None
     for i, c in enumerate(counts):
         step = f"  Step {i + 1}: {fmt(c)}"
-        if prev:
+        if c is None:
+            step += "  (missing: not a number)"
+        elif prev:
             step += f"  ({100 * c / prev:.1f}% of previous"
             step += f", {100 * c / first:.1f}% of step 1)" if first else ")"
-        t = times[i] if i < len(times) else None
-        if isinstance(t, (int, float)) and t >= 0:
+        t = num(times[i]) if i < len(times) else None
+        if t is not None and t >= 0:
             step += f"  avg time from previous: {t / 3600:.1f} h"
         print(step)
         prev = c
@@ -104,8 +133,10 @@ def main():
     resp = json.loads(raw)
     if isinstance(resp, dict) and "result" in resp and "data" not in resp:
         resp = resp["result"]
-    if not resp.get("success", True):
-        print(f"Query failed: {resp.get('error')}")
+    if resp.get("success") is False:
+        name = "stdin" if args.path == "-" else args.path
+        print(f"{name}: Loomi Connect returned an error: {resp.get('error') or 'no error text'}. "
+              "This check couldn't run; don't treat it as 'nothing found'.", file=sys.stderr)
         return 1
     data = resp.get("data") or {}
     if "query" in resp:

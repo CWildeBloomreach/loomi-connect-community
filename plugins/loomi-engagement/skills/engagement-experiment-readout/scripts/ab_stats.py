@@ -28,13 +28,17 @@ Input JSON:
     {"label": "week 1", "Control group": [3500, 98],  "Variant A": [3450, 140]},
     {"label": "week 2", "Control group": [3450, 106], "Variant A": [3430, 117]}
   ],
-  "mixed": 140                         # optional: customers found in more than one variant
+  "mixed": 140,                        # optional: customers found in more than one variant
+  "mixed_excluded": true               # optional: true if the counts above already leave them out
 }
 
 "n" is unique customers assigned (or delivered, for email). "conversions" is
 unique customers who converted (bought, or clicked for metric "click").
 "revenue" is total revenue from those customers in the attribution window.
+Numbers may be strings ("1000", "$1,234.00"). A variant with no customers or
+no conversions count is listed but left out of the tests.
 """
+import argparse
 import json
 import math
 import random
@@ -58,7 +62,38 @@ EXAMPLE = {
         {"label": "week 3", "Control group": [3450, 108], "Variant A": [3430, 104]},
     ],
     "mixed": 140,
+    "mixed_excluded": True,
 }
+
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
+def count(x):
+    v = num(x)
+    return None if v is None else int(round(v))
 
 
 # ---------- distributions ----------
@@ -226,32 +261,55 @@ def n_per_arm_mean(mean, var, rel_lift, alpha, power):
 # ---------- main ----------
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "--example":
+    ap = argparse.ArgumentParser(
+        description="Significance maths for an Engagement A/B test readout (prints Markdown).",
+        epilog="Run with --example to see the input format.")
+    ap.add_argument("counts", nargs="?", help="JSON file of aggregate counts per variant")
+    ap.add_argument("--example", action="store_true", help="print an example input file and exit")
+    args = ap.parse_args()
+    if args.example:
         print(json.dumps(EXAMPLE, indent=2))
         return
-    if len(sys.argv) != 2:
-        sys.exit(__doc__)
-    with open(sys.argv[1], encoding="utf-8") as f:
+    if not args.counts:
+        ap.error("give a counts JSON file, or --example")
+    with open(args.counts, encoding="utf-8") as f:
         cfg = json.load(f)
 
     metric = cfg.get("metric", "conversion").lower()
     if metric not in ("conversion", "click", "revenue"):
         sys.exit("metric must be conversion, click or revenue")
-    variants = cfg["variants"]
+    variants = []
+    for v in cfg["variants"]:
+        v = dict(v, n=count(v.get("n")), conversions=count(v.get("conversions")),
+                 revenue=num(v.get("revenue")), planned_share=num(v.get("planned_share")))
+        variants.append(v)
     names = [v["name"] for v in variants]
     control_name = cfg.get("control", names[0])
     if control_name not in names:
         sys.exit(f"Control {control_name!r} not in variants {names}")
     ctrl = next(v for v in variants if v["name"] == control_name)
-    tests = [v for v in variants if v["name"] != control_name]
+
+    def problem(v):
+        if not v["n"] or v["n"] < 0:
+            return "no customers (n is 0 or missing)"
+        if v["conversions"] is None:
+            return "conversions missing"
+        if v["conversions"] > v["n"]:
+            return "more conversions than customers"
+        if metric == "revenue" and v["revenue"] is None:
+            return "revenue missing"
+        return None
+
+    skipped = [(v["name"], problem(v)) for v in variants if problem(v)]
+    tests = [v for v in variants if v is not ctrl and not problem(v)]
     alpha = float(cfg.get("alpha", 0.05))
     power = float(cfg.get("power", 0.8))
     mde = float(cfg.get("mde", 0.10))
     cv = float(cfg.get("aov_cv", 1.0))
     cur = cfg.get("currency", "")
-    days = cfg.get("days_run")
-    planned = cfg.get("planned_days")
-    looks = int(cfg.get("looks", 1))
+    days = count(cfg.get("days_run"))
+    planned = count(cfg.get("planned_days"))
+    looks = count(cfg.get("looks")) or 1
 
     # Multiple comparisons: Bonferroni across the test variants.
     k = max(len(tests), 1)
@@ -263,20 +321,30 @@ def main():
     print(f"## {title}: statistics ({metric})\n")
 
     # --- table ---
+    def whole(x):
+        return "n/a" if x is None else f"{x:,}"
+
     print("| Variant | Customers | Converted | Rate | Revenue | Revenue / customer |")
     print("|---|---|---|---|---|---|")
-    for v in [ctrl] + tests:
-        n, c = v["n"], v.get("conversions", 0)
-        rev = v.get("revenue")
+    for v in [ctrl] + [v for v in variants if v is not ctrl]:
+        n, c, rev = v["n"], v["conversions"], v["revenue"]
         label = f"{v['name']} (control)" if v is ctrl else v["name"]
-        print(f"| {label} | {n:,} | {c:,} | {pct(c / n if n else None)} | "
-              f"{'n/a' if rev is None else money(rev, cur)} | {'n/a' if rev is None else money(rev / n, cur)} |")
+        print(f"| {label} | {whole(n)} | {whole(c)} | {pct(c / n if n and c is not None else None)} | "
+              f"{money(rev, cur)} | {money(rev / n if rev is not None and n else None, cur)} |")
+    if skipped:
+        print()
+    for name, why in skipped:
+        print(f"- **{name}** is left out of the tests: {why}.")
+    if problem(ctrl):
+        print(f"\nThe control ({control_name}) can't be tested ({problem(ctrl)}), so no lift can be worked out. "
+              "Fix the counts and run again.")
+        sys.exit(1)
 
     # --- sample ratio mismatch ---
-    total = sum(v["n"] for v in variants)
-    shares = [v.get("planned_share") for v in variants]
+    total = sum(v["n"] or 0 for v in variants)
+    shares = [v["planned_share"] for v in variants]
     print("\n### Traffic split check (sample ratio mismatch)")
-    if all(s is not None for s in shares) and total > 0:
+    if all(s and v["n"] is not None for v, s in zip(variants, shares)) and total > 0:
         ssum = sum(shares)
         chi = sum((v["n"] - total * s / ssum) ** 2 / (total * s / ssum) for v, s in zip(variants, shares))
         p_srm = chi2_sf(chi, len(variants) - 1)
@@ -288,17 +356,27 @@ def main():
         else:
             print(f"- No mismatch detected (chi-square p = {p_srm:.2g}).")
     else:
-        print("- Planned shares not given, so the split couldn't be checked.")
-    if cfg.get("mixed"):
-        print(f"- {cfg['mixed']:,} customers appeared in more than one variant (profile merges). "
-              f"That's {cfg['mixed'] / max(total, 1):.1%} of assigned customers; they should be excluded.")
+        print("- Planned shares or customer counts missing, so the split couldn't be checked.")
+    mixed = count(cfg.get("mixed"))
+    if mixed:
+        share = mixed / max(total, 1)
+        if cfg.get("mixed_excluded") is True:
+            where = "The input says they are already left out of the counts above."
+        else:
+            where = ("**This script does not remove them**: if the counts above include them, count the "
+                     "variants again without them (references/data-sources.md) before trusting the result.")
+        print(f"- {mixed:,} customers appeared in more than one variant (profile merges), "
+              f"{share:.1%} of assigned customers. {where}"
+              + (" More than 5% are mixed, so the result is less reliable." if share > 0.05 else ""))
 
     # --- per variant tests ---
     verdicts = []
     print(f"\n### Lift against {control_name} ({conf_label} intervals"
           f"{', Bonferroni-adjusted for ' + str(k) + ' comparisons' if k > 1 else ''})")
+    if not tests:
+        print("- No variant has usable counts to compare with the control.")
     for v in tests:
-        n1, c1, n2, c2 = ctrl["n"], ctrl.get("conversions", 0), v["n"], v.get("conversions", 0)
+        n1, c1, n2, c2 = ctrl["n"], ctrl["conversions"], v["n"], v["conversions"]
         if metric in ("conversion", "click"):
             r = proportion_test(n1, c1, n2, c2, z_crit)
             pb = prob_beats_control(n1, c1, n2, c2)
@@ -307,12 +385,11 @@ def main():
                   f"absolute {r['abs_diff'] * 100:+.2f} pts (CI {r['abs_ci'][0] * 100:+.2f} to {r['abs_ci'][1] * 100:+.2f}), "
                   f"relative {signed_pct(r['rel'])}"
                   + (f" (CI {signed_pct(rel_ci[0])} to {signed_pct(rel_ci[1])})" if rel_ci else "")
+                  + (" (the control has no conversions, so there's no relative lift)" if r["rel"] is None else "")
                   + f"; p = {r['p_value']:.3g}; chance it beats control {pb:.0%}.")
             need = n_per_arm_rate(r["p1"], r["rel"], alpha_adj, power) if r["rel"] else None
             need_mde = n_per_arm_rate(r["p1"], mde, alpha_adj, power)
         else:
-            if ctrl.get("revenue") is None or v.get("revenue") is None:
-                sys.exit("metric revenue needs 'revenue' on every variant")
             m1, var1 = rpv_stats(n1, c1, ctrl["revenue"], cv)
             m2, var2 = rpv_stats(n2, c2, v["revenue"], cv)
             r = mean_test(m1, var1, n1, m2, var2, n2, z_crit)
@@ -342,32 +419,44 @@ def main():
                        else "more than a year at the current rate."))
             elif need > have:
                 print(f"  - To confirm the observed {signed_pct(r['rel'])} would need about {need:,} per variant.")
-        verdicts.append((v["name"], sig, r["rel"], rel_ci, remaining_days, pb))
+        verdicts.append((v["name"], sig, r["abs_diff"], r["rel"], rel_ci, remaining_days))
 
     # --- novelty / trend ---
+    def period_rate(per, name):
+        pair = per.get(name)
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            return None
+        n, c = num(pair[0]), num(pair[1])
+        return c / n if n and c is not None else None
+
     periods = cfg.get("periods") or []
     if len(periods) >= 2:
         print("\n### Lift by period (novelty check)")
+        usable = []
         for per in periods:
-            parts = []
-            cn, cc = per[control_name]
-            for v in tests:
-                if v["name"] in per:
-                    vn, vc = per[v["name"]]
-                    if cn and vn and cc:
-                        parts.append(f"{v['name']} {signed_pct((vc / vn) / (cc / cn) - 1)}")
-            print(f"- {per.get('label', '?')}: " + (", ".join(parts) or "n/a"))
-        first = periods[0]
-        last = periods[-1]
-        for v in tests:
-            try:
-                l1 = (first[v["name"]][1] / first[v["name"]][0]) / (first[control_name][1] / first[control_name][0]) - 1
-                l2 = (last[v["name"]][1] / last[v["name"]][0]) / (last[control_name][1] / last[control_name][0]) - 1
-            except (KeyError, ZeroDivisionError):
+            label = per.get("label", "?")
+            cr = period_rate(per, control_name)
+            if not cr:
+                why = "no control counts" if control_name not in per else "the control rate is 0 or unreadable"
+                print(f"- {label}: skipped ({why}).")
                 continue
-            if l1 > 0 and l2 < l1 / 2:
-                print(f"- **{v['name']}: lift is fading** ({signed_pct(l1)} first period, {signed_pct(l2)} last). "
-                      "Possible novelty effect; the long-run lift is likely nearer the later figure.")
+            usable.append((per, cr))
+            parts = []
+            for v in tests:
+                vr = period_rate(per, v["name"])
+                if vr is not None:
+                    parts.append(f"{v['name']} {signed_pct(vr / cr - 1)}")
+            print(f"- {label}: " + (", ".join(parts) or "n/a"))
+        if len(usable) >= 2:
+            (first, c_first), (last, c_last) = usable[0], usable[-1]
+            for v in tests:
+                v_first, v_last = period_rate(first, v["name"]), period_rate(last, v["name"])
+                if v_first is None or v_last is None:
+                    continue
+                l1, l2 = v_first / c_first - 1, v_last / c_last - 1
+                if l1 > 0 and l2 < l1 / 2:
+                    print(f"- **{v['name']}: lift is fading** ({signed_pct(l1)} first period, {signed_pct(l2)} last). "
+                          "Possible novelty effect; the long-run lift is likely nearer the later figure.")
 
     # --- duration and peeking ---
     print("\n### Has it run long enough?")
@@ -387,16 +476,19 @@ def main():
 
     # --- verdict ---
     print("\n### Statistical verdict")
-    for name, sig, rel, ci, rem, pb in verdicts:
-        if sig and rel and rel > 0:
-            print(f"- {name}: **significantly better** than control ({signed_pct(rel)}).")
-        elif sig and rel is not None and rel < 0:
-            print(f"- {name}: **significantly worse** than control ({signed_pct(rel)}).")
+    for name, sig, diff, rel, ci, rem in verdicts:
+        lift = signed_pct(rel) if rel is not None else "the control had no conversions"
+        if sig and diff > 0:
+            print(f"- {name}: **significantly better** than control ({lift}).")
+        elif sig and diff < 0:
+            print(f"- {name}: **significantly worse** than control ({lift}).")
         elif rem is not None and rem <= 28:
             print(f"- {name}: **not yet significant**; about {rem} more days could settle it.")
         else:
             print(f"- {name}: **not significant**, and unlikely to become so in a reasonable time"
                   + (f" (the CI spans {signed_pct(ci[0])} to {signed_pct(ci[1])})." if ci else "."))
+    for name, why in skipped:
+        print(f"- {name}: **not tested** ({why}).")
     print("\nThese are frequentist tests on aggregate counts, with the assumptions above. "
           "Decide using the rules in references/statistics.md, not the p-value alone.")
 

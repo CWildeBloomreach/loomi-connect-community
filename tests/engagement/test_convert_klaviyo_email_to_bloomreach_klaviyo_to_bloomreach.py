@@ -1,0 +1,99 @@
+"""Tests for klaviyo_to_bloomreach.py. They need a venv with beautifulsoup4 and jinja2:
+
+    python3 plugins/loomi-engagement/skills/convert-klaviyo-email-to-bloomreach/scripts/klaviyo_to_bloomreach.py setup --venv /tmp/klvenv
+    /tmp/klvenv/bin/pip install beautifulsoup4 jinja2
+    KLAVIYO_TEST_VENV=/tmp/klvenv python3 -m unittest discover -s tests -t .
+
+Without KLAVIYO_TEST_VENV (or without the packages in it) they are skipped.
+"""
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "plugins/loomi-engagement/skills/convert-klaviyo-email-to-bloomreach/scripts/klaviyo_to_bloomreach.py"
+FX = ROOT / "tests/fixtures/engagement/klaviyo"
+VENV = os.environ.get("KLAVIYO_TEST_VENV")
+
+
+def venv_ready():
+    if not VENV:
+        return False
+    py = Path(VENV) / ("Scripts/python.exe" if os.name == "nt" else "bin/python3")
+    if not py.exists():
+        return False
+    r = subprocess.run([str(py), "-c", "import bs4, jinja2"], capture_output=True)
+    return r.returncode == 0
+
+
+class HelpWithoutPackagesTest(unittest.TestCase):
+    def test_help(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            r = subprocess.run([sys.executable, str(SCRIPT), "--help"], cwd=tmp, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertIn("render-check", r.stdout)
+
+
+@unittest.skipUnless(venv_ready(), "set KLAVIYO_TEST_VENV to a venv with beautifulsoup4 and jinja2")
+class KlaviyoToBloomreachTest(unittest.TestCase):
+    def convert(self, export, mapping=None, meta=None):
+        """Run analyze then build from a temp working folder; return (build result, email.html)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            mp = FX / "mapping.json"
+            if mapping is not None:
+                mp = Path(tmp) / "mapping.json"
+                mp.write_text(json.dumps(mapping))
+            mt = FX / "meta_now.json"
+            if meta is not None:
+                mt = Path(tmp) / "meta.json"
+                mt.write_text(json.dumps(meta))
+            run = lambda *a: subprocess.run([sys.executable, str(SCRIPT), *map(str, a), "--venv", VENV],
+                                            cwd=tmp, capture_output=True, text=True)
+            r = run("analyze", FX / export, "--out-dir", "out")
+            self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+            r = run("build", "--model", "out/model.json", "--mapping", mp, "--meta", mt, "--out-dir", "out")
+            result = json.loads(r.stdout)
+            html = (Path(tmp) / "out" / "email.html").read_text(encoding="utf-8")
+        return result, html
+
+    def test_help(self):
+        r = subprocess.run([sys.executable, str(SCRIPT), "--help", "--venv", VENV], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_plain_copy_mentioning_event_is_not_an_error(self):
+        result, _ = self.convert("export_plain_event_copy.html")
+        self.assertTrue(result["ok"], result["errors"])
+
+    def test_event_data_with_now_trigger_is_an_error(self):
+        mapping = json.loads((FX / "mapping.json").read_text())
+        mapping.pop("event_list_aggregates")
+        result, html = self.convert("export_cart.html", mapping=mapping)
+        self.assertIn("event.product_list", html)
+        self.assertTrue(any("trigger-event data" in e for e in result["errors"]))
+
+    def test_loop_variable_inside_catalog_loop(self):
+        result, html = self.convert("export_cart.html")
+        self.assertIn("{{ product.Quantity }}", html)
+        self.assertNotIn("line.Quantity", html)
+        self.assertIn("{{ item.title }}", html)
+        self.assertTrue(any("loop variable 'line'" in w for w in result["warnings"]))
+
+    def test_attributes_escaped(self):
+        result, html = self.convert("export_cart.html")
+        self.assertIn('alt="Tom &amp; &quot;Jerry&quot; {{ first_name }}"', html)
+        self.assertIn('href="https://shop.example/sale?a=1&amp;b=2"', html)
+        self.assertTrue(any("image alt attribute" in w for w in result["warnings"]))
+
+    def test_subject_translated_once(self):
+        result, html = self.convert("export_cart.html")
+        # one {{ first_name }} in the body copy and one in the subject
+        self.assertEqual(result["changes"]["{{ first_name }} shorthand -> customer property"], 2)
+        self.assertIn("<title>Hi {{ customer.first_name }}, you left something</title>", html)
+
+
+if __name__ == "__main__":
+    unittest.main()

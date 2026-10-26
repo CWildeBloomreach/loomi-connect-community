@@ -99,8 +99,8 @@ Otherwise classify each event type yourself:
 |---|---|
 | **Stopped** | none in the last 7 days, but some in the previous week or the 90-day window |
 | **Dropped** | down 40% or more on the previous week |
-| **Spiked** | up 100% or more on the previous week, or 2.5× the 90-day weekly average (90-day count ÷ 13) |
-| **New** | none in the previous week or the 90-day window |
+| **Spiked** | up 100% or more on the previous week, or 2.5× the 90-day weekly average (the 90-day count minus the last 7 days, ÷ 83 days × 7) |
+| **New** | none in the previous week or in the 90-day window before the last 7 days |
 | **Silent** | in the schema, but nothing in 90 days: historical imports, or abandoned tracking |
 | **Low volume** | fewer than about 50 a week: ignore percentage swings |
 

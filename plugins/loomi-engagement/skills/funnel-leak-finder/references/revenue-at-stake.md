@@ -47,7 +47,7 @@ If an abandonment flow already runs, the current leak is **after** that flow's e
 
 ## When not to put a figure on it
 
-- **The purchase step is unreliable** (F1's last step under about half of F3's purchasers): give view → cart only.
+- **The purchase step is unreliable** (F1's last step under about half of F3's purchasers): give view → cart only. Its downstream conversion then uses all purchasers in the window (F3) ÷ customers at the cart, capped at 1, so the figure is an upper bound.
 - **Fewer than about 100 customers** at a step or in a segment: show the counts, not a value.
 - **No value property is filled:** give customer counts and ask the user for their AOV.
 - **A sandbox or test project:** say the figures describe test traffic.

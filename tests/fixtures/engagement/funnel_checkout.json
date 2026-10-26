@@ -1,0 +1,10 @@
+{
+  "window": "last 30 days",
+  "conversion_window": "7 days",
+  "steps": ["Viewed a product", "Added to cart", "Started checkout", "Purchased"],
+  "counts": ["20,000", 4000, 1500, 1000],
+  "times": [-1, 400.0, 900.0, 3600.0],
+  "aov": "$80.00",
+  "avg_cart_value": 90,
+  "purchasers_in_window": 1100
+}

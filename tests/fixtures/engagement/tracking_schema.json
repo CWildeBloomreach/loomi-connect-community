@@ -1,0 +1,5 @@
+{"success": true, "data": {"events": [
+  {"type": "purchase", "used": true, "properties": {"event": {"properties": [{"property": "total_price", "type": "number", "used": true}]}}},
+  {"type": "view_item", "used": true, "properties": {}},
+  {"type": "quiz_completed", "used": true, "properties": {}}
+]}}

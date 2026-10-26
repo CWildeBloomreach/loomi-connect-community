@@ -72,7 +72,7 @@ Read [references/eql-campaign-metrics.md](references/eql-campaign-metrics.md) be
 4. **Per campaign.** Run the per-campaign breakdown (pattern B) for the current period, and for the previous period if the cost allows. If the cross-tab scores `very_high`, run pattern C instead: one query per key status (`delivered`, `opened`, `clicked`, plus bounces and unsubscribes if they appear).
 5. **Revenue (optional).** Engagement's campaign revenue attribution lives in the UI's campaign evaluation dashboards, not in the `campaign` event. Report revenue only if a saved report provides it, or the purchase event carries a campaign or UTM property you can group by (pattern D). Otherwise write "Revenue: not available from Loomi Connect for this project".
 
-If you prefer, put the counts into JSON and run `scripts/summarise_campaign_counts.py` to compute rates, period changes and flags consistently. See the script's docstring for the input format.
+If you prefer, put the counts into JSON and run `python3 <this skill's folder>/scripts/summarise_campaign_counts.py counts.json` to compute rates, period changes and flags consistently. See the script's docstring for the input format.
 
 ### 5. Work out rates and flags
 
