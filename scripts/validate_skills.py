@@ -98,6 +98,9 @@ def script_command_problems(cmd, skill_dir):
         return [f"script command {short!r} runs scripts/ by a relative path; give the full path, "
                 "e.g. `<this skill's folder>/scripts/`; see docs/skill-authoring.md#scripts"]
     source = skill_dir / "scripts" / script
+    # The template's example command names a placeholder script.
+    if skill_dir.parent.name == "templates":
+        return []
     if not source.is_file():
         return [f"script command {short!r} names scripts/{script}, which is not in this skill's scripts/ folder"]
     code = source.read_text(encoding="utf-8", errors="ignore")
