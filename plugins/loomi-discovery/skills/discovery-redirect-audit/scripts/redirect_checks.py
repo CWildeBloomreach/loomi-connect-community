@@ -21,6 +21,7 @@ Prints Markdown: one table of findings, then navigational redirect candidates.
 """
 import argparse
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -40,7 +41,13 @@ NAVIGATIONAL = [
     "newsletter", "catalog", "catalogue", "rewards", "loyalty", "wishlist",
     "unsubscribe", "privacy", "terms", "sitemap", "blog",
 ]
-NAV_WORDS = {w for p in NAVIGATIONAL for w in p.split() if len(w) > 3} - {"card", "cards", "store", "about", "gift", "code"}
+# Words that mark a short query as navigational wherever they appear ("klarna payment", "paypal
+# refund"). Words that also describe products ("size", "track", "mobile", "free", "contact", "order")
+# only count as part of a phrase above ("size guide", "track order") or as the whole query.
+NAV_WORDS = {"refund", "refunds", "klarna", "afterpay", "paypal", "giftcard", "egift", "voucher", "vouchers",
+             "coupon", "coupons", "login", "unsubscribe", "newsletter", "sitemap", "careers", "faq", "faqs",
+             "warranty", "wishlist"}
+NAV_STEMS = {" ".join(w[:-1] if len(w) > 3 and w.endswith("s") else w for w in p.split()) for p in NAVIGATIONAL}
 
 SUSPECT_HOST = re.compile(r"(^|[.-])(localhost|staging|stage|stg|dev|qa|uat|test|preview|sandbox)([.-]|$)|example\.(com|org)", re.I)
 SEASONAL = re.compile(r"(black[-_ ]?friday|cyber[-_ ]?monday|christmas|xmas|holiday|halloween|easter|valentine|"
@@ -49,10 +56,56 @@ SEASONAL = re.compile(r"(black[-_ ]?friday|cyber[-_ ]?monday|christmas|xmas|holi
 
 def load(path):
     with open(path, encoding="utf-8") as f:
-        doc = json.load(f)
+        doc = check(json.load(f), path)
     while isinstance(doc, dict) and "result" in doc and isinstance(doc["result"], dict):
         doc = doc["result"]
     return doc
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    return doc
+
+
+def num(v):
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
+    try:
+        f = float(s)
+    except ValueError:
+        return None
+    return f if math.isfinite(f) else None
+
+
+def is_navigational(q):
+    """True for a query that asks for a site page rather than products."""
+    nq = norm_q(q)
+    words = nq.split()
+    if not words:
+        return False
+    sq = stem(nq)
+    if sq in NAV_STEMS:
+        return True  # the whole query is a navigational term ("returns", "store", "size chart")
+    if len(words) > 4:
+        return False
+    if any(" " in p and re.search(rf"\b{re.escape(p)}\b", sq) for p in NAV_STEMS):
+        return True  # contains a navigational phrase ("track my order uk", "size guide women")
+    return len(words) <= 3 and bool(set(words) & NAV_WORDS)
 
 
 def rows_of(doc):
@@ -244,7 +297,7 @@ def main():
     for rid, r in live.items():
         for q, _ in r["queries"]:
             row = sess.get(norm_q(q))
-            if row and (row.get("browse_sessions") or 0) > 0:
+            if row and (num(row.get("browse_sessions")) or 0) > 0:
                 add("Review", rid, "Redirect query has search-results traffic",
                     f"{row.get('browse_sessions')} sessions, bounce {row.get('bounce_rate')}",
                     "Check it fires (grid keywordRedirect); the rule may be new, scheduled or not matching")
@@ -294,10 +347,11 @@ def main():
     cands = []
     for row in qperf:
         nq = norm_q(row["query"])
-        s = row.get("browse_sessions") or row.get("visits") or 0
+        s = num(row.get("browse_sessions"))
+        s = s if s is not None else (num(row.get("visits")) or 0)
         if s < a.min_sessions or stem(nq) in redirected:
             continue
-        if nq in NAVIGATIONAL or stem(nq) in {stem(n) for n in NAVIGATIONAL} or (set(nq.split()) & NAV_WORDS and len(nq.split()) <= 3):
+        if is_navigational(nq):
             cands.append((s, row))
     print("\n## Navigational queries without a redirect\n")
     if not cands:
@@ -306,7 +360,7 @@ def main():
         print("| Query | Sessions | Bounce | Product views | Revenue |\n|---|---|---|---|---|")
         for s, row in sorted(cands, key=lambda c: -c[0]):
             cells = [row.get(k) for k in ("bounce_rate", "product_page_views", "revenue")]
-            print(f"| {row['query']} | {s} | " + " | ".join("-" if c is None else str(c) for c in cells) + " |")
+            print(f"| {row['query']} | {s:g} | " + " | ".join("-" if c is None else str(c) for c in cells) + " |")
 
 
 if __name__ == "__main__":

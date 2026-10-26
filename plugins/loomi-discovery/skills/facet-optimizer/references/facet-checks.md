@@ -48,7 +48,7 @@ Use this as the starting point for apparel. Adapt it for other verticals (for ex
 
 ## Values to merge or tidy
 
-All of these are set in the dashboard (facet value settings), or fixed in the feed.
+All of these are set in the dashboard (facet value settings), or fixed in the feed. Don't merge category facet values: the same name in two branches ("Pants" under Men and Women) is two categories, so `scripts/facet_summary.py` doesn't check that facet for merges.
 
 | Finding | Example | Change |
 |---|---|---|

@@ -1,0 +1,58 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 200,
+    "docs": []
+   },
+   "facet_counts": {
+    "facets": [
+     {
+      "name": "category",
+      "type": "text",
+      "value": [
+       {
+        "cat_id": "m-pants",
+        "cat_name": "Pants",
+        "count": 90,
+        "crumb": "Men/Pants"
+       },
+       {
+        "cat_id": "w-pants",
+        "cat_name": "Pants",
+        "count": 80,
+        "crumb": "Women/Pants"
+       },
+       {
+        "cat_id": "w-tops",
+        "cat_name": "Tops ",
+        "count": 30,
+        "crumb": "Women/Tops"
+       }
+      ]
+     },
+     {
+      "name": "color",
+      "type": "text",
+      "value": [
+       {
+        "name": "Grey",
+        "count": 60
+       },
+       {
+        "name": "grey",
+        "count": 20
+       },
+       {
+        "name": "Black",
+        "count": 120
+       }
+      ]
+     }
+    ]
+   },
+   "debug": {}
+  }
+ }
+}

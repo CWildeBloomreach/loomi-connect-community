@@ -1,0 +1,17 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "rows": [
+    {
+     "query": "jeans",
+     "visits": "1,250"
+    },
+    {
+     "query": "wellies",
+     "visits": "0"
+    }
+   ]
+  }
+ }
+}

@@ -22,6 +22,7 @@ new categories and tracking-hygiene rows. Standard library only; no network acce
 """
 import argparse
 import json
+import math
 import statistics
 import sys
 
@@ -35,17 +36,35 @@ METRICS = {
 
 
 def num(v):
-    if v is None:
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
-    if s in ("", "N/A", "n/a", "-"):
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
         return None
     try:
-        return float(s)
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
 
 
 def unwrap(data):
@@ -62,7 +81,7 @@ def load_rows(paths):
     rows = {}
     for p in paths:
         with open(p, encoding="utf-8") as f:
-            data = unwrap(json.load(f))
+            data = unwrap(check(json.load(f), p))
         for r in data.get("rows", []):
             rows[(r.get("cat_id"), r.get("category"))] = r
     return list(rows.values())
@@ -72,7 +91,7 @@ def load_categories(path):
     if not path:
         return {}
     with open(path, encoding="utf-8") as f:
-        data = unwrap(json.load(f))
+        data = unwrap(check(json.load(f), path))
     out = {}
     for c in data if isinstance(data, list) else []:
         cid = str(c.get("categoryId") or "").lower()

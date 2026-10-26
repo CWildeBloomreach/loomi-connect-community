@@ -30,9 +30,18 @@ import re
 import sys
 
 
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    return doc
+
+
 def load_docs(path):
     with open(path, encoding="utf-8") as f:
-        doc = json.load(f)
+        doc = check(json.load(f), path)
     if isinstance(doc, list):
         return doc
     if "result" in doc and "data" not in doc:

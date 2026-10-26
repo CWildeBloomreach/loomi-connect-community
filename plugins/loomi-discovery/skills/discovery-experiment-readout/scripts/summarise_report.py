@@ -13,11 +13,13 @@ Usage:
         --metric rpv [--threshold 0.95]
 
 --metric is one of: cr, rpv, aov, atc_rate. It accepts the experiment's
-successMetric text too, for example "RPV - Revenue Per Visit".
+successMetric text too, for example "RPV - Revenue Per Visit", and plain
+wording such as "Conversion Rate" or "add-to-cart rate".
 """
 import argparse
 import json
 import math
+import re
 import sys
 
 METRICS = {
@@ -34,9 +36,18 @@ def load(path):
         doc = json.load(f)
     if isinstance(doc, dict) and "result" in doc and "data" not in doc:
         doc = doc["result"]
-    if not doc.get("success", True):
-        sys.exit(f"The report call failed: {doc.get('error')}")
+    if isinstance(doc, dict) and doc.get("success") is False:
+        sys.exit(f"{path}: Loomi Connect returned an error: {doc.get('error') or 'no error text'}. "
+                 "This check couldn't run; don't treat it as 'nothing found'.")
     return doc["data"]
+
+
+PLAIN = {
+    "conversionrate": "cr", "conversion": "cr", "cvr": "cr",
+    "revenuepervisit": "rpv", "revenuepervisitor": "rpv",
+    "averageordervalue": "aov", "ordervalue": "aov",
+    "addtocartrate": "atc_rate", "addtocart": "atc_rate", "atcrate": "atc_rate", "cartrate": "atc_rate",
+}
 
 
 def metric_key(text):
@@ -46,7 +57,10 @@ def metric_key(text):
             return key
     if t.startswith("atc"):
         return "atc_rate"
-    sys.exit(f"Unknown metric {text!r}; use one of {', '.join(METRICS)}")
+    plain = re.sub(r"[^a-z]", "", t)
+    if plain in PLAIN:
+        return PLAIN[plain]
+    sys.exit(f"Unknown metric {text!r}; use one of {', '.join(METRICS)} (or plain wording such as 'Conversion Rate')")
 
 
 def pct(x):

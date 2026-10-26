@@ -66,7 +66,7 @@ returns, return policy, refund, exchange, store locator, stores near me, find a 
 
 Flag one when it has meaningful sessions (default 50 in 90 days), no redirect, and the signs of a failing product search: high bounce, few product page views, no revenue. Confirm with the grid: off-topic or no products means it needs a redirect. Order by sessions.
 
-Some are product searches on some sites. "Gift card" is a product if gift cards are in the catalog, and "app" can be part of "apple". Check the grid titles before recommending a redirect.
+Match the whole query or a whole phrase ("track order", "size guide"), not a single word that also describes products: "plus size dress", "track pants", "mobile phone case" and "free people" are product searches. `scripts/redirect_checks.py` works this way. Some are product searches on some sites. "Gift card" is a product if gift cards are in the catalog, and "app" can be part of "apple". Check the grid titles before recommending a redirect.
 
 Dead-end searches that aren't navigational need products, synonyms or rules, not a redirect. Hand them to the discovery-zero-results-triage skill.
 

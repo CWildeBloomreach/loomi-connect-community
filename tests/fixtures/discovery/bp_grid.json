@@ -1,0 +1,400 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 60,
+    "start": 0,
+    "docs": [
+     {
+      "pid": "C0",
+      "title": "Sample tee 0",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C1",
+      "title": "Sample tee 1",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C2",
+      "title": "Sample tee 2",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C3",
+      "title": "Sample tee 3",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C4",
+      "title": "Sample tee 4",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C5",
+      "title": "Sample tee 5",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C6",
+      "title": "Sample tee 6",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C7",
+      "title": "Sample tee 7",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C8",
+      "title": "Sample tee 8",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C9",
+      "title": "Sample tee 9",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C10",
+      "title": "Sample tee 10",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C11",
+      "title": "Sample tee 11",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C12",
+      "title": "Sample tee 12",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C13",
+      "title": "Sample tee 13",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C14",
+      "title": "Sample tee 14",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C15",
+      "title": "Sample tee 15",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C16",
+      "title": "Sample tee 16",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C17",
+      "title": "Sample tee 17",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C18",
+      "title": "Sample tee 18",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C19",
+      "title": "Sample tee 19",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C20",
+      "title": "Sample tee 20",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C21",
+      "title": "Sample tee 21",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C22",
+      "title": "Sample tee 22",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C23",
+      "title": "Sample tee 23",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C24",
+      "title": "Sample tee 24",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C25",
+      "title": "Sample tee 25",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C26",
+      "title": "Sample tee 26",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C27",
+      "title": "Sample tee 27",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C28",
+      "title": "Sample tee 28",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C29",
+      "title": "Sample tee 29",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C30",
+      "title": "Sample tee 30",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C31",
+      "title": "Sample tee 31",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C32",
+      "title": "Sample tee 32",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C33",
+      "title": "Sample tee 33",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C34",
+      "title": "Sample tee 34",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C35",
+      "title": "Sample tee 35",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C36",
+      "title": "Sample tee 36",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C37",
+      "title": "Sample tee 37",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C38",
+      "title": "Sample tee 38",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C39",
+      "title": "Sample tee 39",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C40",
+      "title": "Sample tee 40",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C41",
+      "title": "Sample tee 41",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C42",
+      "title": "Sample tee 42",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C43",
+      "title": "Sample tee 43",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C44",
+      "title": "Sample tee 44",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C45",
+      "title": "Sample tee 45",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C46",
+      "title": "Sample tee 46",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C47",
+      "title": "Sample tee 47",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C48",
+      "title": "Sample tee 48",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C49",
+      "title": "Sample tee 49",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C50",
+      "title": "Sample tee 50",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C51",
+      "title": "Sample tee 51",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C52",
+      "title": "Sample tee 52",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C53",
+      "title": "Sample tee 53",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C54",
+      "title": "Sample tee 54",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C55",
+      "title": "Sample tee 55",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C56",
+      "title": "Sample tee 56",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C57",
+      "title": "Sample tee 57",
+      "brand": "Pacifica ",
+      "price": 20
+     },
+     {
+      "pid": "C58",
+      "title": "Sample tee 58",
+      "brand": "Contoso",
+      "price": 20
+     },
+     {
+      "pid": "C59",
+      "title": "Sample tee 59",
+      "brand": "Pacifica ",
+      "price": 20
+     }
+    ]
+   },
+   "facet_counts": {
+    "facets": [
+     {
+      "name": "category",
+      "type": "text",
+      "value": []
+     },
+     {
+      "name": "brand",
+      "type": "text",
+      "value": [
+       {
+        "name": "Pacifica",
+        "count": 30
+       },
+       {
+        "name": "Contoso",
+        "count": 30
+       },
+       {
+        "name": "Tailspin",
+        "count": 12
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

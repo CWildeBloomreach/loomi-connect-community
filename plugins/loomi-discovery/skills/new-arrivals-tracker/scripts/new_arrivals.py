@@ -48,8 +48,9 @@ Groups (each new product appears once, checked in this order):
 Revenue at stake (an upper bound for the period, not a forecast):
   buried      (median visits/day x days live - visits) x CR halfway to the median x AOV
   slow_start  visits x (median CR - CR) x AOV
-Also checks the release data against traffic: a product released inside the window should have no
-views in the previous period. If most "new" products do, the release attribute is unreliable.
+Also checks the release data against traffic: a product released at most --days minus --lag days
+ago should have no views in the previous period. If most such products do, the release attribute is
+unreliable. Older products (a widened release window) aren't checked, and --fallback-no-prev skips it.
 Standard library only; no network access.
 """
 import argparse
@@ -59,18 +60,42 @@ import statistics
 import sys
 
 Z = 1.645  # 90% two-sided
+MARKDOWN = False  # set from --markdown: errors print as text to stderr
 
 
 def num(v):
-    if v is None or v == "":
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
     try:
-        return float(s)
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            if MARKDOWN:
+                print(msg, file=sys.stderr)
+            else:
+                print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
 
 
 def unwrap(data):
@@ -105,7 +130,7 @@ def load_new(paths):
         with open(path, encoding="utf-8") as f:
             text = f.read()
         try:
-            data = unwrap(json.loads(text))
+            data = unwrap(check(json.loads(text), path))
             for d in data.get("response", {}).get("docs", []):
                 if d.get("pid") is None:
                     continue
@@ -136,13 +161,15 @@ def main():
     ap.add_argument("--limit", type=int, default=15)
     ap.add_argument("--markdown", action="store_true")
     a = ap.parse_args()
+    global MARKDOWN
+    MARKDOWN = a.markdown
     if not a.new and not a.fallback_no_prev:
         ap.error("pass --new with the new-arrival list, or --fallback-no-prev")
 
     rows, seen_pids = [], set()
     for p in a.products:
         with open(p, encoding="utf-8") as f:
-            for r in unwrap(json.load(f)).get("rows", []):
+            for r in unwrap(check(json.load(f), p)).get("rows", []):
                 pid = str(r.get("prod_id"))
                 if pid in seen_pids:
                     continue
@@ -169,29 +196,38 @@ def main():
 
     days = a.days
     # Release-data sanity check: a product released inside the window can't have had views in the
-    # previous period.
-    judged_release = [by_pid[p] for p, d in new.items() if p in by_pid and (d is not None or a.fallback_no_prev)]
+    # previous period. Only products released at most --days minus --lag days ago are judged: older
+    # ones (a widened 60- or 90-day release list) were live in the previous period, so views there are
+    # expected. The fallback defines new as "no previous views", so there is nothing to check.
+    has_ages = not a.fallback_no_prev and any(d is not None for d in new.values())
+    max_age = days - a.lag
+    judged_release = [] if a.fallback_no_prev else [
+        by_pid[p] for p, d in new.items() if p in by_pid and d is not None and d <= max_age]
     conflicts = [r for r in judged_release if r["prev_visits"] > 0]
     share = len(conflicts) / len(judged_release) if judged_release else None
-    check = {"new_with_release_age": len(judged_release), "with_previous_period_views": len(conflicts),
-             "share": round(share, 4) if share is not None else None}
-    use_age = not a.no_age and share is not None and share <= 0.5 and not a.fallback_no_prev
+    release_check = {"new_with_release_age": len(judged_release), "with_previous_period_views": len(conflicts),
+             "share": round(share, 4) if share is not None else None,
+             "checked_release_age_up_to_days": None if a.fallback_no_prev else max_age}
+    use_age = not a.no_age and has_ages and (share is None or share <= 0.5)
     if share is not None and share > 0.5:
-        check["verdict"] = ("UNRELIABLE: most products released inside the window already had views in the "
+        release_check["verdict"] = ("UNRELIABLE: most products released inside the window already had views in the "
                             "previous period, so the release attribute doesn't match traffic. Release ages were "
                             "ignored (every product judged on the whole window). Treat the list of new products "
                             "with caution and fix the feed.")
     elif share is not None and share > 0.1:
-        check["verdict"] = "PARTLY RELIABLE: some 'new' products had earlier views (relaunches, pre-orders or feed errors)."
+        release_check["verdict"] = "PARTLY RELIABLE: some 'new' products had earlier views (relaunches, pre-orders or feed errors)."
     elif share is not None:
-        check["verdict"] = "OK: new products had no earlier views."
+        release_check["verdict"] = "OK: new products had no earlier views."
     elif a.fallback_no_prev:
-        check["verdict"] = ("Fallback used: no release data. " + (
+        release_check["verdict"] = ("Fallback used: no release data, so the release check didn't run. " + (
             "No product had views this period and none in the previous one, so nothing looks new."
             if not new else "New = views this period, none in the previous period."))
+    elif has_ages:
+        release_check["verdict"] = (f"Not checked: no new product in the report was released in the last {max_age} days "
+                            "(the window less the lag), so its previous-period views are expected.")
     else:
-        check["verdict"] = "Not checked: no release age per product. Every product judged on the whole window."
-    check["age_adjusted"] = use_age
+        release_check["verdict"] = "Not checked: no release age per product. Every product judged on the whole window."
+    release_check["age_adjusted"] = use_age
 
     for r in rows:
         v = r["visits"]
@@ -329,7 +365,7 @@ def main():
                       "median_conversion_rate": round(med_cr, 4), "median_rpv": round(med_rpv, 2),
                       "top10_revenue_per_day": round(top_rev_daily, 2),
                       "judged_on": "established products (not new) with at least --min-visits visits"},
-        "release_data_check": check, "comparison": comparison, "groups": out_groups,
+        "release_data_check": release_check, "comparison": comparison, "groups": out_groups,
     }
     if a.markdown:
         print_markdown(out)
@@ -341,8 +377,9 @@ def main():
 def print_markdown(out):
     b, c, chk = out["baselines"], out["comparison"], out["release_data_check"]
     print(f"New arrivals: {out['new_products']} ({out['source']}), window {out['window_days']} days")
-    print(f"Release data check: {chk['with_previous_period_views']} of {chk['new_with_release_age']} "
-          f"had previous-period views. {chk['verdict']}\n")
+    counts = (f"{chk['with_previous_period_views']} of {chk['new_with_release_age']} had previous-period views. "
+              if chk["new_with_release_age"] else "")
+    print(f"Release data check: {counts}{chk['verdict']}\n")
     print(f"Typical established product: {b['median_visits_per_day']} visits/day, ATC {b['median_atc_rate']:.1%}, "
           f"CR {b['median_conversion_rate']:.1%}, RPV ${b['median_rpv']:.2f}\n")
     print("| | Products | Visits | Revenue | ATC | CR | RPV |")

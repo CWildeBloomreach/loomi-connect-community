@@ -1,0 +1,36 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 3,
+    "docs": [
+     {
+      "pid": "G1",
+      "title": "Linen shirt"
+     }
+    ]
+   },
+   "did_you_mean": [],
+   "autoCorrectQuery": null,
+   "debug": {
+    "experiments": [
+     {
+      "name": "ab_test_buckets",
+      "value": [
+       "exp_12:bucket_b"
+      ]
+     },
+     {
+      "name": "customizations_priority",
+      "value": {
+       "ranking": [
+        "901"
+       ]
+      }
+     }
+    ]
+   }
+  }
+ }
+}

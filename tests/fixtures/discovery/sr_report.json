@@ -1,0 +1,82 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "currency": "36",
+   "overalldata": {
+    "buckets": {
+     "Bucket A": {
+      "visits": 10000,
+      "orders": 300,
+      "cr": 0.03,
+      "atc_rate": 0.1,
+      "aov": 100,
+      "rpv": 3,
+      "lift": {
+       "cr": 0,
+       "rpv": 0,
+       "aov": 0,
+       "atc_rate": 0
+      },
+      "confidenceValues": {
+       "cr": 0.3,
+       "rpv": 0.4,
+       "aov": 0.5,
+       "atc_rate": 0.5
+      }
+     },
+     "Bucket B": {
+      "visits": 10100,
+      "orders": 340,
+      "cr": 0.0337,
+      "atc_rate": 0.1,
+      "aov": 97,
+      "rpv": 3.27,
+      "lift": {
+       "cr": 0.12,
+       "rpv": 0.09,
+       "aov": -0.03,
+       "atc_rate": 0
+      },
+      "confidenceValues": {
+       "cr": 0.97,
+       "rpv": 0.6,
+       "aov": 0.5,
+       "atc_rate": 0.5
+      }
+     }
+    }
+   },
+   "dayWisedata": {
+    "dailyMetrics": {
+     "visits": [
+      {
+       "date": "20261002",
+       "values": {
+        "dailyValues": {
+         "Bucket A": 500,
+         "Bucket B": 510
+        },
+        "cumulativeConfidence": {}
+       }
+      }
+     ],
+     "cr": [
+      {
+       "date": "20261002",
+       "values": {
+        "dailyValues": {
+         "Bucket A": 15,
+         "Bucket B": 17
+        },
+        "cumulativeConfidence": {
+         "Bucket B": 0.97
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ }
+}

@@ -60,7 +60,7 @@ If you can run Python, save each query response as a JSON file and run:
 python3 <this skill's folder>/scripts/rank_trends.py --baseline <baseline %> [--min-sessions 30] [--top 15] page1.json [page2.json]
 ```
 
-This returns `rising`, `new` and `falling` lists. Otherwise, work them out yourself for each query:
+This returns `rising`, `new` and `falling` lists, plus `merged_variants`: queries that differ only by case or spaces ("dress", "Dress "), which it adds together. Say which were merged. If it stops with `"ok": false`, the query call failed; report that rather than "no trends". Otherwise, work them out yourself for each query:
 
 - **expected** = previous sessions × (1 + baseline ÷ 100)
 - **extra sessions** = current sessions − expected

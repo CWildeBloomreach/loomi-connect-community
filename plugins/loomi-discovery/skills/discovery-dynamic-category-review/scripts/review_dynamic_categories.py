@@ -18,13 +18,15 @@ Usage:
                rows=1, fl="pid" and facets left on. One per dynamic category; add grids for
                static categories too when you want their sizes for duplicate checks. The
                category ID is read from the response's debug section, or from the file name
-               (for example grid_brg_dyn_abc123.json or grid_70300.json).
+               (for example grid_brg_dyn_abc123.json, grid_70300.json or
+               grid_womens-sneakers.json; a leading "grid_" is dropped).
 --table        get_discovery_category_performance_table response (all pages, or one big page).
 --categories   list_categories response, for static category paths and navigation checks.
 """
 import argparse
 import datetime as dt
 import json
+import math
 import re
 import statistics
 import sys
@@ -57,19 +59,37 @@ def unwrap(doc):
 
 def load(path):
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        return check(json.load(f), path)
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    return doc
 
 
 def num(v):
-    if v is None:
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
     try:
-        return float(s)
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
 
 
 def leaf_rules(cfg):
@@ -112,8 +132,8 @@ def grid_id(doc, path):
     m = re.search(r"(brg_dyn_[a-z0-9]+)", stem, re.I)
     if m:
         return m[1].lower()
-    m = re.search(r"(\d+)$", stem)
-    return m[1] if m else stem.lower()
+    # grid_70300.json -> 70300; grid_womens-sneakers.json -> womens-sneakers (IDs aren't always numeric)
+    return re.sub(r"^grid_", "", stem, flags=re.I).lower()
 
 
 def parse_grid(doc):

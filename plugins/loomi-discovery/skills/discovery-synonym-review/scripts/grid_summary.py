@@ -19,17 +19,31 @@ import json
 import sys
 
 
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
-    # Accept the full tool envelope, or just its `data` object.
+        data = check(json.load(f), path)
+    # Accept the full tool envelope, its `data` object, or call_tool's {"result": ...} wrapper.
+    if isinstance(data, dict) and isinstance(data.get("result"), dict):
+        data = data["result"]
     return data.get("data", data) if isinstance(data, dict) else {}
 
 
 def experiments(debug):
     out = {}
-    for exp in (debug.get("request") or {}).get("experiments") or []:
-        out[exp.get("name")] = exp.get("value")
+    for exp in debug.get("experiments") or (debug.get("request") or {}).get("experiments") or []:
+        if isinstance(exp, dict):
+            out[exp.get("name")] = exp.get("value")
     return out
 
 
@@ -102,6 +116,9 @@ def summarise(data):
 
 
 def main(paths):
+    if paths and paths[0] in ("-h", "--help"):
+        print(__doc__)
+        return 0
     if not paths:
         print(__doc__, file=sys.stderr)
         return 2

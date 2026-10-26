@@ -1,0 +1,24 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "data": {
+    "id": 501,
+    "name": "Gift cards",
+    "enabled": true,
+    "durationTag": "unscheduled",
+    "queries": [
+     {
+      "query": "gift card",
+      "matchType": "EXACT_MATCH"
+     }
+    ],
+    "customizationItems": {
+     "redirect": {
+      "url": "https://shop.example-retail.test/gift-cards"
+     }
+    }
+   }
+  }
+ }
+}
