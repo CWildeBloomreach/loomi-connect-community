@@ -58,8 +58,9 @@ Or select **Sync fork** on your fork's GitHub page.
 
 ## Review
 
-- Every PR needs **one maintainer approval**.
-- A skill that **writes** data needs **two approvals**. That covers creating campaigns or scenarios, changing Discovery rules, starting experiments, and similar actions.
+- Every PR from a contributor needs **one maintainer approval**.
+- A maintainer's own PR can be merged once CI passes, without a second reviewer.
+- A skill that **writes** data gets a closer review, whoever wrote it. That covers creating campaigns or scenarios, changing Discovery rules, starting experiments, and similar actions. Before merging, check that its Safety section lists every write, each write asks for an explicit yes first, and `agents/openai.yaml` sets `allow_implicit_invocation: false`.
 - Reviewers check correctness, safety, clarity, and that the skill works across clients.
 - CI runs `scripts/validate_skills.py` and the unit tests on every PR. Both must pass.
 
