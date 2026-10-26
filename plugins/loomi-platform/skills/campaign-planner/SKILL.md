@@ -76,7 +76,7 @@ Read [references/retail-calendar.md](references/retail-calendar.md). It has a **
 If you can run Python, generate the list for the window instead:
 
 ```bash
-python3 scripts/retail_dates.py --market <codes> --from <window start> --weeks <N> --json --out moments.json
+python3 <this skill's folder>/scripts/retail_dates.py --market <codes> --from <window start> --weeks <N> --json --out moments.json
 ```
 
 It keeps a moment if **either the moment or its promotion start** falls in the window, so you also catch moments you need to start promoting now (for example Christmas gift guides in early November). It works for any year. Dates marked `verify` are provisional (moon sighting, regional calendars, announced retailer events); `look up` means the date isn't known yet.
@@ -99,7 +99,7 @@ Use the **same window last year**, aligned by weekday (subtract 364 days). For m
 2. **Purchases and revenue by day** (pattern 1 in the reference). Save the response and run:
 
    ```bash
-   python3 scripts/weekly_peaks.py purchases.json --label Purchases --moments moments_last_year.json
+   python3 <this skill's folder>/scripts/weekly_peaks.py purchases.json --label Purchases --moments moments_last_year.json
    ```
 
    Make `moments_last_year.json` by running `retail_dates.py` for last year's window. The script rolls days into weeks, gives each week an **index** against the median week, and tags the moments in each week. Without Python, add up the days into weeks by hand.

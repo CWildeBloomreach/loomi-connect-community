@@ -99,7 +99,7 @@ Use the method in [references/revenue-at-stake.md](references/revenue-at-stake.m
 If you can run Python, save the counts as JSON and run:
 
 ```bash
-python3 scripts/winback_calc.py grid.json
+python3 <this skill's folder>/scripts/winback_calc.py grid.json
 ```
 
 It prints the table with every assumption, and accepts overrides. Otherwise calculate by hand and show the working for at least one band.

@@ -87,7 +87,7 @@ Owner types: pixel → **web developers**; feed → **feed or catalog owner**.
 2. If you can run scripts:
 
    ```
-   python3 scripts/check_rule_windows.py --rules <file> [--rules <file> ...] --start <ISO start> --end <ISO end> [--keywords "black friday,bf,cyber,sale"] [--experiments <experiments file>]
+   python3 <this skill's folder>/scripts/check_rule_windows.py --rules <file> [--rules <file> ...] --start <ISO start> --end <ISO end> [--keywords "black friday,bf,cyber,sale"] [--experiments <experiments file>]
    ```
 
    Otherwise apply the checks in [references/readiness-checks.md](references/readiness-checks.md) by hand. The checks:
@@ -162,7 +162,7 @@ Owner type: **CRM or web marketer**.
 Collect every item as one row: area, check, status, evidence, fix, owner type, and whether it's a blocker (RED). If you can run scripts, save the rows as JSON and run:
 
 ```
-python3 scripts/render_checklist.py items.json --event "<name>" --window "<start> to <end>"
+python3 <this skill's folder>/scripts/render_checklist.py items.json --event "<name>" --window "<start> to <end>"
 ```
 
 It sorts blockers first, then AMBER by area, and prints the verdict. Otherwise sort by hand.

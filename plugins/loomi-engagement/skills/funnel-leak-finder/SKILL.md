@@ -113,7 +113,7 @@ Call `search_funnels`. If a saved funnel covers these steps, fetch it with `funn
 If you can run Python, save the counts as JSON (format in the script's docstring) and run:
 
 ```
-python3 scripts/funnel_leaks.py funnel.json
+python3 <this skill's folder>/scripts/funnel_leaks.py funnel.json
 ```
 
 Otherwise use the formulas in [references/revenue-at-stake.md](references/revenue-at-stake.md). In short:

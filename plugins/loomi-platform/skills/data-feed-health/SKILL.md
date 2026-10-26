@@ -81,7 +81,7 @@ Run each script as one plain command from your own working folder, giving the sc
 3. Summarise with [scripts/discovery_jobs_summary.py](scripts/discovery_jobs_summary.py) if you can run scripts:
 
    ```
-   python3 scripts/discovery_jobs_summary.py jobs.json
+   python3 <this skill's folder>/scripts/discovery_jobs_summary.py jobs.json
    ```
 
    It reports, per job kind, the latest success, hours since it, failures, warnings and product-count changes, and suggests a RAG status. Otherwise work it out by hand:

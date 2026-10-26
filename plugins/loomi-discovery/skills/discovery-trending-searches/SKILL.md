@@ -57,7 +57,7 @@ Each row contains both the current values and the previous period's (`prev_*`).
 If you can run Python, save each query response as a JSON file and run:
 
 ```bash
-python3 scripts/rank_trends.py --baseline <baseline %> [--min-sessions 30] [--top 15] page1.json [page2.json]
+python3 <this skill's folder>/scripts/rank_trends.py --baseline <baseline %> [--min-sessions 30] [--top 15] page1.json [page2.json]
 ```
 
 This returns `rising`, `new` and `falling` lists. Otherwise, work them out yourself for each query:

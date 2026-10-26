@@ -98,7 +98,7 @@ Follow [references/node-config.md](references/node-config.md) for each step's fi
 Save the payload to a file and run:
 
 ```
-python3 scripts/check_scenario.py PAYLOAD_JSON [--stored STORED_JSON]
+python3 <this skill's folder>/scripts/check_scenario.py PAYLOAD_JSON [--stored STORED_JSON]
 ```
 
 Pass `--stored` (the saved `search_scenarios` detail response) when changing an existing scenario. Fix every **error**. Read each **warning** to the user if it applies.

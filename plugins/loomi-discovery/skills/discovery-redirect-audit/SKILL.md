@@ -99,7 +99,7 @@ How well the destination page performs (exits, bounces) isn't available here. Su
 Run:
 
 ```
-python3 scripts/redirect_checks.py --redirects <list file> --redirects <detail file> [...] --queries <query file> [...] --synonyms <file> [...] --rules <file> [...] [--min-sessions 50]
+python3 <this skill's folder>/scripts/redirect_checks.py --redirects <list file> --redirects <detail file> [...] --queries <query file> [...] --synonyms <file> [...] --rules <file> [...] [--min-sessions 50]
 ```
 
 It prints a findings table and a list of navigational searches without a redirect. If you can't run scripts, apply the checks in [references/redirect-checks.md](references/redirect-checks.md) by hand.

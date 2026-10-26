@@ -80,7 +80,7 @@ Key every user by lower-cased **email**. The same person in several projects has
 If you can run Python, save each response to a file and run:
 
 ```bash
-python3 scripts/access_review.py --company-domain example.com --vendor-domain partner.example "Prod=users_prod.json" "Sandbox=users_sandbox.json"
+python3 <this skill's folder>/scripts/access_review.py --company-domain example.com --vendor-domain partner.example "Prod=users_prod.json" "Sandbox=users_sandbox.json"
 ```
 
 Add `--show-created` for the inferred account-creation column, and `--many-projects N` to change the threshold. It prints the access-review table, a per-project summary and the flag counts. Otherwise apply the checks by hand.

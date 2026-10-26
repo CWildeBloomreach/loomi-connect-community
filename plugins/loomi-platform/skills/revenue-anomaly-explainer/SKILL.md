@@ -103,7 +103,7 @@ Every row has current and `prev_*` values for revenue, visits and conversions. *
 Then run the breakdown script. Pass every file you saved; several files for one table are merged:
 
 ```bash
-python3 scripts/decompose_change.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --table queries=queries.json --table categories=categories.json --table products=products_rev.json,products_prev.json --table brands=brands.json --trend trend.json --top 8
+python3 <this skill's folder>/scripts/decompose_change.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --table queries=queries.json --table categories=categories.json --table products=products_rev.json,products_prev.json --table brands=brands.json --trend trend.json --top 8
 ```
 
 It prints JSON with:

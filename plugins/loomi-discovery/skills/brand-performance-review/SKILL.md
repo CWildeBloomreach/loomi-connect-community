@@ -75,7 +75,7 @@ Take the top 10 queries by sessions from the query table. For each, one call at 
 Run [scripts/brand_scorecard.py](scripts/brand_scorecard.py):
 
 ```
-python3 scripts/brand_scorecard.py --brands brands.json --products products.json --queries queries.json --shelf shelf/*.json --ignore "AND,Basics" --markdown
+python3 <this skill's folder>/scripts/brand_scorecard.py --brands brands.json --products products.json --queries queries.json --shelf shelf/*.json --ignore "AND,Basics" --markdown
 ```
 
 Use `--ignore` for brand names that are also everyday words, so "black and white dress" isn't counted as a search for the brand "AND". Run it once, read the brand-search matches, and add any false matches to `--ignore`.
@@ -99,7 +99,7 @@ Pick up to five brands: the biggest under-exposed brands, any falling brand whos
 3. Run [scripts/grid_positions.py](scripts/grid_positions.py):
 
    ```
-   python3 scripts/grid_positions.py grid.json --brand "Tommy Hilfiger" --brand "Pacific"
+   python3 <this skill's folder>/scripts/grid_positions.py grid.json --brand "Tommy Hilfiger" --brand "Pacific"
    ```
 
    For each brand it gives the number of matching products, how many are in the first 24, and its best and median positions.

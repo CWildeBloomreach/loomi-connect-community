@@ -117,7 +117,7 @@ Note:
 Run [scripts/review_dynamic_categories.py](scripts/review_dynamic_categories.py) on the saved files:
 
 ```
-python3 scripts/review_dynamic_categories.py --definitions def_*.json --grids grid_*.json --table category_table.json --categories list_categories.json --today <YYYY-MM-DD>
+python3 <this skill's folder>/scripts/review_dynamic_categories.py --definitions def_*.json --grids grid_*.json --table category_table.json --categories list_categories.json --today <YYYY-MM-DD>
 ```
 
 Name grid files after the category ID (for example `grid_brg_dyn_abc123.json`, `grid_70300.json`) so the script can match them. It prints an inventory table and a findings table with a priority for each finding. If you can't run scripts, apply the checks in [references/checks.md](references/checks.md) by hand.

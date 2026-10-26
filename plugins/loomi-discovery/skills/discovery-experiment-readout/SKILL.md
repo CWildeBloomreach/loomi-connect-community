@@ -83,7 +83,7 @@ The response has `data.overalldata.buckets.<bucket name>` with `visits`, `orders
 If the response was saved to a file, run:
 
 ```
-python3 scripts/summarise_report.py <saved file> --control "<control bucket>" --metric "<successMetric>"
+python3 <this skill's folder>/scripts/summarise_report.py <saved file> --control "<control bucket>" --metric "<successMetric>"
 ```
 
 It prints a bucket table, the period covered, how confidence changed over time, a verdict on the success metric, and (for rate metrics) how much more traffic would be needed. If you can't run scripts, read `data.overalldata.buckets` and work out the same things by hand.

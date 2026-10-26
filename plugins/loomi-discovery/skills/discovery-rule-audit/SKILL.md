@@ -79,7 +79,7 @@ Save each response.
 Run:
 
 ```
-python3 scripts/audit_rules.py --rules <file> [--rules <file> ...] --queries <query file> --categories <category file> --experiments <experiments file> --today <YYYY-MM-DD>
+python3 <this skill's folder>/scripts/audit_rules.py --rules <file> [--rules <file> ...] --queries <query file> --categories <category file> --experiments <experiments file> --today <YYYY-MM-DD>
 ```
 
 It prints a summary and a cleanup table. If you can't run scripts, apply the checks in [references/audit-checks.md](references/audit-checks.md) by hand.

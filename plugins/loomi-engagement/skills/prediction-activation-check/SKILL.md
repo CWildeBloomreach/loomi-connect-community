@@ -108,7 +108,7 @@ Check, one call at a time, in this order (cheapest and most likely first):
 If you can run Python, save each fetched definition as JSON in one folder (named `<type>_<id>.json`, for example `scenario_<id>.json`), and the predictions you're checking in `predictions.json`, then run:
 
 ```bash
-python3 scripts/find_prediction_refs.py predictions.json definitions/
+python3 <this skill's folder>/scripts/find_prediction_refs.py predictions.json definitions/
 ```
 
 It prints every object that mentions each prediction's ID or output attribute, grouped by object type. Otherwise search each definition by hand for both strings.

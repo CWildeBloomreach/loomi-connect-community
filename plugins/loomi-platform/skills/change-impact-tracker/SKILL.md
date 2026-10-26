@@ -136,10 +136,10 @@ Things to get right:
 
 ### 6. Calculate the effect
 
-Put the numbers into a JSON file (run `python3 scripts/did_effect.py --template` to see the format) and run:
+Put the numbers into a JSON file (run `python3 <this skill's folder>/scripts/did_effect.py --template` to see the format) and run:
 
 ```bash
-python3 scripts/did_effect.py change.json [--placebo placebo.json]
+python3 <this skill's folder>/scripts/did_effect.py change.json [--placebo placebo.json]
 ```
 
 It prints the difference-in-differences effect on visits, orders, revenue, conversion, revenue per visit and AOV against each control, each with a 95% range; a two-proportion test on the treated conversion rate; the incremental revenue in the window and per 30 days with a range; the smallest effect the data could detect; warnings; and a verdict. `--json` prints the same as JSON.

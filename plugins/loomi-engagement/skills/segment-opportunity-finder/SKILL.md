@@ -139,7 +139,7 @@ Use [references/value-and-ranking.md](references/value-and-ranking.md):
 If you can run Python, save the inputs as JSON and run:
 
 ```bash
-python3 scripts/rank_opportunities.py opportunities.json
+python3 <this skill's folder>/scripts/rank_opportunities.py opportunities.json
 ```
 
 Otherwise calculate by hand and show the working for the top opportunity. Label P4 as **margin protected** and P8 as **long-term**, so nobody adds them to revenue. Don't add up overlapping opportunities. Under about 100 customers, give the count but no value.

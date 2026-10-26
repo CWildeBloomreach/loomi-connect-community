@@ -79,7 +79,7 @@ Autosuggest can't be listed in full; you can only type into it. Sample like this
 
 Call `get_autosuggest_results` with `q=<prefix>` for each, one at a time. The tool returns a plain list of up to 20 suggestion strings, in display order, with no counts or types. Record each list against its prefix, and note each suggestion's position.
 
-Save what you collect as a JSON object (`{"sk": ["skirt", "skinny jeans", ...], "coc": []}`). If you can run scripts, run `python3 scripts/autosuggest_check.py suggestions.json <saved query-performance responses>`. It lists missing top queries, near-duplicates, "product + attribute" suggestions with their metrics, prefixes that one lead word dominates, and weaker wordings. Treat its output as leads to check.
+Save what you collect as a JSON object (`{"sk": ["skirt", "skinny jeans", ...], "coc": []}`). If you can run scripts, run `python3 <this skill's folder>/scripts/autosuggest_check.py suggestions.json <saved query-performance responses>`. It lists missing top queries, near-duplicates, "product + attribute" suggestions with their metrics, prefixes that one lead word dominates, and weaker wordings. Treat its output as leads to check.
 
 ### 4. Check each kind of problem
 

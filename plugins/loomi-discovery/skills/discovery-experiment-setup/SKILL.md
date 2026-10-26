@@ -103,7 +103,7 @@ Turn the idea into a `create_ranking_rule` payload (see the template in the refe
 
 A rule can't be previewed in the product grid before it exists, so build the best available preview:
 
-1. Run `python3 scripts/simulate_rerank.py <saved grid> --boost-brand "<brand>" ... --bury-duplicates --top 24`. It prints the brand mix before and after, a before-and-after table, and the product IDs to bury. **This is the strongest possible effect** (a hard sort). The real rule blends with relevance according to its strength, so it will be milder. Say so.
+1. Run `python3 <this skill's folder>/scripts/simulate_rerank.py <saved grid> --boost-brand "<brand>" ... --bury-duplicates --top 24`. It prints the brand mix before and after, a before-and-after table, and the product IDs to bury. **This is the strongest possible effect** (a hard sort). The real rule blends with relevance according to its strength, so it will be milder. Say so.
 2. Optionally, show what the boosted brands would contribute: call the product grid with `fq='brand:"<brand>"'` and check that those products are relevant (no wallets or gift sets ranking for "belt").
 3. If an existing rule applies, call the grid with its ID in `disabled_customization_ids` to show results with no rule.
 
@@ -111,7 +111,7 @@ If the preview shows a problem, such as one brand taking the whole first page, o
 
 ### 6. Size the test
 
-Run `python3 scripts/estimate_duration.py --baseline-rate <conversion rate> --visits <visits> --days 90`. It gives the days needed to detect a +5%, +10% and +20% lift with a 50/50 split.
+Run `python3 <this skill's folder>/scripts/estimate_duration.py --baseline-rate <conversion rate> --visits <visits> --days 90`. It gives the days needed to detect a +5%, +10% and +20% lift with a 50/50 split.
 
 - Recommend **RPV** as the success metric for ranking tests (or CR if the aim is conversion), 100% of traffic, and a 50/50 split.
 - If even a +20% lift would take more than about 8 weeks, tell the user plainly. Suggest testing on a broader query or a category, or making the change as a judgment call without a test.

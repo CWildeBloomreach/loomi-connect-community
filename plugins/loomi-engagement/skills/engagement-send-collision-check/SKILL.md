@@ -107,7 +107,7 @@ A frequency policy stops a customer receiving too many messages, but the later s
 Save the merged calendar entries as JSON, and the audiences from step 4 as a small JSON map, then run:
 
 ```
-python3 scripts/find_collisions.py calendar.json --audiences audiences.json --utc-offset <hours>
+python3 <this skill's folder>/scripts/find_collisions.py calendar.json --audiences audiences.json --utc-offset <hours>
 ```
 
 The script's docstring describes the audience file. By default it flags:

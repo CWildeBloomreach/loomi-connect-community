@@ -13,7 +13,7 @@ Retail and cultural moments that campaigns are planned around, organised by mark
 | **(verify)** | Provisional. Islamic dates depend on moon sighting and can move by a day and differ between countries; some Hindu dates differ between regional calendars; retailer events can be moved. Check before committing a send date. |
 | **look up** | Not known yet. Search for it, or ask the user, and label what you use "unverified". |
 
-For any other year, run `python3 scripts/retail_dates.py --year <year> --market <codes>`. If this file and the script disagree, trust the rule, fix whichever is wrong, and note it in the PR.
+For any other year, run `python3 <this skill's folder>/scripts/retail_dates.py --year <year> --market <codes>`. If this file and the script disagree, trust the rule, fix whichever is wrong, and note it in the PR.
 
 **Start promoting** is a typical lead time for the first teaser or early-access send, not a rule. Most moments follow tease → launch → reminder → last chance. Gift moments also have a **shipping cut-off**, usually 3–7 days before the day, that should get its own "last order date" send.
 

@@ -63,7 +63,7 @@ Call `list_cloud_organizations`, then `list_projects`. If there's more than one 
 If you can run Python, save the event schema to a file and run:
 
 ```bash
-python3 scripts/tracking_checks.py schema event_schema.json
+python3 <this skill's folder>/scripts/tracking_checks.py schema event_schema.json
 ```
 
 It lists suspicious event type names and look-alike families, properties with conflicting types, and likely misspelt duplicates. Otherwise look for these yourself:
@@ -90,7 +90,7 @@ Event types with no events in a window are **missing from the rows**, not listed
 If you can run Python, save the three results and run:
 
 ```bash
-python3 scripts/tracking_checks.py volumes event_schema.json last7.json prev7.json last90.json
+python3 <this skill's folder>/scripts/tracking_checks.py volumes event_schema.json last7.json prev7.json last90.json
 ```
 
 Otherwise classify each event type yourself:

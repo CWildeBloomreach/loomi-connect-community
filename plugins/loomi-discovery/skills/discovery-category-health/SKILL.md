@@ -75,7 +75,7 @@ A category is only underperforming compared with categories of the same kind. A 
 Run [scripts/category_baseline.py](scripts/category_baseline.py) on the saved table and category files:
 
 ```
-python3 scripts/category_baseline.py --categories categories.json table.json
+python3 <this skill's folder>/scripts/category_baseline.py --categories categories.json table.json
 ```
 
 It groups categories into peers (**dynamic** collections, **top-level** departments, and **sub**-categories), works out each group's median for conversion, bounce, RPV, add-to-cart rate and product views per visit, and flags categories more than 25% from their group median. It also lists big period swings, new categories, same-named categories, categories in the tree with no traffic, and tracking problems. If you can't run scripts, do the same comparison by hand.
@@ -124,7 +124,7 @@ Pick the 2–3 categories with the most sessions among the underperformers (or t
 4. Run [scripts/buried_products.py](scripts/buried_products.py):
 
    ```
-   python3 scripts/buried_products.py --grid grid.json products.json
+   python3 <this skill's folder>/scripts/buried_products.py --grid grid.json products.json
    ```
 
    It reports the brand mix and repeated titles in the first 24 positions, brands with many products in the category but none in the first 24, products ranked below position 48 that earn at least as much per visit as the median top-24 product, and top-24 products that convert much worse than their neighbours.

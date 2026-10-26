@@ -105,7 +105,7 @@ Classify what you find: **none**; **rule-based on a release attribute** (good: i
 Run [scripts/new_arrivals.py](scripts/new_arrivals.py):
 
 ```
-python3 scripts/new_arrivals.py products.json --new new_p*.json new_last.txt --days 30 --markdown
+python3 <this skill's folder>/scripts/new_arrivals.py products.json --new new_p*.json new_last.txt --days 30 --markdown
 ```
 
 It does three things:
@@ -121,7 +121,7 @@ See [references/classification-guide.md](references/classification-guide.md) for
 Run the grid twice, one call at a time, both with `query="*"`, `rows=1`, `fl="pid"` and facets on: once with no filter, once with the release `fq`. Then run [scripts/new_by_category.py](scripts/new_by_category.py):
 
 ```
-python3 scripts/new_by_category.py --all all.json --new new.json --markdown
+python3 <this skill's folder>/scripts/new_by_category.py --all all.json --new new.json --markdown
 ```
 
 It gives each category's share of new products against the catalog's, and flags categories with **no** new arrivals, **under-represented** ones, and categories that are **mostly new**. It also gives a lower bound for new products with **no top-level category**: those can only be found by search, so they're likely invisible.
@@ -135,7 +135,7 @@ Pick up to 5 products from **buried**, **breakout** and **invisible** (the highe
 3. Run [scripts/new_in_grid.py](scripts/new_in_grid.py) on each grid:
 
    ```
-   python3 scripts/new_in_grid.py grid.json --new new_p*.json --pids 110071,109874
+   python3 <this skill's folder>/scripts/new_in_grid.py grid.json --new new_p*.json --pids 110071,109874
    ```
 
    It gives each product's position, how many new products reach the first 24, and a **placement index**: the new share of the first page ÷ the new share of all results. Below about 0.7, new products are pushed down on that page. `scripts/grid_positions.py` (the same script as in `product-opportunity-finder`) adds the brand mix and the ranking rules applied.

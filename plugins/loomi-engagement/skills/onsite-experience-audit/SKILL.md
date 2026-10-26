@@ -91,7 +91,7 @@ From each detail, keep only:
 If you can run Python, save the list and detail responses to files and run:
 
 ```bash
-python3 scripts/audit_experiences.py banners_list.json banner_detail_*.json
+python3 <this skill's folder>/scripts/audit_experiences.py banners_list.json banner_detail_*.json
 ```
 
 It prints the findings for steps 4–6 without any content. It also accepts in-app message, survey and experiment responses.

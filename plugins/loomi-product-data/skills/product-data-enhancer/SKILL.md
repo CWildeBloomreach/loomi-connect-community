@@ -129,8 +129,8 @@ Appending per product means a run that stops can be resumed (step 1.4), and batc
 Run [scripts/suggestions_to_files.py](scripts/suggestions_to_files.py):
 
 ```
-python3 scripts/suggestions_to_files.py suggestions_example_2026-10-08.jsonl --out-dir product_suggestions --currency USD --banned-terms competitors.txt
-cat batch1.jsonl batch2.jsonl | python3 scripts/suggestions_to_files.py - --out-dir product_suggestions
+python3 <this skill's folder>/scripts/suggestions_to_files.py suggestions_example_2026-10-08.jsonl --out-dir product_suggestions --currency USD --banned-terms competitors.txt
+cat batch1.jsonl batch2.jsonl | python3 <this skill's folder>/scripts/suggestions_to_files.py - --out-dir product_suggestions
 ```
 
 It streams the lines and writes, product by product: `suggestions.csv` (one row per change, for import or a spreadsheet review), `suggestions.jsonl` (one line per product with rows, JSON-LD and checks), `jsonld/<product_id>.json` and `review.md`. It blocks unverified claims and banned terms, checks lengths and GTIN check digits, keeps image-only values out of the JSON-LD, and reports malformed or repeated lines with their line numbers without stopping. If you can't run scripts, give the review table and the JSON-LD for each product inline, applying the same rules by hand.

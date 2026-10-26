@@ -116,7 +116,7 @@ Read the response:
 - **Funnels** (`analysis_type: "funnel"`): `data.total.counts` is the number of customers reaching each step in order; `data.total.times` is the average seconds between steps (`-1` for step 1).
 - **Zero matches** can come back as an empty `rows` list, a row with `0`, or a `null` value. Treat all three as zero.
 
-If you can run Python, save the response and run `python3 scripts/summarise_eql.py response.json` to get the total, sorted rows and funnel conversion rates.
+If you can run Python, save the response and run `python3 <this skill's folder>/scripts/summarise_eql.py response.json` to get the total, sorted rows and funnel conversion rates.
 
 ### 7. Sanity-check before answering
 

@@ -42,7 +42,7 @@ You need the account, and optionally a site. If the user names specific queries 
 
 - **Make every call one at a time.** Discovery allows 3 requests per second per user, shared with anything else the user is running. Parallel product grid calls can return HTTP 500 errors. On a 429 or a 500, wait 2–5 seconds and retry once.
 - **Keep product grid responses small.** Always pass `fl="pid,title"`, `rows` of 5–10 and `extra_params={"facet": "false"}`. A response can still be 70,000–260,000 characters. **Don't** pass `simple_debug=false`: in testing, that returned HTTP 500 every time, and the synonym data is in the debug block anyway.
-- **If the client saves a response to a file**, run `python3 scripts/grid_summary.py <file>`. It prints `numFound`, the top titles and every synonym chain with its type and direction.
+- **If the client saves a response to a file**, run `python3 <this skill's folder>/scripts/grid_summary.py <file>`. It prints `numFound`, the top titles and every synonym chain with its type and direction.
 
 ### Running the scripts
 

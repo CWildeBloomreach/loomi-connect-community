@@ -47,7 +47,7 @@ You need the account, and optionally a site and a date range. The default is the
 
 - **Make every call one at a time.** Discovery allows 3 requests per second per user, shared with anything else the user is running. Parallel product grid calls can also return HTTP 500 errors. On a 429 or a 500, wait 2–5 seconds and retry once.
 - **Keep product grid responses small.** Always pass `fl="pid,title"`, `rows` of 5–10, and `extra_params={"facet": "false"}`, which drops the facet block. Even then a response can be 70,000+ characters, because the debug block explains every product's score. **Don't** pass `simple_debug=false` to shrink it: in testing, that returned HTTP 500 every time.
-- **If the client saves a response to a file**, run `python3 scripts/grid_summary.py <file>` to print only the fields this skill needs. Otherwise read only the fields listed in step 3.
+- **If the client saves a response to a file**, run `python3 <this skill's folder>/scripts/grid_summary.py <file>` to print only the fields this skill needs. Otherwise read only the fields listed in step 3.
 
 ### Running the scripts
 

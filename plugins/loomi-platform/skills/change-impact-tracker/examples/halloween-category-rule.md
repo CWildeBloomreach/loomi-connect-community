@@ -43,7 +43,7 @@ Change day: 30 Sep (went live at 22:00 UTC, so 30 Sep was almost all "before", b
 
 The placebo file used 18 to 23 Sep against 24 to 29 Sep (both before the rule started).
 
-`python3 scripts/did_effect.py change.json --placebo placebo.json`:
+`python3 <this skill's folder>/scripts/did_effect.py change.json --placebo placebo.json`:
 
 ```
 DIFFERENCE-IN-DIFFERENCES vs control: all category pages, excluding kids tops

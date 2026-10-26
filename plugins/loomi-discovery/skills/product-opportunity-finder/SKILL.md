@@ -70,8 +70,8 @@ Run each script as one plain command from your own working folder, giving the sc
 Run [scripts/product_opportunities.py](scripts/product_opportunities.py) on the saved table:
 
 ```
-python3 scripts/product_opportunities.py products.json --markdown
-python3 scripts/product_opportunities.py products.json --catalog-pids catalog_pids.txt --out groups.json
+python3 <this skill's folder>/scripts/product_opportunities.py products.json --markdown
+python3 <this skill's folder>/scripts/product_opportunities.py products.json --catalog-pids catalog_pids.txt --out groups.json
 ```
 
 It works out the typical (median) product's ATC rate, conversion rate and RPV, then places each product with at least 30 visits in one group, the one with the most revenue at stake:
@@ -97,7 +97,7 @@ For the top 3–5 **hidden gems**, **declining winners driven by visibility**, a
 3. Run [scripts/grid_positions.py](scripts/grid_positions.py):
 
    ```
-   python3 scripts/grid_positions.py grid.json --pids 110467,107119 --brand "Brand name"
+   python3 <this skill's folder>/scripts/grid_positions.py grid.json --pids 110467,107119 --brand "Brand name"
    ```
 
    It gives each product's position, the brand mix of the first 24, any ranking rules applied, and whether an A/B test is running.

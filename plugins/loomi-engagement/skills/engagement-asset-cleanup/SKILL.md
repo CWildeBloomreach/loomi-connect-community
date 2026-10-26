@@ -86,7 +86,7 @@ What each list returns, and what it doesn't, is in [references/cleanup-checks.md
 If you can run Python, save each list response to a file and run:
 
 ```bash
-python3 scripts/cleanup_inventory.py scenario:scenarios.json email:email.json segmentation:segs.json aggregate:aggs.json report:reports.json
+python3 <this skill's folder>/scripts/cleanup_inventory.py scenario:scenarios.json email:email.json segmentation:segs.json aggregate:aggs.json report:reports.json
 ```
 
 It applies the checks in step 3, prints findings by asset type with a suggested action, and never prints editor names.

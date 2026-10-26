@@ -111,7 +111,7 @@ If a scope was given, add it as an `fq` on every call (for example `fq='gender:"
 Read [references/association-scoring.md](references/association-scoring.md) for the method. If you can run Python:
 
 ```
-python3 scripts/score_association.py --terms "pickleball,pickle ball" --exclude "tennis,padel,badminton" --weights weights.json grid_*.json --family "Court shoes" shoes_*.json --family "Eye protection" eyewear_*.json --markdown
+python3 <this skill's folder>/scripts/score_association.py --terms "pickleball,pickle ball" --exclude "tennis,padel,badminton" --weights weights.json grid_*.json --family "Court shoes" shoes_*.json --family "Eye protection" eyewear_*.json --markdown
 ```
 
 It reads the saved grid files and prints each product's score, **tier** and evidence **source** (data, knowledge or both), plus each family's size and how many of its products the topic's own searches already return:
@@ -155,7 +155,7 @@ For the **core**:
 3. **Compare** each rule with the scored list:
 
    ```
-   python3 scripts/score_association.py --terms ... --exclude ... --weights weights.json grid_*.json --rule "sport=pickleball" rule1_p1.json rule1_p2.json --rule "category=racket-sports" rule2.json
+   python3 <this skill's folder>/scripts/score_association.py --terms ... --exclude ... --weights weights.json grid_*.json --rule "sport=pickleball" rule1_p1.json rule1_p2.json --rule "category=racket-sports" rule2.json
    ```
 
    For each rule it reports its size, **precision** (share of its products that are core or likely), **core recall** (share of core products it contains), the off-topic products it includes, and the top core products it misses. Without Python, compare the product IDs by hand.
