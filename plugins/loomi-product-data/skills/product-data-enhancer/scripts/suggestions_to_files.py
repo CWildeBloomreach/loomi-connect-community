@@ -16,7 +16,8 @@ file and line number and skipped; the rest of the run carries on.
 
 Writes, one product at a time:
   OUT/suggestions.csv       one row per suggested change: product_id, field, current, suggested,
-                            source, confidence, priority, evidence, status
+                            source, confidence, priority, evidence, status (a cell starting with
+                            =, +, -, @, tab or CR gets a leading ' so spreadsheets don't run it)
   OUT/suggestions.jsonl     one line per product: its rows, JSON-LD and checks
   OUT/jsonld/<id>.json      a schema.org Product JSON-LD block per product
   OUT/review.md             a review table per product (current vs suggested)
@@ -207,6 +208,12 @@ def iter_lines(paths, problems):
                 f.close()
 
 
+def csv_safe(v):
+    """Stop spreadsheets running a cell as a formula: prefix =, +, -, @, tab or CR with '."""
+    s = "" if v is None else str(v)
+    return "'" + s if s[:1] in ("=", "+", "-", "@", "\t", "\r") else s
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("inputs", nargs="*", default=["-"], help=".jsonl files, or - for stdin (default)")
@@ -269,7 +276,7 @@ def main():
             ld, ld_warns = jsonld(p, args_line, texts)
             prod_warns += ld_warns
 
-            writer.writerows(prod_rows)
+            writer.writerows({k: csv_safe(v) for k, v in r.items()} for r in prod_rows)
             with open(os.path.join(args.out_dir, "jsonld", re.sub(r"[^A-Za-z0-9_.-]", "_", pid) + ".json"),
                       "w", encoding="utf-8") as f:
                 json.dump(ld, f, indent=2, ensure_ascii=False)

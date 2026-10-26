@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled statistics script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -24,6 +24,8 @@ Every readout ends with one of **Call the winner**, **Keep running** (with an es
 
 Engagement has no A/B report tool in Loomi Connect, so the numbers come from **aggregate EQL counts** and the statistics are worked out by this skill. It never reads individual customers and never changes anything.
 
+For Discovery tests (search and category ranking rules), use `discovery-experiment-readout`. For a change made without a test, use `change-impact-tracker`.
+
 ## Before you start
 
 This skill uses these Loomi Connect tools:
@@ -36,7 +38,7 @@ This skill uses these Loomi Connect tools:
 | Counts | `estimate_eql_cost`, then `execute_analytics_eql` |
 | Saved evaluation (optional) | `search_reports`, `calculate_report`, `search_dashboards` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 You need the project, and either a test name or ID, or a scope ("running tests", "tests in the last 90 days"). If the user gives neither, list the candidate tests (step 2) and ask which to read out.
 
@@ -101,10 +103,10 @@ If the project already has a saved evaluation report or dashboard for this test 
 Save the counts as JSON and run:
 
 ```bash
-python3 scripts/ab_stats.py counts.json
+python3 <this skill's folder>/scripts/ab_stats.py counts.json
 ```
 
-(`python3 scripts/ab_stats.py --example` prints the input format.) It prints the per-variant table, a sample ratio mismatch check, absolute and relative lift with confidence intervals, the p-value, the chance each variant beats the control, the customers needed and the days remaining, a novelty check, duration and peeking warnings, and a statistical verdict.
+(`python3 <this skill's folder>/scripts/ab_stats.py --example` prints the input format.) It prints the per-variant table, a sample ratio mismatch check, absolute and relative lift with confidence intervals, the p-value, the chance each variant beats the control, the customers needed and the days remaining, a novelty check, duration and peeking warnings, and a statistical verdict. Put the mixed-customer count in `mixed`, and set `"mixed_excluded": true` only when the per-variant counts already leave them out: the script reports them but never removes them itself. A variant with no customers or a missing count is listed and left out of the tests.
 
 If you can't run scripts, follow [references/statistics.md](references/statistics.md) by hand, and show the working for at least one variant.
 

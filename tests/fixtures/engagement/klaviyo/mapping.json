@@ -1,0 +1,15 @@
+{
+  "customer_properties": {"first_name": "first_name", "last_name": "last_name", "email": "email", "phone_number": "phone"},
+  "custom_properties": {},
+  "organization": {"name": "{{ project_variables.company_name }}", "full_address": "1 Example Road, Sampletown", "url": "https://www.example.com"},
+  "unsubscribe_token": "{{ consent.page }}",
+  "catalog": "products",
+  "catalog_fields": {"image": "image", "title": "title", "price": "price", "url": "url"},
+  "event_lists": {"item_ids": "product_list"},
+  "event_list_aggregates": {"item_ids": "aaaaaaaaaaaaaaaaaaaaaaaa"},
+  "event_list_id_field": "product_id",
+  "currency_symbol": "$",
+  "voucher_pools": {},
+  "image_map": {},
+  "keep_mobile_variants": false
+}

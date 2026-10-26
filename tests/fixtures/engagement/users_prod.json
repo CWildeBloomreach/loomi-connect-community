@@ -1,0 +1,9 @@
+{"success": true, "data": [
+  {"_id": "5f0000000000000000000001", "email": "dev.patel@acme.example", "username": "dev.patel@acme.example", "first_name": "Dev", "last_name": "Patel", "role": "Developer"},
+  {"_id": "5f0000000000000000000002", "email": "tech.nguyen@acme.example", "username": "tech.nguyen@acme.example", "first_name": "Tech", "last_name": "Nguyen", "role": "Marketing Manager"},
+  {"_id": "5f0000000000000000000003", "email": "marketing@acme.example", "username": "marketing@acme.example", "first_name": "Marketing", "last_name": "Team", "role": null},
+  {"_id": "5f0000000000000000000004", "email": "test1@acme.example", "username": "test1@acme.example", "first_name": null, "last_name": null, "role": null},
+  {"_id": "5f0000000000000000000005", "email": "api+sync@acme.example", "username": "api+sync@acme.example", "first_name": "Api", "last_name": "api+sync@acme.example", "role": null},
+  {"_id": "5f0000000000000000000006", "email": "jane.test@acme.example", "username": "jane.test@acme.example", "first_name": "Jane", "last_name": "Doe", "role": "Analyst"},
+  {"_id": "5f0000000000000000000007", "email": "sam@agency.example", "username": "sam@agency.example", "first_name": "Sam", "last_name": "Lee", "role": "Developer"}
+]}

@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.2.2"
+  version: "0.2.3"
   products: engagement
   access: read-only
 ---
@@ -33,7 +33,7 @@ This skill uses these Loomi Connect tools:
 | Templates and consent | `search_email_assets`, `get_consent_settings` (both via `search_tools` and `call_tool` if not listed) |
 | Run activity (optional) | `estimate_eql_cost`, `execute_analytics_eql` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -112,6 +112,8 @@ When the user asks for an audit, clean-up or health check of scenarios:
 5. Run activity is optional. It needs EQL over the `campaign` event, which is costly on large projects. See [references/audit-checks.md](references/audit-checks.md) for the query, and only run it if `estimate_eql_cost` says `low` or `medium`, or the user agrees to a `high` one. Never run `very_high`. If you skip it, say that "last run" wasn't checked.
 
 Apply the checks and severity levels in [references/audit-checks.md](references/audit-checks.md).
+
+For pre-launch QA of one flow, use `scenario-qa`. For project-wide hygiene across all asset types, use `engagement-asset-cleanup`.
 
 ## Output
 

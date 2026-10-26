@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled inventory script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -43,7 +43,7 @@ This skill uses these Loomi Connect tools:
 | Filing | `search_initiatives`, `get_initiative_items` (not listed by default: find it with `search_tools`, run it with `call_tool`) |
 | Scenario activity (optional) | `get_campaign_calendar`, `get_event_schema`, `estimate_eql_cost`, `execute_analytics_eql` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: never call anything named `create_*`, `update_*`, `delete_*`, `start_*`, `clone_*` or similar, even if the user asks you to "just archive them".
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools. Never call anything named `create_*`, `update_*`, `delete_*`, `start_*`, `clone_*` or similar, even if the user asks you to "just archive them".
 
 ### Rules for calling the tools
 
@@ -86,7 +86,7 @@ What each list returns, and what it doesn't, is in [references/cleanup-checks.md
 If you can run Python, save each list response to a file and run:
 
 ```bash
-python3 scripts/cleanup_inventory.py scenario:scenarios.json email:email.json segmentation:segs.json aggregate:aggs.json report:reports.json
+python3 <this skill's folder>/scripts/cleanup_inventory.py scenario:scenarios.json email:email.json segmentation:segs.json aggregate:aggs.json report:reports.json
 ```
 
 It applies the checks in step 3, prints findings by asset type with a suggested action, and never prints editor names.

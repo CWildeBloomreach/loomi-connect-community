@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery and Engagement; either one alone gives a partial check).
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery,engagement
   access: read-only
 ---
@@ -40,7 +40,7 @@ This skill uses these Loomi Connect tools:
 | Marketing | `get_campaign_calendar`, `search_scenarios`, `search_scenario_nodes`, `search_email_campaigns`, `search_segmentations`, `get_frequency_policies`, `estimate_eql_cost`, `execute_analytics_eql` |
 | On-site | `search_banners`, `search_in_app_messages` |
 
-Several of these are not listed directly (`search_discovery_catalog_jobs`, `list_site_search_media_rules`, `list_category_media_rules`, `search_scenario_nodes`, `get_frequency_policies`). Find them with the Loomi Connect `search_tools` tool and run them with `call_tool`. Check each tool's parameters before calling it. Only ever use read tools.
+Several of these are not listed directly (`search_discovery_catalog_jobs`, `list_site_search_media_rules`, `list_category_media_rules`, `search_scenario_nodes`, `get_frequency_policies`). Find them with the Loomi Connect `search_tools` tool and run them with `call_tool`. Check each tool's parameters before calling it. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Ask first
 
@@ -87,7 +87,7 @@ Owner types: pixel → **web developers**; feed → **feed or catalog owner**.
 2. If you can run scripts:
 
    ```
-   python3 scripts/check_rule_windows.py --rules <file> [--rules <file> ...] --start <ISO start> --end <ISO end> [--keywords "black friday,bf,cyber,sale"] [--experiments <experiments file>]
+   python3 <this skill's folder>/scripts/check_rule_windows.py --rules <file> [--rules <file> ...] --start <ISO start> --end <ISO end> [--keywords "black friday,bf,cyber,sale"] [--experiments <experiments file>]
    ```
 
    Otherwise apply the checks in [references/readiness-checks.md](references/readiness-checks.md) by hand. The checks:
@@ -162,7 +162,7 @@ Owner type: **CRM or web marketer**.
 Collect every item as one row: area, check, status, evidence, fix, owner type, and whether it's a blocker (RED). If you can run scripts, save the rows as JSON and run:
 
 ```
-python3 scripts/render_checklist.py items.json --event "<name>" --window "<start> to <end>"
+python3 <this skill's folder>/scripts/render_checklist.py items.json --event "<name>" --window "<start> to <end>"
 ```
 
 It sorts blockers first, then AMBER by area, and prints the verdict. Otherwise sort by hand.
@@ -170,6 +170,7 @@ It sorts blockers first, then AMBER by area, and prints the verdict. Otherwise s
 **Verdict rules:**
 - **NO-GO:** any RED in data, search for top event queries, landing pages, or "no event sends".
 - **GO WITH FIXES:** REDs only in lower-impact items, or AMBERs only.
+- **INCOMPLETE:** nothing RED or AMBER, but some items are NOT CHECKED. Never call it GO until they're checked.
 - **GO:** all GREEN, or AMBERs the user has accepted.
 
 Say how many days remain and which fixes need a lead time (feed changes, new segments, template approvals) versus same-day fixes (rule dates, redirects).
@@ -180,7 +181,7 @@ Say how many days remain and which fixes need a lead time (feed changes, new seg
 ## Peak readiness: <event>, <start> to <end> (<timezone>)
 Checked <date>; <n> days to go. Scope: <Discovery account/site>, <Engagement project>.
 
-**Verdict:** NO-GO / GO WITH FIXES / GO: <one sentence: the biggest blocker and the fix>
+**Verdict:** NO-GO / GO WITH FIXES / INCOMPLETE / GO: <one sentence: the biggest blocker and the fix>
 
 ### Blockers (fix before the event)
 | # | Area | Check | Evidence | Fix | Owner |
@@ -204,3 +205,4 @@ This skill is **read-only**. It never creates, schedules, enables, disables or d
 
 - Discovery changes go live immediately, and changes are blocked during a running A/B test. If the user asks you to fix something, describe the exact change for them to make, or hand off to a skill that writes, which must show the change and wait for an explicit "yes".
 - Use aggregate counts only. Never read or quote individual customers, and never repeat template, script or webhook content.
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.

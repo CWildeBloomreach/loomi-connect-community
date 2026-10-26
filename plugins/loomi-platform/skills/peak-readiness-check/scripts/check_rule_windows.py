@@ -33,9 +33,18 @@ import sys
 DEFAULT_KEYWORDS = "black friday,cyber,bfcm,sale,deal,deals,gift,gifts,holiday,christmas,xmas,clearance,promo"
 
 
-def load(path):
+def load(path, as_json=False):
     with open(path, encoding="utf-8") as f:
         doc = json.load(f)
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or d.get('message') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            if as_json:
+                print(json.dumps({"ok": False, "error": msg}))
+            else:
+                print(msg, file=sys.stderr)
+            sys.exit(1)
     if isinstance(doc, dict) and isinstance(doc.get("result"), dict):
         doc = doc["result"]
     if isinstance(doc, dict):
@@ -43,7 +52,12 @@ def load(path):
     return doc if isinstance(doc, list) else []
 
 
-def to_ms(text):
+def to_ms(text, end_of_day=False):
+    """ISO date or time to epoch ms (UTC if no offset). A date alone means the whole day:
+    00:00:00 as a start, 23:59:59 as an end."""
+    text = text.strip()
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+        text += "T23:59:59" if end_of_day else "T00:00:00"
     t = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
     if t.tzinfo is None:
         t = t.replace(tzinfo=dt.timezone.utc)
@@ -74,20 +88,27 @@ def label(rule):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--rules", action="append", required=True)
-    ap.add_argument("--start", required=True, help="event start, ISO 8601 (UTC if no offset)")
-    ap.add_argument("--end", required=True, help="event end, ISO 8601")
+    ap.add_argument("--start", required=True, help="event start, ISO 8601 (UTC if no offset; a date alone means 00:00)")
+    ap.add_argument("--end", required=True, help="event end, ISO 8601 (a date alone means 23:59:59 that day)")
     ap.add_argument("--keywords", default=DEFAULT_KEYWORDS, help="comma-separated event vocabulary")
     ap.add_argument("--experiments")
     ap.add_argument("--format", choices=["markdown", "json"], default="markdown")
     a = ap.parse_args()
 
-    start, end = to_ms(a.start), to_ms(a.end)
+    try:
+        start, end = to_ms(a.start), to_ms(a.end, end_of_day=True)
+    except ValueError:
+        ap.error(f"--start and --end must be ISO dates or times, like 2026-11-27 or 2026-11-27T00:00:00Z "
+                 f"(got {a.start!r} and {a.end!r})")
+    if end < start:
+        ap.error(f"--end ({a.end}) is before --start ({a.start})")
+    as_json = a.format == "json"
     words = [w.strip().lower() for w in a.keywords.split(",") if w.strip()]
     pattern = re.compile(r"(?<![a-z0-9])(" + "|".join(re.escape(w) for w in words) + r")(?![a-z0-9])", re.I)
 
     rules, seen = [], set()
     for path in a.rules:
-        for r in load(path):
+        for r in load(path, as_json):
             if r.get("id") not in seen and r.get("ruleType") != "facet":
                 seen.add(r.get("id"))
                 rules.append(r)
@@ -153,7 +174,7 @@ def main():
                          "owner": "Merchandiser"})
 
     if a.experiments:
-        for x in load(a.experiments):
+        for x in load(a.experiments, as_json):
             if x.get("experimentStatus") != "RUNNING":
                 continue
             ends = x.get("endedAt")

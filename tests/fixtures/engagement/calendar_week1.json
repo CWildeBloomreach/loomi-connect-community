@@ -1,0 +1,8 @@
+{"result": {"success": true, "campaigns": [
+  {"campaign_id": "c1", "campaign_name": "Autumn sale", "action_name": "Email 1", "channel": "email", "status": "running",
+   "trigger": "planned", "times": [{"start": 1791190800}], "results": {"reach": "50,000", "potential_reach": 60000}},
+  {"campaign_id": "c2", "campaign_name": "Small promo", "action_name": "Email", "channel": "email", "status": "running",
+   "trigger": "planned", "times": [{"start": 1791201600}], "results": {"reach": 200}},
+  {"campaign_id": "c3", "campaign_name": "Flash SMS", "action_name": "SMS", "channel": "sms", "status": "running",
+   "trigger": "planned", "times": [{"start": 1791212400}], "results": {"reach": null, "potential_reach": 30000}}
+]}}

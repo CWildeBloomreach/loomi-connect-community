@@ -1,11 +1,11 @@
 ---
 name: ask-your-data
-description: Answers a plain-English analytics question about a Bloomreach Engagement project by writing and running an EQL query with Loomi Connect, then explains the answer and shows the exact query and assumptions. It checks the event and customer schema so the query uses real names, estimates the query cost first, and asks before running anything expensive. Use when the user asks how many, how much, what share, which top values, conversion between two events, or a trend over time in Engagement data, for example "how many customers bought last month", "revenue by currency this week", "top search terms", or "what share of visitors purchased".
+description: Answers a plain-English analytics question about a Bloomreach Engagement project by writing and running an EQL query with Loomi Connect, then explains the answer and shows the exact query and assumptions. It checks the event and customer schema so the query uses real names, estimates the query cost first, and asks before running anything expensive. Use when the user asks how many, how much, what share, which top values, conversion between two events, or a trend over time in Engagement data, for example "how many customers bought last month", "revenue by currency this week", "top products bought", or "what share of visitors purchased".
 license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled result-summary script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -34,7 +34,7 @@ This skill uses these Loomi Connect tools, all normally listed directly:
 | Data model | `get_event_schema`, `get_customer_property_schema` |
 | Query | `estimate_eql_cost`, then `execute_analytics_eql` |
 
-If one of these isn't available in the client, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If one of these isn't available in the client, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -116,7 +116,7 @@ Read the response:
 - **Funnels** (`analysis_type: "funnel"`): `data.total.counts` is the number of customers reaching each step in order; `data.total.times` is the average seconds between steps (`-1` for step 1).
 - **Zero matches** can come back as an empty `rows` list, a row with `0`, or a `null` value. Treat all three as zero.
 
-If you can run Python, save the response and run `python3 scripts/summarise_eql.py response.json` to get the total, sorted rows and funnel conversion rates.
+If you can run Python, save the response and run `python3 <this skill's folder>/scripts/summarise_eql.py response.json` to get the total, sorted rows and funnel conversion rates.
 
 ### 7. Sanity-check before answering
 

@@ -1,0 +1,9 @@
+<html><body style="background-color:#eeeeee"><div id="bodyTable">
+<div style="max-width:600px">
+<div class="kl-row"><div class="kl-column" style="width:100%">
+ <div class="component-wrapper"><table><tr><td class="kl-image" align="center"><a href="https://shop.example/sale?a=1&amp;b=2"><img src="https://img.example/hero.png" alt="Tom &amp; &quot;Jerry&quot; {{ first_name }}" width="600"></a></td></tr></table></div>
+ <div class="component-wrapper"><table><tr><td class="kl-text" style="padding:10px"><div style="font-size:14px"><p>Hi {{ first_name|default:'there' }}, your cart:</p>
+ {% for line in event.item_ids %}{% catalog line.ProductID %}<p>{{ catalog_item.title }} x {{ line.Quantity }} - {% currency_format catalog_item.metadata|lookup:"$price" %}</p>{% endcatalog %}{% endfor %}
+ </div></td></tr></table></div>
+ <div class="component-wrapper"><table><tr><td class="kl-text" style="padding:10px"><div><p>{{ organization.name }} {{ organization.full_address }} {% unsubscribe %}</p></div></td></tr></table></div>
+</div></div></div></div></body></html>

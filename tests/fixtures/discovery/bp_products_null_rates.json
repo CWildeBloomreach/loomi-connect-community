@@ -1,0 +1,270 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "rows": [
+    {
+     "prod_id": "C0",
+     "product_title": "Sample tee 0",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C1",
+     "product_title": "Sample tee 1",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C2",
+     "product_title": "Sample tee 2",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C3",
+     "product_title": "Sample tee 3",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C4",
+     "product_title": "Sample tee 4",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C5",
+     "product_title": "Sample tee 5",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C6",
+     "product_title": "Sample tee 6",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C7",
+     "product_title": "Sample tee 7",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C8",
+     "product_title": "Sample tee 8",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C9",
+     "product_title": "Sample tee 9",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C10",
+     "product_title": "Sample tee 10",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C11",
+     "product_title": "Sample tee 11",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C12",
+     "product_title": "Sample tee 12",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C13",
+     "product_title": "Sample tee 13",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C14",
+     "product_title": "Sample tee 14",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C15",
+     "product_title": "Sample tee 15",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C16",
+     "product_title": "Sample tee 16",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C17",
+     "product_title": "Sample tee 17",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C18",
+     "product_title": "Sample tee 18",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C19",
+     "product_title": "Sample tee 19",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C20",
+     "product_title": "Sample tee 20",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C21",
+     "product_title": "Sample tee 21",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C22",
+     "product_title": "Sample tee 22",
+     "brand": "Contoso",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C23",
+     "product_title": "Sample tee 23",
+     "brand": "Pacifica ",
+     "visits": 0,
+     "revenue": "$0.00",
+     "rpv": null,
+     "conversion_rate": null
+    },
+    {
+     "prod_id": "C50",
+     "product_title": "Sample tee 50",
+     "brand": "Contoso",
+     "visits": 80,
+     "revenue": "$400.00",
+     "rpv": "$5.00",
+     "conversion_rate": "4%"
+    },
+    {
+     "prod_id": "C51",
+     "product_title": "Sample tee 51",
+     "brand": "Contoso",
+     "visits": 80,
+     "revenue": "$400.00",
+     "rpv": "$5.00",
+     "conversion_rate": "4%"
+    },
+    {
+     "prod_id": "C52",
+     "product_title": "Sample tee 52",
+     "brand": "Contoso",
+     "visits": 80,
+     "revenue": "$400.00",
+     "rpv": "$5.00",
+     "conversion_rate": "4%"
+    },
+    {
+     "prod_id": "C53",
+     "product_title": "Sample tee 53",
+     "brand": "Contoso",
+     "visits": 80,
+     "revenue": "$400.00",
+     "rpv": "$5.00",
+     "conversion_rate": "4%"
+    },
+    {
+     "prod_id": "C54",
+     "product_title": "Sample tee 54",
+     "brand": "Contoso",
+     "visits": 80,
+     "revenue": "$400.00",
+     "rpv": "$5.00",
+     "conversion_rate": "4%"
+    }
+   ]
+  }
+ }
+}

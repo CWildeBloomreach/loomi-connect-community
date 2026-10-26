@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; Bloomreach Engagement for campaign and scenario launches). Python 3 is optional, for the bundled calculation script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery,engagement
   access: read-only
 ---
@@ -40,7 +40,7 @@ This skill uses these Loomi Connect tools:
 | Measure | `get_discovery_query_performance`, `get_discovery_category_performance_table`, `get_discovery_product_performance_table`, `get_discovery_search_performance`, `get_discovery_category_performance`, `get_discovery_overall_performance`, `get_discovery_trend` |
 | Campaigns (Engagement) | `list_cloud_organizations`, `list_projects`, `get_campaign_calendar`, `search_scenarios`, `search_email_campaigns`, `estimate_eql_cost`, `execute_analytics_eql` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it.
 
 **You need:** the account (and site, if it has sites) or the Engagement project, and the change. If the user doesn't name the change, find candidates (step 2) and ask.
 
@@ -136,10 +136,10 @@ Things to get right:
 
 ### 6. Calculate the effect
 
-Put the numbers into a JSON file (run `python3 scripts/did_effect.py --template` to see the format) and run:
+Put the numbers into a JSON file (run `python3 <this skill's folder>/scripts/did_effect.py --template --out change.json` to start from an example, then replace its numbers) and run:
 
 ```bash
-python3 scripts/did_effect.py change.json [--placebo placebo.json]
+python3 <this skill's folder>/scripts/did_effect.py change.json [--placebo placebo.json]
 ```
 
 It prints the difference-in-differences effect on visits, orders, revenue, conversion, revenue per visit and AOV against each control, each with a 95% range; a two-proportion test on the treated conversion rate; the incremental revenue in the window and per 30 days with a range; the smallest effect the data could detect; warnings; and a verdict. `--json` prints the same as JSON.
@@ -212,6 +212,7 @@ Keep it to about one screen. Round money to the nearest $100 below $10k, and to 
 
 This skill is **read-only**. It never creates, changes, enables, disables or deletes rules, synonyms, redirects, facets, banners, categories, experiments, campaigns or scenarios.
 
-- If the user wants to roll back or change something, hand over to the relevant skill. Warn them that **Discovery changes go live immediately**, deletes can't be undone, and changes are blocked while an A/B test runs. Show exactly what would change and wait for an explicit "yes" before any write tool is used. Prefer disabling to deleting.
+- This skill never uses a write tool, even if asked. If the user wants to roll back or change something, give the exact change (what, where and the values) for them to make in the Bloomreach UI, or hand off to a skill that writes, such as `discovery-experiment-setup` to test a ranking change. Warn them that **Discovery changes go live immediately**, deletes can't be undone, and changes are blocked while an A/B test runs. Prefer disabling to deleting.
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 - For Engagement, use only aggregate EQL, run `estimate_eql_cost` first, and never run a `very_high` query. Never call `list_customers`, `get_customer_properties`, `list_customer_events` or `list_customers_in_segment`.
 - Don't repeat editors' names or email addresses from rule, synonym or experiment lists.

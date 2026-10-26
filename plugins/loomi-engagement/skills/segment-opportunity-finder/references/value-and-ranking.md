@@ -40,7 +40,7 @@ Every figure here is an **estimate built on stated assumptions**, not a forecast
 Save the inputs as JSON (format in the script's docstring) and run:
 
 ```bash
-python3 scripts/rank_opportunities.py opportunities.json
+python3 <this skill's folder>/scripts/rank_opportunities.py opportunities.json
 ```
 
 It prints the ranked table with value, reachable share, coverage and notes. Without Python, calculate by hand and show the working for the top opportunity.

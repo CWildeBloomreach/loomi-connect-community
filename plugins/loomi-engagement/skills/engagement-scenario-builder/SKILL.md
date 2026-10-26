@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.3"
+  version: "0.1.4"
   products: engagement
   access: writes
 ---
@@ -98,7 +98,7 @@ Follow [references/node-config.md](references/node-config.md) for each step's fi
 Save the payload to a file and run:
 
 ```
-python3 scripts/check_scenario.py PAYLOAD_JSON [--stored STORED_JSON]
+python3 <this skill's folder>/scripts/check_scenario.py PAYLOAD_JSON [--stored STORED_JSON]
 ```
 
 Pass `--stored` (the saved `search_scenarios` detail response) when changing an existing scenario. Fix every **error**. Read each **warning** to the user if it applies.
@@ -141,3 +141,5 @@ For a one-field change on one node (a wait time, a condition's name), `update_sc
 ```
 
 Before saving, the same block ends with "Shall I create this as a draft in <project>?" instead of the "Saved as" line.
+
+After saving, tell the user to run `scenario-qa` on the draft before going live.

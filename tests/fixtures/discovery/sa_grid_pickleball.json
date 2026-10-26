@@ -1,0 +1,22 @@
+{
+ "data": {
+  "response": {
+   "numFound": 2,
+   "docs": [
+    {
+     "pid": "T1",
+     "title": "Pickleball paddle set",
+     "brand": "Litware"
+    },
+    {
+     "pid": "T2",
+     "title": "Tennis racket",
+     "brand": "Litware"
+    }
+   ]
+  },
+  "debug": {
+   "feUrl": "https://search.invalid/api?q=pickleball&query.search_mode=hybrid&auth_key=REDACTED&start=0"
+  }
+ }
+}

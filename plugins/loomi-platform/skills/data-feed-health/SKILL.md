@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery; optionally Data Hub and Engagement).
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery,datahub,engagement
   access: read-only
 ---
@@ -23,7 +23,7 @@ It covers:
 3. **Data Hub** (if enabled): failed or stale pipeline jobs, and which catalogs it manages.
 4. **Engagement** (optional): catalog job history and whether standard events and the product catalog are mapped.
 
-This skill only reads. It never re-runs jobs, uploads data or changes settings.
+This skill only reads. It never re-runs jobs, uploads data or changes settings. For Engagement event tracking and data quality (event volumes, junk events, property fill rates), use `engagement-tracking-health`.
 
 ## Before you start
 
@@ -38,7 +38,7 @@ This skill uses these Loomi Connect tools:
 | Data Hub | `search_datahub_jobs`, `search_datahub_catalogs` |
 | Engagement | `search_catalogs`, `list_catalog_jobs`, `get_mapping` |
 
-`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it.
+`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it. Use read tools only: `search_tools` also returns write tools; never call them.
 
 Ask the user which parts to check. By default, check the Discovery pixel and catalog, plus Data Hub and Engagement if the user has access to a cloud organisation.
 
@@ -81,7 +81,7 @@ Run each script as one plain command from your own working folder, giving the sc
 3. Summarise with [scripts/discovery_jobs_summary.py](scripts/discovery_jobs_summary.py) if you can run scripts:
 
    ```
-   python3 scripts/discovery_jobs_summary.py jobs.json
+   python3 <this skill's folder>/scripts/discovery_jobs_summary.py jobs.json
    ```
 
    It reports, per job kind, the latest success, hours since it, failures, warnings and product-count changes, and suggests a RAG status. Otherwise work it out by hand:
@@ -138,4 +138,4 @@ This skill is **read-only**. It never re-runs jobs, uploads or imports data, or 
 
 It never reads individual customer profiles or event histories, and it never puts user IDs, cookies, IP addresses or segment values from pixel samples into its output.
 
-If the user asks to fix something, explain what needs to change and who usually owns it (the site's front-end team for pixels; whoever sends the feed for catalog data). If they want to use a Loomi Connect write tool, show exactly what it will do and wait for an explicit "yes".
+If the user asks to fix something, explain what needs to change and who usually owns it (the site's front-end team for pixels; whoever sends the feed for catalog data). Give the exact change (what, where and the values) for them to make in Bloomreach. This skill never uses a write tool, even if asked.

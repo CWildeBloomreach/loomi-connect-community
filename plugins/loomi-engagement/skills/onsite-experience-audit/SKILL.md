@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled audit script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -41,7 +41,7 @@ This skill uses these Loomi Connect tools:
 | Performance (optional) | `get_event_schema`, `estimate_eql_cost`, `execute_analytics_eql` |
 | Discovery placements (optional) | `get_discovery_weblayer_customizations` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. There's no separate "weblayer" tool in Engagement: web layers are **banners**. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. There's no separate "weblayer" tool in Engagement: web layers are **banners**. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -91,7 +91,7 @@ From each detail, keep only:
 If you can run Python, save the list and detail responses to files and run:
 
 ```bash
-python3 scripts/audit_experiences.py banners_list.json banner_detail_*.json
+python3 <this skill's folder>/scripts/audit_experiences.py banners_list.json banner_detail_*.json
 ```
 
 It prints the findings for steps 4–6 without any content. It also accepts in-app message, survey and experiment responses.

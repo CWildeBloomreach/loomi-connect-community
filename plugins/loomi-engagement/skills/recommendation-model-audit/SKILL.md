@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled audit script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -123,7 +123,7 @@ Read [references/audit-checks.md](references/audit-checks.md) for the full rules
 If you can run Python, save the engine detail responses, the catalog list and any placement responses to files and run:
 
 ```bash
-python3 scripts/audit_engines.py --engines engine_*.json --catalogs catalogs.json --jobs jobs_<catalogId>.json --placements scenario_node_*.json email_*.json banner_*.json
+python3 <this skill's folder>/scripts/audit_engines.py --engines engine_*.json --catalogs catalogs.json --jobs jobs_<catalogId>.json --placements scenario_node_*.json email_*.json banner_*.json
 ```
 
 It prints each engine's summary, duplicate groups, catalog problems and the placements that reference each engine, without printing any content.

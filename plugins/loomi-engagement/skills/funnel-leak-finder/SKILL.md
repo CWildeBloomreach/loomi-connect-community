@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -22,7 +22,7 @@ Measures how many customers move from viewing a product to adding to cart, (wher
 
 The answer is a short list of the biggest leaks, each with the revenue at stake and the next step, plus the missing or weak recovery flows, with hand-offs to `engagement-segment-builder` (to define the recovery audience) and `engagement-scenario-explainer` (to inspect an existing flow).
 
-It uses aggregate counts only. It never reads individual customers and never changes anything.
+It uses aggregate counts only. It never reads individual customers and never changes anything. To see how an existing recovery flow performs step by step, use `engagement-scenario-performance`. For campaign results across a period, use `engagement-campaign-digest`.
 
 ## Before you start
 
@@ -36,7 +36,7 @@ This skill uses these Loomi Connect tools:
 | Counts | `estimate_eql_cost`, `execute_analytics_eql` |
 | Recovery flows | `search_scenarios`, `search_scenario_nodes` (not listed by default: find it with `search_tools`, run it with `call_tool`) |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 Ask the user for the **window** (default: last 30 days) and the **conversion window** between steps (default: 7 days; use 1 day for fast-moving or low-price catalogs). Ask for a **recovery rate** assumption if they have one from their own flows; otherwise use the defaults in [references/revenue-at-stake.md](references/revenue-at-stake.md) and label them as assumptions.
 
@@ -103,7 +103,7 @@ Call `search_funnels`. If a saved funnel covers these steps, fetch it with `funn
 
 ### 5. Size abandoned carts and order value
 
-1. **Abandoned carts:** customers at the cart step minus customers at the next step, from step 4 (if the purchase step is reliable).
+1. **Abandoned carts:** customers at the cart step minus customers at the next step, from step 4 (if the purchase step is reliable, or the next step is checkout). The script takes the first step named "cart" or "basket"; set `cart_step` (its index) in the JSON if yours is named differently.
 2. **Average cart value** (pattern V2): `select avg event cart_update.total_price where .action = "add" by event cart_update.action grouping top 3 with null in last 30 days`. Read the `add` row.
 3. **Average order value** (pattern V3): `select avg event purchase.total_price by event purchase.<low-cardinality property> grouping top 5 with null in last 30 days`. Weight the rows by their counts if there's more than one.
 4. If a value property is empty (all rows 0 or null), try the other value fields, and say which you used. In testing, `price` on `cart_update` was empty while `total_price` was filled.
@@ -113,7 +113,7 @@ Call `search_funnels`. If a saved funnel covers these steps, fetch it with `funn
 If you can run Python, save the counts as JSON (format in the script's docstring) and run:
 
 ```
-python3 scripts/funnel_leaks.py funnel.json
+python3 <this skill's folder>/scripts/funnel_leaks.py funnel.json
 ```
 
 Otherwise use the formulas in [references/revenue-at-stake.md](references/revenue-at-stake.md). In short:

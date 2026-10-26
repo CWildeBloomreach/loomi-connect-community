@@ -1,0 +1,4 @@
+{"success": true, "campaigns": [
+  {"campaign_id": "c4", "campaign_name": "Next week newsletter", "action_name": "Email", "channel": "email", "status": "running",
+   "trigger": "planned", "times": [{"start": 1791280800}], "results": {"reach": 45000}}
+]}

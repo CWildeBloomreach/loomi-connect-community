@@ -1,0 +1,41 @@
+{
+ "result": {
+  "success": true,
+  "data": [
+   {
+    "id": 9001,
+    "name": "Black Friday boost",
+    "ruleType": "ranking",
+    "enabled": true,
+    "syncStatus": "synced",
+    "startedAt": 1795651200000,
+    "endedAt": 1796126400000,
+    "durationTag": "scheduled",
+    "isAbTestLive": false,
+    "queries": [
+     {
+      "query": "black friday",
+      "queryType": "search"
+     }
+    ]
+   },
+   {
+    "id": 9002,
+    "name": "Cyber week boost",
+    "ruleType": "ranking",
+    "enabled": true,
+    "syncStatus": "synced",
+    "startedAt": 1795651200000,
+    "endedAt": 1796169599000,
+    "durationTag": "scheduled",
+    "isAbTestLive": false,
+    "queries": [
+     {
+      "query": "cyber monday",
+      "queryType": "search"
+     }
+    ]
+   }
+  ]
+ }
+}

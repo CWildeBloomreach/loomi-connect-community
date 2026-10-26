@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled summary script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -36,7 +36,7 @@ This skill uses these Loomi Connect tools:
 | Event names and properties | `get_event_schema` (large; only if a definition needs checking) |
 | Optional numbers for funnels, trends and segmentations | `estimate_eql_cost`, then `execute_analytics_eql` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools. There is no read tool for saved **metrics** (dashboard KPI tiles); see step 4.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them. There is no read tool for saved **metrics** (dashboard KPI tiles); see step 4.
 
 ### Rules for calling the tools
 
@@ -96,7 +96,7 @@ Only call a reference **missing** when you looked in the right list and it isn't
 - **Reports:** call `calculate_report` with `project_id` and `report_id`, and **no** `parameter_values` (the cache path). If the report is `parametrized`, check that `parameter_values` are saved; if a required one is missing the tool returns HTTP 400 naming it: ask the user for a value rather than inventing one.
   - The result is `as_dict`: keys are the row breakdown values (for a timestamp breakdown, Unix timestamps of each bucket's start in the **project's time zone**), and each value is a list with **one number per metric, in the order of `server.metrics[]`**. There are no column headers: label them yourself from the metric names.
   - An empty `as_dict`, or all zeros on a production project, can mean the cache is cold (the report hasn't been opened in the UI recently). Say so; don't present zeros as fact.
-  - [scripts/analysis_summary.py](scripts/analysis_summary.py) turns a saved `calculate_report` response into a labelled table with dates.
+  - [scripts/analysis_summary.py](scripts/analysis_summary.py) turns a saved `calculate_report` response into a labelled table with dates: `python3 <this skill's folder>/scripts/analysis_summary.py result report.json --tz <project time zone>`. Pass `--tz` with the project's IANA time zone when you know it; without it, dates are right only for zones from UTC−10 to UTC+13, and the output says so.
 - **Funnels, trends, segmentations and event segmentations:** there's no calculate tool. Offer, rather than run by default, an aggregate EQL equivalent (for example, a segment size or a one-step purchaser count). Estimate first. Say plainly that an EQL re-creation may differ slightly from the UI. For deeper funnel analysis, hand off to `funnel-leak-finder` if it's installed.
 - **Dashboard metric tiles:** say they can't be calculated through Loomi Connect, and that the user should read them in the UI.
 

@@ -31,7 +31,7 @@
     {
       "name": "loomi-platform",
       "source": "./plugins/loomi-platform",
-      "description": "Skills that span Bloomreach products via Loomi Connect: data and feed health, and connecting Discovery search demand to Engagement campaigns.",
+      "description": "Skills that span products: weekly briefing, revenue anomalies, peak readiness, data and feed health, campaign planning, collections and change impact, and turning search demand into campaigns",
       "category": "marketing",
       "tags": [
         "bloomreach",

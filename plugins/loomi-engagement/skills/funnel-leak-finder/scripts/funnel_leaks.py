@@ -18,8 +18,13 @@ funnel.json (only "steps", "counts" and "aov" are required):
     "device = iPhone": [9000, 900, 180],
     "device = Other": [19000, 3150, 960]
   },
-  "min_customers": 100                    # optional: below this, no value is given
+  "min_customers": 100,                   # optional: below this, no value is given
+  "cart_step": 1                          # optional: index of the cart step (default: the first
+                                          # step named "cart" or "basket", else 1)
 }
+
+Abandoned carts = customers at the cart step minus customers at the next step.
+Counts may be strings ("1,200"); a missing count is treated as 0 and said so.
 
 Formulas are in references/revenue-at-stake.md. All values are estimates:
 "walking away" is an upper bound; "recoverable" rests on the recovery rate.
@@ -27,7 +32,43 @@ Standard library only; no network access.
 """
 import argparse
 import json
+import math
 import sys
+
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
+def counts_of(values, label, caveats):
+    out = []
+    for i, x in enumerate(values):
+        v = num(x)
+        if v is None:
+            caveats.append(f"{label}: count {i + 1} is missing ({x!r}); treated as 0.")
+        out.append(int(round(v or 0)))
+    return out
 
 
 def pct(x):
@@ -46,26 +87,42 @@ def default_rate(i, n_steps):
     return 0.05 if i == n_steps - 1 else 0.01
 
 
+def cart_index(d, steps):
+    last = len(steps) - 1
+    if d.get("cart_step") is not None:
+        i = int(d["cart_step"])
+        if not 0 <= i < last:
+            raise SystemExit(f"cart_step must be between 0 and {last - 1} (the last step is the purchase)")
+        return i
+    for i, name in enumerate(steps[:last]):
+        if any(w in str(name).lower() for w in ("cart", "basket")):
+            return i
+    return min(1, last - 1)
+
+
 def analyse(d):
-    steps, n = d["steps"], [int(c or 0) for c in d["counts"]]
+    caveats = []
+    steps, n = d["steps"], counts_of(d["counts"], "Funnel", caveats)
     if len(steps) != len(n) or len(n) < 2:
         raise SystemExit("steps and counts must be lists of the same length (2 or more)")
-    aov = float(d["aov"])
-    cart = d.get("avg_cart_value")
-    rates = d.get("recovery_rates") or []
-    min_n = int(d.get("min_customers", 100))
-    times = d.get("times") or []
+    aov = num(d.get("aov"))
+    if aov is None:
+        raise SystemExit("aov is missing or not a number: ask the user for their average order value")
+    cart = num(d.get("avg_cart_value"))
+    rates = [num(r) for r in (d.get("recovery_rates") or [])]
+    min_n = int(num(d.get("min_customers")) or 100)
+    times = [num(t) for t in (d.get("times") or [])]
     last = len(n) - 1
+    ci = cart_index(d, steps)
 
-    caveats = []
     purchase_ok = True
-    buyers = d.get("purchasers_in_window")
+    buyers = num(d.get("purchasers_in_window"))
     if buyers:
         share = n[last] / buyers if buyers else 0
         if share < 0.5:
             purchase_ok = False
             caveats.append(
-                f"Only {share * 100:.0f}% of the {buyers:,} purchasers in the window appear at the funnel's last step. "
+                f"Only {share * 100:.0f}% of the {buyers:,.0f} purchasers in the window appear at the funnel's last step. "
                 "Purchases are probably not linked to the browsing identity (server-side or imported orders), "
                 "so the last step isn't a reliable leak. Check purchase tracking (engagement-tracking-health).")
 
@@ -74,21 +131,29 @@ def analyse(d):
         lost = max(n[i - 1] - n[i], 0)
         conv = n[i] / n[i - 1] if n[i - 1] else None
         into_last = i == last
-        downstream = 1.0 if into_last else (n[last] / n[i] if n[i] else 0.0)
+        estimated = False
+        if into_last:
+            downstream = 1.0
+        elif purchase_ok:
+            downstream = n[last] / n[i] if n[i] else 0.0
+        else:
+            # The funnel's purchase step misses most buyers: use all purchasers in the window instead.
+            downstream, estimated = (min(buyers / n[i], 1.0) if n[i] else 0.0), True
         value = min(aov, float(cart)) if (into_last and cart) else aov
         rate = rates[i] if i < len(rates) and rates[i] is not None else default_rate(i, len(n))
         assumed = not (i < len(rates) and rates[i] is not None)
         reliable = purchase_ok or not into_last
         enough = n[i - 1] >= min_n
         walk = lost * downstream * value if (reliable and enough) else None
-        if not purchase_ok and i < last:
-            walk = None  # downstream conversion depends on the unreliable last step
+        note = "" if reliable else "purchase step unreliable"
+        if estimated:
+            note = "onward conversion from all purchasers in the window (upper bound)"
         rows.append({
             "from": steps[i - 1], "to": steps[i], "customers": n[i], "step_conversion": conv, "lost": lost,
             "value_walking_away": walk, "recovery_rate": rate, "rate_assumed": assumed,
             "recoverable": walk * rate if walk is not None else None,
             "avg_seconds": times[i] if i < len(times) and times[i] not in (None, -1) else None,
-            "note": "" if reliable else "purchase step unreliable",
+            "note": note,
         })
         if not enough:
             rows[-1]["note"] = f"fewer than {min_n} customers"
@@ -96,7 +161,7 @@ def analyse(d):
     overall = n[last] / n[0] if n[0] else 0
     segs = []
     for name, counts in (d.get("segments") or {}).items():
-        c = [int(x or 0) for x in counts]
+        c = counts_of(counts, f"Segment {name}", caveats)
         conv = c[-1] / c[0] if c and c[0] else None
         step_convs = [(c[i] / c[i - 1]) if c[i - 1] else None for i in range(1, len(c))]
         gap = None
@@ -106,14 +171,12 @@ def analyse(d):
                      "gap_value": gap})
     segs.sort(key=lambda s: -(s["gap_value"] or 0))
 
-    if not purchase_ok:
-        weakest = rows[0] if rows else None
-    else:
-        weakest = max(rows, key=lambda r: r["recoverable"] or 0) if rows else None
+    weakest = max(rows, key=lambda r: r["recoverable"] or 0) if rows else None
     abandoned = None
-    if purchase_ok and len(n) >= 2:
-        abandoned = {"customers": n[last - 1] - n[last], "avg_cart_value": cart,
-                     "value_in_carts": (n[last - 1] - n[last]) * float(cart) if cart else None}
+    if purchase_ok or ci + 1 < last:
+        left = max(n[ci] - n[ci + 1], 0)
+        abandoned = {"cart_step": steps[ci], "next_step": steps[ci + 1], "customers": left,
+                     "avg_cart_value": cart, "value_in_carts": left * cart if cart else None}
     return {"window": d.get("window"), "conversion_window": d.get("conversion_window"), "steps": steps,
             "counts": n, "overall_conversion": overall, "aov": aov, "rows": rows, "segments": segs,
             "abandoned_carts": abandoned, "biggest_leak": weakest, "caveats": caveats}
@@ -140,7 +203,7 @@ def render(r):
             out.append(f"| {s['segment']} | {s['entered']:,} | {pct(s['end_to_end'])} | {sc} | {money(s['gap_value'])} |")
     a = r["abandoned_carts"]
     if a:
-        out.append(f"\nAbandoned carts: {a['customers']:,} customers"
+        out.append(f"\nAbandoned carts ({a['cart_step']}, not {a['next_step']}): {a['customers']:,} customers"
                    + (f", average cart {money(a['avg_cart_value'])}, about {money(a['value_in_carts'])} left in carts"
                       if a["value_in_carts"] else ""))
     b = r["biggest_leak"]

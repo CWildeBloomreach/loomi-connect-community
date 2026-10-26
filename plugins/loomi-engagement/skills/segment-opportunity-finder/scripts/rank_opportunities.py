@@ -15,7 +15,10 @@ opportunities.json:
       "size": 10000,                 # aggregate EQL count (all rows added up)
       "reachable": 200,              # optional: count that can be messaged (contact + consent)
       "onsite": true,                # optional: can be reached on-site (web layer) when not messageable
-      "value_per_conversion": 110.0, # optional: AOV, cart value or category AOV; defaults to "aov"
+      "value_per_conversion": 110.0, # optional: overrides the pattern's default value basis (below)
+      "avg_cart_value": 110.0,       # optional, P6: average cart value
+      "category_aov": 80.0,          # optional, P1 and P5: the category's AOV
+      "discount_depth": 0.2,         # P4: discount moved away from (0.2 or "20%")
       "response_rate": 0.05,         # optional: overrides the pattern default
       "period_multiplier": 4.3,      # optional: e.g. a weekly audience refills ~4.3 times a month
       "coverage": "none",            # none | partial | covered | inactive
@@ -23,6 +26,16 @@ opportunities.json:
     }
   ]
 }
+
+Default value per conversion, by pattern (references/value-and-ranking.md):
+    P1, P5  category_aov (store AOV if not given, noted)
+    P2, P7  AOV
+    P3      AOV x 1.5
+    P4      AOV x discount_depth (margin protected; no value without discount_depth)
+    P6      avg_cart_value (store AOV if not given, noted)
+    P8      0.5 x AOV (12-month value of a messageable customer)
+    other   AOV
+Numbers may be strings ("1,200", "$95", "20%").
 
 For each row:
     reach         = reachable / size (1.0 if "reachable" is missing; flagged as an assumption)
@@ -54,6 +67,62 @@ DEFAULT_RATES = {
 }
 COVERAGE = {"none": 1.0, "inactive": 0.9, "partial": 0.5, "covered": 0.1}
 
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
+def default_value(pid, o, aov, notes):
+    """Value per conversion from the pattern's value basis, when the row gives none."""
+    def given(key, label):
+        v = num(o.get(key))
+        if v is None:
+            notes.append(f"store AOV ({label} not given)")
+            return aov
+        return v
+
+    if pid in ("P1", "P5"):
+        return given("category_aov", "category AOV")
+    if pid == "P6":
+        return given("avg_cart_value", "average cart value")
+    if pid == "P3":
+        notes.append("AOV × 1.5")
+        return aov * 1.5
+    if pid == "P4":
+        depth = num(o.get("discount_depth"))
+        if depth is None:
+            notes.append("no value: discount_depth missing")
+            return 0.0
+        depth = depth / 100 if depth > 1 else depth
+        notes.append(f"AOV × {depth:.0%} discount")
+        return aov * depth
+    if pid == "P8":
+        notes.append("0.5 × AOV per consent")
+        return aov * 0.5
+    notes.append("store AOV")
+    return aov
+
 
 def money(x):
     if x is None:
@@ -72,19 +141,22 @@ def sig2(n):
 
 def score_row(o, default_aov, onsite_factor):
     notes = []
-    size = int(o.get("size") or 0)
+    size = int(num(o.get("size")) or 0)
     pid = str(o.get("id", "")).upper()
-    rate = o.get("response_rate")
+    rate = num(o.get("response_rate"))
+    if rate is not None and rate > 1:
+        rate /= 100  # "5%" or 5 means 5%
     if rate is None:
         rate = DEFAULT_RATES.get(pid, 0.03)
         notes.append(f"default rate {rate:.0%}")
-    vpc = o.get("value_per_conversion")
+    vpc = num(o.get("value_per_conversion"))
     if vpc is None:
-        vpc = default_aov
-        notes.append("store AOV")
-    mult = float(o.get("period_multiplier", 1.0))
-    if "reachable" in o and o["reachable"] is not None and size:
-        reach = max(0.0, min(1.0, float(o["reachable"]) / size))
+        vpc = default_value(pid, o, default_aov, notes)
+    mult = num(o.get("period_multiplier"))
+    mult = 1.0 if mult is None else mult
+    reachable = num(o.get("reachable"))
+    if reachable is not None and size:
+        reach = max(0.0, min(1.0, reachable / size))
     else:
         reach = 1.0 if size else 0.0
         notes.append("reachability not measured")
@@ -118,7 +190,10 @@ def main():
     args = ap.parse_args()
     with open(args.path, encoding="utf-8") as f:
         d = json.load(f)
-    aov = float(d.get("aov") or 0)
+    aov = num(d.get("aov"))
+    if aov is None:
+        print("Warning: no store AOV given; values that need it count as 0.", file=sys.stderr)
+        aov = 0.0
     rows = [score_row(o, aov, args.onsite_rate_factor) for o in d.get("opportunities", [])]
     rows.sort(key=lambda r: r["score"], reverse=True)
 

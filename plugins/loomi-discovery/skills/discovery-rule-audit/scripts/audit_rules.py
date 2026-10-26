@@ -27,6 +27,7 @@ import argparse
 import collections
 import datetime as dt
 import json
+import math
 import re
 import sys
 
@@ -36,9 +37,39 @@ PROTECTED = re.compile(r"do not (delete|change|remove|update)|don'?t (delete|cha
 SEVERITY = {"high": 0, "medium": 1, "low": 2, "info": 3}
 
 
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            sys.exit(f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
+    return doc
+
+
+def num(v):
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
+    try:
+        f = float(s)
+    except ValueError:
+        return None
+    return f if math.isfinite(f) else None
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
-        doc = json.load(f)
+        doc = check(json.load(f), path)
     if isinstance(doc, dict) and "result" in doc and "data" not in doc:
         doc = doc["result"]
     return doc.get("data", doc) if isinstance(doc, dict) else doc
@@ -49,6 +80,11 @@ def kind_of(rule):
     qts = {q.get("queryType") for q in rule.get("queries") or []}
     scope = "global" if any("global" in (t or "") for t in qts) else ("category" if "category" in qts else "search")
     return f"{scope} {rt}"
+
+
+def is_expired(rule, now_ms):
+    ended = num(rule.get("endedAt"))
+    return rule.get("durationTag") == "expired" or bool(ended and ended < now_ms)
 
 
 def days_since(ms, today):
@@ -70,19 +106,22 @@ def main():
     today = dt.date.fromisoformat(args.today) if args.today else dt.datetime.now(dt.timezone.utc).date()
     now_ms = dt.datetime.combine(today, dt.time(), dt.timezone.utc).timestamp() * 1000
 
+    # The same rule can be saved twice (overlapping pages); a ranking rule and a media rule can
+    # share an ID, so key on both.
     rules, seen = [], set()
     for path in args.rules:
         for r in load(path) or []:
-            if r.get("id") not in seen:
-                seen.add(r.get("id"))
+            k = (r.get("ruleType"), r.get("id"))
+            if k not in seen:
+                seen.add(k)
                 rules.append(r)
 
     query_visits = None
     if args.queries:
-        query_visits = {row["query"].strip().lower(): row.get("visits") or 0 for row in load(args.queries)["rows"]}
+        query_visits = {row["query"].strip().lower(): num(row.get("visits")) or 0 for row in load(args.queries)["rows"]}
     cat_visits = None
     if args.categories:
-        cat_visits = {str(row.get("cat_id")).strip().lower(): row.get("visits") or 0 for row in load(args.categories)["rows"]}
+        cat_visits = {str(row.get("cat_id")).strip().lower(): num(row.get("visits")) or 0 for row in load(args.categories)["rows"]}
 
     exp_rules = collections.defaultdict(list)
     experiments = load(args.experiments) if args.experiments else []
@@ -101,7 +140,7 @@ def main():
     for r in rules:
         enabled = bool(r.get("enabled"))
         name = r.get("name") or ""
-        expired = r.get("durationTag") == "expired" or (r.get("endedAt") and r["endedAt"] < now_ms)
+        expired = is_expired(r, now_ms)
         protected = bool(PROTECTED.search(name))
         if r.get("isAbTestLive"):
             add("info", r, "In a RUNNING A/B test", "Leave it. It can't be changed or deleted until the test ends.")
@@ -140,7 +179,7 @@ def main():
     # Duplicates and overlaps: more than one enabled rule of the same type for the same query.
     groups = collections.defaultdict(list)
     for r in rules:
-        if r.get("enabled") and r.get("durationTag") != "expired":
+        if r.get("enabled") and not is_expired(r, now_ms):
             for q in r.get("queries") or []:
                 groups[(r.get("ruleType"), q.get("queryType"), str(q.get("query")).strip().lower())].append(r)
     for (rt, qt, q), rs in sorted(groups.items()):

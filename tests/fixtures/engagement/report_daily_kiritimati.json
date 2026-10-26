@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "as_dict": {"1767607200": [12, "340.50"], "1767520800": [10, 300.0]},
+  "definition": {
+    "name": "Synthetic daily purchases",
+    "server": {
+      "rows": [{"attribute": {"type": "timestamp"}}],
+      "metrics": [{"name": "Purchases"}, {"name": "Revenue"}]
+    }
+  }
+}

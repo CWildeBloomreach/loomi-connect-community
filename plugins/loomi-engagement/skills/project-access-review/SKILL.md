@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled review script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -32,7 +32,7 @@ This skill uses these Loomi Connect tools:
 | Organisation and projects | `list_cloud_organizations`, `list_projects`, optionally `get_cloud_organization_details` |
 | Users | `list_project_users` |
 
-All are normally listed directly. If one isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools. Don't use `list_project_variables` or any other project-configuration tool: this review is about user access only.
+All are normally listed directly. If one isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them. Don't use `list_project_variables` or any other project-configuration tool: this review is about user access only.
 
 ### What the data does and doesn't contain
 
@@ -80,7 +80,7 @@ Key every user by lower-cased **email**. The same person in several projects has
 If you can run Python, save each response to a file and run:
 
 ```bash
-python3 scripts/access_review.py --company-domain example.com --vendor-domain partner.example "Prod=users_prod.json" "Sandbox=users_sandbox.json"
+python3 <this skill's folder>/scripts/access_review.py --company-domain example.com --vendor-domain partner.example "Prod=users_prod.json" "Sandbox=users_sandbox.json"
 ```
 
 Add `--show-created` for the inferred account-creation column, and `--many-projects N` to change the threshold. It prints the access-review table, a per-project summary and the flag counts. Otherwise apply the checks by hand.

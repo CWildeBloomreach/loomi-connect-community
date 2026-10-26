@@ -1,0 +1,14 @@
+{
+ "data": {
+  "current": {
+   "revenue": "NA",
+   "visits": null,
+   "conversions": "N/A"
+  },
+  "previous": {
+   "revenue": "$1,000.00",
+   "visits": "1,000",
+   "conversions": "10"
+  }
+ }
+}

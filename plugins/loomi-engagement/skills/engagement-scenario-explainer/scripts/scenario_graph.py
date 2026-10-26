@@ -14,8 +14,10 @@ SCENARIO_JSON  a saved `search_scenarios` response fetched with a scenario_id.
 --segmentations  a saved `search_segmentations` list response, to check references.
 --consent        a saved `get_consent_settings` response, to check consent categories.
 
-Prints: triggers, a flow outline from each trigger, references found, and
-structural warnings. Webhook payloads, headers and URLs are never printed.
+Prints: triggers, a flow outline from each trigger (A/B branches labelled by
+variant id, limit branches as within / over), references found, and structural
+warnings (dangling waits, branches from removed variants, splits not adding up
+to 100%). Webhook payloads, headers and URLs are never printed.
 """
 import argparse
 import json
@@ -27,9 +29,17 @@ ACTION_SUFFIXES = ("-webhook-action", "add-event-action", "set-property-action")
 METRIC_RE = re.compile(r"(metrics|report_value_by_key)\(\s*['\"]([0-9a-f]{24})['\"]")
 
 
-def unwrap(obj):
+class ToolError(Exception):
+    pass
+
+
+def unwrap(obj, path=""):
     """Strip the {result: {data: ...}} / {data: ...} envelopes Loomi Connect uses."""
     for _ in range(3):
+        for o in (obj, obj.get("result") if isinstance(obj, dict) else None):
+            if isinstance(o, dict) and o.get("success") is False:
+                raise ToolError(f"{path}: Loomi Connect returned an error: {o.get('error') or 'no error text'}. "
+                                "This check couldn't run; don't treat it as 'nothing found'.")
         if isinstance(obj, dict) and "result" in obj and isinstance(obj["result"], dict):
             obj = obj["result"]
         if isinstance(obj, dict) and "data" in obj and obj.get("data") is not None:
@@ -39,7 +49,7 @@ def unwrap(obj):
 
 def load(path):
     with open(path, encoding="utf-8") as f:
-        return unwrap(json.load(f))
+        return unwrap(json.load(f), path)
 
 
 def is_trigger(t):
@@ -72,6 +82,29 @@ def node_label(n):
     return f"{base} \"{name}\"" if name else base
 
 
+def as_int(x):
+    try:
+        return int(float(str(x).strip().rstrip("%")))
+    except (TypeError, ValueError):
+        return None
+
+
+def branch_label(n, idx):
+    """Name an output (connector_index) of a branching node."""
+    t = n.get("type")
+    if t == "condition":
+        return {1: "yes", 2: "no"}.get(idx, str(idx))
+    if t == "limit":
+        return {1: "within limit", 2: "over limit"}.get(idx, str(idx))
+    if t in ("ab-split", "ab-split-contextual"):
+        offset = 1 if t == "ab-split-contextual" else 0  # contextual outputs are id + 1
+        for v in n.get("variants") or []:
+            if as_int(v.get("id")) is not None and as_int(v.get("id")) + offset == idx:
+                return v.get("name") or f"variant {v.get('id')}"
+        return f"output {idx}: no such variant" if n.get("variants") else str(idx)
+    return ""
+
+
 def summarise_node(n):
     t = n.get("type", "")
     bits = []
@@ -80,7 +113,7 @@ def summarise_node(n):
         kinds = [f.get("type") + (":" + f["attribute"].get("type") if f.get("attribute") else "")
                  for f in cf.get("filters") or []]
         bits.append(f"formula {cf.get('formula') or '(none)'}; atoms {kinds}")
-    elif t == "ab-split" and "variants" in n:
+    elif t in ("ab-split", "ab-split-contextual") and "variants" in n:
         bits.append(", ".join(f"{v.get('name')} {v.get('percentage')}%" for v in n.get("variants") or []))
     elif t == "limit" and "steps" in n:
         bits.append("limit " + ", ".join(str(s.get("limit")) for s in n.get("steps") or []))
@@ -166,13 +199,7 @@ def main():
         seen.add(nid)
         print(f"{prefix}{summarise_node(n)}")
         for idx, dest in sorted(out_edges.get(nid, [])):
-            label = ""
-            if n.get("type") == "condition":
-                label = {1: "yes", 2: "no"}.get(idx, str(idx))
-            elif n.get("type") == "ab-split":
-                vs = n.get("variants") or []
-                label = vs[idx - 1].get("name") if 0 < idx <= len(vs) else str(idx)
-            walk(dest, depth + 1, label)
+            walk(dest, depth + 1, branch_label(n, idx))
 
     for t in triggers:
         walk(t["id"], 0, "")
@@ -187,8 +214,19 @@ def main():
         elif not is_trigger(t) and not in_count.get(nid):
             kind = "action" if is_action(t) else "node"
             warnings.append(f"Disconnected {kind} {node_label(n)}: nothing leads to it, so it never runs")
-        if t == "ab-split" and not out_edges.get(nid):
-            warnings.append(f"{node_label(n)} has no branches (group assignment only?)")
+        if t in ("ab-split", "ab-split-contextual"):
+            if not out_edges.get(nid):
+                warnings.append(f"{node_label(n)} has no branches (group assignment only?)")
+            if n.get("variants"):
+                for idx, _ in out_edges.get(nid, []):
+                    if branch_label(n, idx).endswith("no such variant"):
+                        warnings.append(f"{node_label(n)}: a connection leaves output {idx}, but no variant has that "
+                                        "id (removed variant?), so the steps after it never run")
+                shares = [as_int(v.get("percentage")) for v in n["variants"]]
+                if None not in shares and sum(shares) != 100:
+                    warnings.append(f"{node_label(n)}: variant percentages add up to {sum(shares)}%, not 100%")
+        if t.startswith("wait-action") and not out_edges.get(nid):
+            warnings.append(f"Dangling wait {node_label(n)}: nothing follows it, so customers just wait and leave")
         if t == "condition" and not out_edges.get(nid):
             warnings.append(f"{node_label(n)} leads nowhere")
     if not triggers:
@@ -228,5 +266,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    except ToolError as e:
+        sys.exit(str(e))
     except (OSError, ValueError, KeyError) as e:
         sys.exit(f"error: {e}")

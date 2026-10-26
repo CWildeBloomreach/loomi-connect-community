@@ -21,11 +21,12 @@ envelope or just its `data` object.
 example "Court shoes": the grid for "court shoes" and "indoor court shoe"). Products
 found only there get the tier "companion"; products also returned by the topic's own
 searches are marked as backed by both knowledge and data. Every file after --family
-belongs to it until the next --family or --rule.
+belongs to it until the next --family, --rule or other option (so options such as
+--top 5 can come after a group; wording files after such an option are wordings again).
 
 --rule starts a group of files holding one candidate rule's products (its paged grid
 responses, usually `query="*"` with the rule as fq). Every file after it belongs to
-that rule until the next --rule.
+that rule until the next option.
 
 Output: one JSON object (or Markdown with --markdown) with each product's score, tier,
 evidence source (data, knowledge or both) and signals; for each family its size and
@@ -44,12 +45,46 @@ FLOOR = 0.05
 STANDARD_BONUS = 1.5
 
 
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+        data = check(json.load(f), path)
+    if isinstance(data, dict) and isinstance(data.get("result"), dict):
+        data = data["result"]  # call_tool wraps the response once more
     if isinstance(data, dict) and isinstance(data.get("data"), dict):
         return data["data"]
     return data if isinstance(data, dict) else {}
+
+
+def num(v):
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
+    try:
+        f = float(s)
+    except ValueError:
+        return None
+    return f if math.isfinite(f) else None
 
 
 def source(data):
@@ -95,7 +130,10 @@ def split_args(argv):
             groups[argv[i]].append(current)
             i += 2
             continue
-        if current is not None and not argv[i].startswith("--"):
+        if argv[i].startswith("-") and argv[i] != "-":
+            current = None  # any other option ends the group; its value goes to argparse with it
+            head.append(argv[i])
+        elif current is not None:
             current["files"].append(argv[i])
         else:
             head.append(argv[i])
@@ -266,7 +304,7 @@ def main():
     weights = {}
     if a.weights:
         with open(a.weights, encoding="utf-8") as f:
-            weights = {str(k): v or 0 for k, v in json.load(f).items()}
+            weights = {str(k): num(v) or 0 for k, v in json.load(f).items()}
     try:
         ranked, wordings, notes = score(a.files, split(a.terms), split(a.exclude), weights)
         family_summaries = add_families(families, ranked, split(a.exclude))

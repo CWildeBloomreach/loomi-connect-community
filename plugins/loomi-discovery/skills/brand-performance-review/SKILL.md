@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery
   access: read-only
 ---
@@ -33,7 +33,7 @@ This skill uses these Loomi Connect tools:
 | Brand-name searches | `get_discovery_query_performance` |
 | First-page slots and brand rankings | `search_discovery_product_grid_insights` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it.
 
 You need the account, and optionally a site, a date range (default 30 days) and the brands the user cares most about. If the user is preparing for a specific supplier meeting, ask which brand, and focus the output on it.
 
@@ -75,7 +75,7 @@ Take the top 10 queries by sessions from the query table. For each, one call at 
 Run [scripts/brand_scorecard.py](scripts/brand_scorecard.py):
 
 ```
-python3 scripts/brand_scorecard.py --brands brands.json --products products.json --queries queries.json --shelf shelf/*.json --ignore "AND,Basics" --markdown
+python3 <this skill's folder>/scripts/brand_scorecard.py --brands brands.json --products products.json --queries queries.json --shelf shelf/*.json --ignore "AND,Basics" --markdown
 ```
 
 Use `--ignore` for brand names that are also everyday words, so "black and white dress" isn't counted as a search for the brand "AND". Run it once, read the brand-search matches, and add any false matches to `--ignore`.
@@ -99,7 +99,7 @@ Pick up to five brands: the biggest under-exposed brands, any falling brand whos
 3. Run [scripts/grid_positions.py](scripts/grid_positions.py):
 
    ```
-   python3 scripts/grid_positions.py grid.json --brand "Tommy Hilfiger" --brand "Pacific"
+   python3 <this skill's folder>/scripts/grid_positions.py grid.json --brand "Tommy Hilfiger" --brand "Pacific"
    ```
 
    For each brand it gives the number of matching products, how many are in the first 24, and its best and median positions.
@@ -168,3 +168,5 @@ Offer the full scorecard (all brands) as a file if the user wants it.
 This skill is **read-only**. It never creates rules, boosts, buries or changes anything.
 
 If the user asks to act on a recommendation, hand off to `discovery-experiment-setup` for a boost or bury test. That skill confirms every write. Never use a write tool from this skill.
+
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.

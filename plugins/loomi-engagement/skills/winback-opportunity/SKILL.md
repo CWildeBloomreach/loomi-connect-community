@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled calculation script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -36,7 +36,7 @@ This skill uses these Loomi Connect tools:
 | Existing models and audiences | `search_predictions`, `search_segmentations`, `search_aggregates` |
 | Existing coverage | `search_scenarios`, `search_scenario_nodes` (via `search_tools` and `call_tool`), `search_email_campaigns`, `search_sms_campaigns`, optionally `get_campaign_calendar` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -99,7 +99,7 @@ Use the method in [references/revenue-at-stake.md](references/revenue-at-stake.m
 If you can run Python, save the counts as JSON and run:
 
 ```bash
-python3 scripts/winback_calc.py grid.json
+python3 <this skill's folder>/scripts/winback_calc.py grid.json
 ```
 
 It prints the table with every assumption, and accepts overrides. Otherwise calculate by hand and show the working for at least one band.

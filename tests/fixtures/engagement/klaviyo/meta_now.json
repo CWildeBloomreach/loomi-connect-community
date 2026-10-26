@@ -1,0 +1,1 @@
+{"scenario_name": "[Migrated] Synthetic cart email", "node_name": "Synthetic cart email", "subject": "Hi {{ first_name }}, you left something", "preheader": "Your cart is saved", "sender_name": "Example Shop", "sender_email": "hello@example.com", "consent_category": "newsletter", "trigger": {"type": "now"}}

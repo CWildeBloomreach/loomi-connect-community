@@ -1,0 +1,21 @@
+{
+ "result": {
+  "success": true,
+  "data": [
+   {
+    "id": "77",
+    "ruleType": "campaign",
+    "name": "Denim banner",
+    "enabled": true,
+    "durationTag": "unscheduled",
+    "syncStatus": "SYNCED",
+    "queries": [
+     {
+      "query": "jeans",
+      "queryType": "sitesearch"
+     }
+    ]
+   }
+  ]
+ }
+}

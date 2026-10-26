@@ -20,7 +20,7 @@ Subcommands
 Every subcommand except setup takes --venv DIR and re-runs itself with that environment's
 Python, so beautifulsoup4 and jinja2 (render-check) never need installing into the system Python.
 """
-import argparse, copy, json, os, re, secrets, sys, uuid
+import argparse, copy, html as htmllib, json, os, re, secrets, sys, uuid
 
 # ----------------------------------------------------------------------------------------------
 # virtual environment: create it (setup), or re-run this script with its Python (--venv)
@@ -55,7 +55,10 @@ bootstrap_venv(sys.argv)
 try:
     from bs4 import BeautifulSoup, NavigableString, Comment
 except ImportError:
-    sys.exit(json.dumps({"ok": False, "error": "beautifulsoup4 isn't installed: run setup --venv <work>/.venv, install with its pip, then pass --venv"}))
+    if "-h" in sys.argv or "--help" in sys.argv:  # help needs no packages
+        BeautifulSoup = NavigableString = Comment = None
+    else:
+        sys.exit(json.dumps({"ok": False, "error": "beautifulsoup4 isn't installed: run setup --venv <work>/.venv, install with its pip, then pass --venv"}))
 
 # ----------------------------------------------------------------------------------------------
 # helpers
@@ -467,6 +470,18 @@ class Translator:
                 self.errors.append(f"Catalog loop over event.{klist} has no mapping in mapping.event_lists"); return mo.group(0)
             body = re.sub(r"\{%\s*catalog\s+\w+[^%]*%\}", "", body)
             body = re.sub(r"\{%\s*endcatalog\s*%\}", "", body)
+            # The Klaviyo loop variable (e.g. item.Quantity) is the event list entry, which is now
+            # "product"; rewrite it before catalog_item -> item, or it would read the catalog item.
+            var_re, nv = re.compile(r"\b%s\b(?=\s*[.|\[])" % re.escape(var)), 0
+            def rw_var(mo3):
+                nonlocal nv
+                out, k = var_re.subn("product", mo3.group(0)); nv += k
+                return out
+            body = JINJA_RE.sub(rw_var, body)  # inside template tags only, never in copy
+            if nv:
+                self.note(f"loop variable '{var}' inside a catalog loop -> product (the event list entry)", nv)
+                self.warnings.append(f"Fields read from the Klaviyo loop variable '{var}' now read 'product' (an entry of "
+                                     f"event.{lists[klist]}); check those field names exist on the Bloomreach event")
             fmap = m.get("catalog_fields", {})
             def field(kpath):
                 return fmap.get(kpath, kpath)
@@ -652,7 +667,7 @@ def bee_module(b, ctx):
             for l in b["links"]:
                 st = {k: v for k, v in l["style"].items() if k in ("color", "font-family", "font-size", "font-weight", "letter-spacing", "text-transform")}
                 st["text-decoration"] = "none"
-                parts.append(f'<a href="{static_href(l["href"])}" style="{style_str(st)}">{l["text"]}</a>')
+                parts.append(f'<a href="{attr(static_href(l["href"]))}" style="{style_str(st)}">{l["text"]}</a>')
             inner = f'<p style="text-align:center;margin:0">{sep.join(parts)}</p>'
             wst = {"font-family": ctx["font"], "line-height": "1.3", "text-align": "center"}
         else:
@@ -722,18 +737,33 @@ def bee_module(b, ctx):
                                "iconsList": {"icons": icons}, "style": {**pad, "text-align": "center"}}}
     raise ValueError(t)
 
+JINJA_RE = re.compile(r"\{\{.*?\}\}|\{%.*?%\}", re.S)
+
+def attr(v, ctx=None, what=None):
+    """Escape a value for a double-quoted HTML attribute, leaving Jinja tags as they are.
+
+    With ctx and what, also warn when Jinja appears where none is expected (alt, src)."""
+    v = str(v or "")
+    if what and ctx and JINJA_RE.search(v):
+        ctx["warn"](f"Template tags inside an image {what} attribute ({v[:60]!r}); check it renders as intended")
+    out, last = [], 0
+    for mo in JINJA_RE.finditer(v):
+        out.append(htmllib.escape(v[last:mo.start()], quote=True)); out.append(mo.group(0)); last = mo.end()
+    out.append(htmllib.escape(v[last:], quote=True))
+    return "".join(out)
+
 def html_module(b, ctx):
     """Compact email-safe HTML for one block (jinja_html side)."""
     p = b["padding"]
     pad = f"padding:{p['top']} {p['right']} {p['bottom']} {p['left']}"
     t = b["type"]
     if t == "image":
-        img = f'<img src="{ctx["img_live"](b.get("src"))}" alt="{b.get("alt","")}" width="{re.sub(r"[^0-9]","",b["width"]) or 600}" style="display:block;width:100%;max-width:{b["width"]};height:auto;border:0;margin:0 auto">'
-        if b.get("href"): img = f'<a href="{b["live_href"]}" target="_blank">{img}</a>'
+        img = f'<img src="{attr(ctx["img_live"](b.get("src")), ctx, "src")}" alt="{attr(b.get("alt"), ctx, "alt")}" width="{re.sub(r"[^0-9]","",b["width"]) or 600}" style="display:block;width:100%;max-width:{b["width"]};height:auto;border:0;margin:0 auto">'
+        if b.get("href"): img = f'<a href="{attr(b["live_href"])}" target="_blank">{img}</a>'
         return f'<div style="{pad};text-align:{b.get("align","center")}">{img}</div>'
     if t == "nav":
         links = "&nbsp;&nbsp;&nbsp;&nbsp;".join(
-            f'<a href="{l["live_href"] or "#"}" style="{style_str({k: v for k, v in l["style"].items() if k in ("color","font-family","font-size","font-weight","letter-spacing","text-transform")})};text-decoration:none">{l["text"]}</a>'
+            f'<a href="{attr(l["live_href"] or "#")}" style="{style_str({k: v for k, v in l["style"].items() if k in ("color","font-family","font-size","font-weight","letter-spacing","text-transform")})};text-decoration:none">{l["text"]}</a>'
             for l in b["links"])
         return f'<div style="{pad};text-align:center;font-family:{ctx["font"]}">{links}</div>'
     if t in ("text", "html"):
@@ -746,13 +776,13 @@ def html_module(b, ctx):
         st = (f"display:inline-block;background:{b['bg']};color:{b['color']};font-family:{b['font_family']};font-size:{b['font_size']};"
               f"font-weight:{b['font_weight']};letter-spacing:{b['letter_spacing']};line-height:120%;text-decoration:none;"
               f"padding:{ip['top']} {ip['right']} {ip['bottom']} {ip['left']};border-radius:{b['radius']}{bb}")
-        return f'<div style="{pad};text-align:{b.get("align","center")}"><a href="{b["live_href"] or "#"}" target="_blank" style="{st}">{b["label"]}</a></div>'
+        return f'<div style="{pad};text-align:{b.get("align","center")}"><a href="{attr(b["live_href"] or "#")}" target="_blank" style="{st}">{b["label"]}</a></div>'
     if t == "divider":
         return f'<div style="{pad}"><div style="border-top:{b["border"]};width:{b["width"]};margin:0 auto;font-size:1px;line-height:1px">&nbsp;</div></div>'
     if t == "spacer":
         return f'<div style="height:{b["height"]};line-height:{b["height"]};font-size:1px">&nbsp;</div>'
     if t == "social":
-        icons = "".join(f'<a href="{i["live_href"] or "#"}" target="_blank" style="display:inline-block;margin:0 5px"><img src="{ctx["img_live"](i["src"])}" alt="{i["name"]}" width="{re.sub(r"[^0-9]","",i["width"]) or 32}" style="display:block;border:0"></a>' for i in b["icons"])
+        icons = "".join(f'<a href="{attr(i["live_href"] or "#")}" target="_blank" style="display:inline-block;margin:0 5px"><img src="{attr(ctx["img_live"](i["src"]), ctx, "src")}" alt="{attr(i["name"], ctx, "alt")}" width="{re.sub(r"[^0-9]","",i["width"]) or 32}" style="display:block;border:0"></a>' for i in b["icons"])
         return f'<div style="{pad};text-align:center">{icons}</div>'
     return ""
 
@@ -774,7 +804,7 @@ def build(args):
             return int(v["width"]), int(v["height"])
         return None
     ctx = {"keep_mobile": keep_mobile, "font": model["default_font"], "link_color": model["link_color"],
-           "rules": model["head_rules"], "img": img, "img_live": img, "dims": dims}
+           "rules": model["head_rules"], "img": img, "img_live": img, "dims": dims, "warn": tr.warnings.append}
 
     rows_bee, rows_html = [], []
     dropped_mobile = 0
@@ -874,7 +904,6 @@ def build(args):
                     "template": {"name": "template-base", "type": "basic", "version": "2.0.0"}, "title": meta.get("node_name", "Email")},
            "comments": {}}
     W = model["width"]
-    subject = tr.translate(meta["subject"])
     pre = tr.translate(meta.get("preheader") or "")
     pre_html = f'<div style="display:none;max-height:0;overflow:hidden;mso-hide:all">{pre}</div>' if pre else ""
     wf = web_fonts(json.dumps(bee) + "".join(rows_html))
@@ -924,7 +953,7 @@ def build(args):
                  "event": {"type": trig["event"], "filter": trig.get("filter", [])}}
     else:
         tnode = {"id": 0, "type": "now-trigger", "x": 0, "y": 0}
-        if "event." in email_html:
+        if any(re.search(r"\bevent\s*[.\[|]", t) for t in JINJA_RE.findall(email_html)):
             tr.errors.append("Email uses trigger-event data (event.*) but meta.trigger is 'now' — set an event trigger")
     payload = {"name": meta["scenario_name"], "nodes": [tnode, node],
                "connections": [{"source": {"node_id": 0, "connector_index": 0}, "destination": {"node_id": 1, "connector_index": 0}}],
@@ -1002,7 +1031,7 @@ def render_check(args):
 
 # ----------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("setup"); s.add_argument("--venv", required=True)
     a = sub.add_parser("analyze"); a.add_argument("export"); a.add_argument("--out-dir", required=True)

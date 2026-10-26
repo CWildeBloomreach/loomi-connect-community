@@ -1,11 +1,11 @@
 ---
 name: discovery-experiment-readout
-description: Summarises Bloomreach Discovery A/B tests (experiments) using Loomi Connect. It covers the variants, traffic split, success metric, results, lift, whether the result is statistically conclusive, and the winner, and ends with a plain-English recommendation to ship, keep running or stop. Use when the user asks how an A/B test or experiment is doing, which variant won, whether a ranking rule test is significant, or wants a readout of running or completed Discovery tests.
+description: Summarises Bloomreach Discovery A/B tests (experiments) using Loomi Connect. It covers the variants, traffic split, success metric, results, lift, whether the result is statistically conclusive, and the winner, and ends with a plain-English recommendation to ship, keep running or stop. Use when the user asks how a Discovery A/B test or experiment is doing, which variant won, whether a ranking rule test is significant, or wants a readout of running or completed Discovery tests.
 license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery
   access: read-only
 ---
@@ -18,6 +18,8 @@ Reads out one or more Discovery A/B tests: what was tested, how traffic was spli
 
 This skill only reads. It never starts, ends or changes an experiment.
 
+For Engagement tests (web experiments, scenario A/B splits, A/B tested emails), use `engagement-experiment-readout`. For a change made without a test, use `change-impact-tracker`.
+
 ## Before you start
 
 This skill uses these Loomi Connect tools:
@@ -29,7 +31,7 @@ This skill uses these Loomi Connect tools:
 | Results | `get_discovery_experiment_report` |
 | What the test variant changes (optional) | `get_ranking_rule`, `search_redirects` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 You need the account, and either an experiment name or ID, or a status ("running", "recent"). If the user names neither, read out the RUNNING experiments, then the most recently completed ones.
 
@@ -83,7 +85,7 @@ The response has `data.overalldata.buckets.<bucket name>` with `visits`, `orders
 If the response was saved to a file, run:
 
 ```
-python3 scripts/summarise_report.py <saved file> --control "<control bucket>" --metric "<successMetric>"
+python3 <this skill's folder>/scripts/summarise_report.py <saved file> --control "<control bucket>" --metric "<successMetric>"
 ```
 
 It prints a bucket table, the period covered, how confidence changed over time, a verdict on the success metric, and (for rate metrics) how much more traffic would be needed. If you can't run scripts, read `data.overalldata.buckets` and work out the same things by hand.
@@ -142,8 +144,8 @@ When reading out several experiments, start with a one-line summary table (name,
 
 This skill is **read-only**. It never starts, ends, archives or changes experiments or rules.
 
-If the user wants to act on the recommendation (for example, end a test and ship the winner):
+If the user wants to act on the recommendation (for example, end a test and ship the winner), hand it off. This skill never uses a write tool, even if asked.
 
-1. Warn them that **ending a test is immediate and permanent**. With a winner, that variant goes to 100% of traffic at once. Without one, all variants are disabled and traffic returns to default. A COMPLETED test can't be restarted.
-2. Show exactly what will happen: the experiment, the winning bucket's ID, and the rule that goes live.
-3. Wait for an explicit "yes" before using any write tool.
+1. Give the exact change for them to make in the Bloomreach Discovery dashboard: the experiment, the winning bucket's ID, and the rule that goes live.
+2. Warn them that **ending a test is immediate and permanent**. With a winner, that variant goes to 100% of traffic at once. Without one, all variants are disabled and traffic returns to default. A COMPLETED test can't be restarted.
+3. To set up a follow-up test, hand off to `discovery-experiment-setup`.

@@ -1,0 +1,36 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 40,
+    "start": 0,
+    "docs": []
+   },
+   "facet_counts": {
+    "facets": [
+     {
+      "name": "category",
+      "type": "text",
+      "value": [
+       {
+        "cat_id": "womens-sneakers",
+        "cat_name": "Sneakers",
+        "count": 40,
+        "crumb": "Women/Sneakers",
+        "tree_path": "/w,Women/womens-sneakers,Sneakers"
+       },
+       {
+        "cat_id": "brg_dyn_k3sneak",
+        "cat_name": "Sneaker Edit",
+        "count": 40,
+        "crumb": "",
+        "tree_path": ""
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

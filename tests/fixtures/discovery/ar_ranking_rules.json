@@ -1,0 +1,50 @@
+{
+ "result": {
+  "success": true,
+  "data": [
+   {
+    "id": "77",
+    "ruleType": "ranking",
+    "name": "Boost denim",
+    "enabled": true,
+    "durationTag": "unscheduled",
+    "syncStatus": "SYNCED",
+    "queries": [
+     {
+      "query": "jeans",
+      "queryType": "sitesearch"
+     }
+    ]
+   },
+   {
+    "id": "78",
+    "ruleType": "ranking",
+    "name": "Old denim push",
+    "enabled": true,
+    "durationTag": "scheduled",
+    "endedAt": 1787408000000,
+    "syncStatus": "SYNCED",
+    "queries": [
+     {
+      "query": "jeans",
+      "queryType": "sitesearch"
+     }
+    ]
+   },
+   {
+    "id": "79",
+    "ruleType": "ranking",
+    "name": "Boost wellies",
+    "enabled": true,
+    "durationTag": "unscheduled",
+    "syncStatus": "SYNCED",
+    "queries": [
+     {
+      "query": "wellies",
+      "queryType": "sitesearch"
+     }
+    ]
+   }
+  ]
+ }
+}

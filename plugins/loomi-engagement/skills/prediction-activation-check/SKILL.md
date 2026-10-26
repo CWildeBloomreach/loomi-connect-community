@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement) and an account allowed to read predictions. Python 3 is optional, for the bundled reference-scanning script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Activation | `search_scenarios`, `search_scenario_nodes` (via `search_tools` and `call_tool`), `search_email_campaigns`, `search_sms_campaigns`, `search_banners` |
 | Reporting | `search_reports`, `search_dashboards` |
 
-`search_scenario_nodes` isn't in the default tool list: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. If any other tool here isn't visible, do the same. Only ever use read tools (`search_*`, `list_*`, `get_*`).
+`search_scenario_nodes` isn't in the default tool list: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. If any other tool here isn't visible, do the same. Only ever use read tools (`search_*`, `list_*`, `get_*`): `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -108,7 +108,7 @@ Check, one call at a time, in this order (cheapest and most likely first):
 If you can run Python, save each fetched definition as JSON in one folder (named `<type>_<id>.json`, for example `scenario_<id>.json`), and the predictions you're checking in `predictions.json`, then run:
 
 ```bash
-python3 scripts/find_prediction_refs.py predictions.json definitions/
+python3 <this skill's folder>/scripts/find_prediction_refs.py predictions.json definitions/
 ```
 
 It prints every object that mentions each prediction's ID or output attribute, grouped by object type. Otherwise search each definition by hand for both strings.

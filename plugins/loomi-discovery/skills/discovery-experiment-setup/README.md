@@ -5,8 +5,8 @@ Guides the setup of a Bloomreach Discovery A/B test for a ranking rule, so the c
 | | |
 |---|---|
 | **Products** | Discovery |
-| **Access** | **Writes**: creates a ranking rule (disabled), creates an experiment (draft), and starts the experiment. Each write needs explicit confirmation. Starting a test is live immediately |
-| **Loomi Connect tools** | `list_discovery_accounts`, `list_discovery_sites`, `search_discovery_experiments`, `list_site_search_ranking_rules`, `list_category_ranking_rules`, `list_ranking_rules_global`, `get_ranking_rule`, `get_discovery_query_performance`, `get_discovery_category_performance_table`, `search_discovery_product_grid_insights`, `create_ranking_rule`, `create_discovery_experiment`, `start_discovery_experiment`; for Pattern 2 also `create_ranking_rule_variant`, `update_ranking_rule` |
+| **Access** | **Writes**: creates a ranking rule (disabled), creates an experiment (draft), and starts the experiment. When a rule already exists (Pattern 2), it instead creates a variant of that rule (disabled) and enables it once the draft experiment exists, which may make it live for all shoppers of the query until the test starts. Each write needs explicit confirmation. Starting a test is live immediately |
+| **Loomi Connect tools** | `list_discovery_accounts`, `list_discovery_sites`, `search_discovery_experiments`, `list_site_search_ranking_rules`, `list_category_ranking_rules`, `list_ranking_rules_global`, `get_ranking_rule`, `get_discovery_query_performance`, `get_discovery_category_performance_table`, `search_discovery_product_grid_insights`, `create_ranking_rule`*, `create_discovery_experiment`, `start_discovery_experiment`; for Pattern 2 also `create_ranking_rule_variant`*, `update_ranking_rule`* (* found with `search_tools` and run with `call_tool`) |
 | **Tested with** | Claude Code: the read-only steps (pre-flight checks, preview and sizing) were run against a demo account. **The writes are untested.** No rule or experiment was created; the write payloads were checked against the tool schemas only |
 | **Maintainer** | Bloomreach |
 

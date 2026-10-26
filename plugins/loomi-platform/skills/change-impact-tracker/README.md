@@ -28,7 +28,7 @@ See [examples/halloween-category-rule.md](examples/halloween-category-rule.md) f
 
 ## Scripts
 
-- `scripts/did_effect.py`: reads a small JSON file with visits, orders and revenue for the treated thing and each control, before and after, and prints the difference-in-differences effect for visits, orders, revenue, conversion, revenue per visit and AOV with 95% ranges; a two-proportion test on conversion; incremental revenue for the window and per 30 days with a range; the smallest detectable effect; a placebo check (`--placebo`); warnings; and a verdict. `--template` prints an example input, `--json` prints JSON. Standard library only; no network access.
+- `scripts/did_effect.py`: reads a small JSON file with visits, orders and revenue for the treated thing and each control, before and after, and prints the difference-in-differences effect for visits, orders, revenue, conversion, revenue per visit and AOV with 95% ranges; a two-proportion test on conversion; incremental revenue for the window and per 30 days with a range; the smallest detectable effect; a placebo check (`--placebo`); warnings; and a verdict. `--template` prints an example input (`--template --out <file>` saves it), `--json` prints JSON. Standard library only; no network access.
 
 ## Notes and limitations
 

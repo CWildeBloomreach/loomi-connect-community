@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled check script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement
   access: read-only
 ---
@@ -21,7 +21,7 @@ Audits one Engagement project's tracking and returns a prioritised list of probl
 - **data quality:** properties that are often empty, and values that have drifted or moved into the wrong field;
 - **schema oddities:** the same property with different types, misspelt duplicates, and identifiers stored as numbers.
 
-It uses aggregate counts only. It never reads individual customers or events, and it never changes anything.
+It uses aggregate counts only. It never reads individual customers or events, and it never changes anything. For the Discovery pixel, catalog feeds and Data Hub jobs, use `data-feed-health`.
 
 ## Before you start
 
@@ -34,11 +34,11 @@ This skill uses these Loomi Connect tools:
 | Counts | `estimate_eql_cost`, `execute_analytics_eql` |
 | Context (optional) | `search_trends`, `search_reports` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
-- **Make calls one at a time.** Engagement allows about 3 requests per second. **EQL is stricter: about one query every 3 seconds per project.** If you get HTTP 429 or "Too many requests", wait 3–5 seconds and retry once.
+- **Make calls one at a time.** Engagement allows about 3 requests per second. **EQL is stricter: about one query every 3 seconds, shared across the whole Engagement instance** (other users' queries and cost estimates count too). If you get HTTP 429 or "Too many requests", wait 3–5 seconds and retry once.
 - **Estimate before every EQL query.** Call `estimate_eql_cost` first. If the level is `high` or `very_high`, tell the user before running it, and run only the high-cost checks they agree to. The estimator doesn't credit short date windows, so a 7-day event query can still say "high".
 - **Aggregate only.** Never call `list_customers`, `get_customer_properties`, `list_customer_events` or `list_customers_in_segment`. Never break down by free-text, URL, email, phone or ID properties: the values can contain personal data.
 - **Schemas are large.** On big projects `get_event_schema` can exceed 200,000 characters. If the client saves it to a file, extract what you need with `jq` or Python rather than reading it all.
@@ -63,7 +63,7 @@ Call `list_cloud_organizations`, then `list_projects`. If there's more than one 
 If you can run Python, save the event schema to a file and run:
 
 ```bash
-python3 scripts/tracking_checks.py schema event_schema.json
+python3 <this skill's folder>/scripts/tracking_checks.py schema event_schema.json
 ```
 
 It lists suspicious event type names and look-alike families, properties with conflicting types, and likely misspelt duplicates. Otherwise look for these yourself:
@@ -90,7 +90,7 @@ Event types with no events in a window are **missing from the rows**, not listed
 If you can run Python, save the three results and run:
 
 ```bash
-python3 scripts/tracking_checks.py volumes event_schema.json last7.json prev7.json last90.json
+python3 <this skill's folder>/scripts/tracking_checks.py volumes event_schema.json last7.json prev7.json last90.json
 ```
 
 Otherwise classify each event type yourself:
@@ -99,8 +99,8 @@ Otherwise classify each event type yourself:
 |---|---|
 | **Stopped** | none in the last 7 days, but some in the previous week or the 90-day window |
 | **Dropped** | down 40% or more on the previous week |
-| **Spiked** | up 100% or more on the previous week, or 2.5× the 90-day weekly average (90-day count ÷ 13) |
-| **New** | none in the previous week or the 90-day window |
+| **Spiked** | up 100% or more on the previous week, or 2.5× the 90-day weekly average (the 90-day count minus the last 7 days, ÷ 83 days × 7) |
+| **New** | none in the previous week or in the 90-day window before the last 7 days |
 | **Silent** | in the schema, but nothing in 90 days: historical imports, or abandoned tracking |
 | **Low volume** | fewer than about 50 a week: ignore percentage swings |
 

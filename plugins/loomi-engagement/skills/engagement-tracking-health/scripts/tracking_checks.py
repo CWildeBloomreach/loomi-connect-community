@@ -9,7 +9,9 @@ SCHEMA.json  : raw output of get_event_schema.
 CURRENT.json : raw output of execute_analytics_eql for
                "select count any event by any event type grouping top N in last 7 days".
 PREVIOUS.json: the same query run with execution_time = now - 7 days.
-BASELINE_90D : optional, the same query with "in last 90 days".
+BASELINE_90D : optional, the same query with "in last 90 days". The current week
+               is taken out of it, so avg_week_90d is the average of the
+               previous 83 days, per week.
 
 Prints JSON. Standard library only; no network access.
 """
@@ -24,7 +26,16 @@ SAFE_NAME = re.compile(r"^[A-Za-z0-9_\-. ]{1,64}$")
 
 def load(path):
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    for o in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(o, dict) and o.get("success") is False:
+            print(json.dumps({"ok": False, "error": f"{path}: Loomi Connect returned an error: "
+                              f"{o.get('error') or 'no error text'}. This check couldn't run; "
+                              "don't treat it as 'nothing found'."}))
+            sys.exit(1)
+    if isinstance(data, dict) and isinstance(data.get("result"), dict):
+        data = data["result"]
+    return data
 
 
 def schema_events(schema):
@@ -118,7 +129,8 @@ def check_volumes(schema, cur, prev, base, drop_pct, min_volume):
     rows = []
     for t in sorted(known | set(c) | set(p) | set(b)):
         now, before = c.get(t, 0), p.get(t, 0)
-        weekly_base = round(b.get(t, 0) / (90 / 7), 1) if base else None
+        # The 90-day count includes this week: take it out so a brand-new type can show as "new".
+        weekly_base = round(max(b.get(t, 0) - now, 0) / (83 / 7), 1) if base else None
         change = round((now / before - 1) * 100, 1) if before else None
         if now == 0 and (before > 0 or (weekly_base or 0) > 0):
             status = "stopped"

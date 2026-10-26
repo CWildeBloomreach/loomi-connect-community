@@ -1,0 +1,10 @@
+[
+ {
+  "area": "search",
+  "check": "\"big sale\" query",
+  "status": "red",
+  "evidence": "auto-corrected to 'big sail'",
+  "fix": "Add a redirect",
+  "owner": "Merchandiser"
+ }
+]

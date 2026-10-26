@@ -29,8 +29,13 @@ Input JSON:
 
 "coverage" is one of "covered", "partly covered" or "uncovered" (the default).
 Any row whose band starts at 0 is treated as active and gets no revenue at stake.
+Band labels match the win-back rates whatever the dash ("31-90", "31–90",
+"31 – 90"). Counts may be strings ("18,000").
 """
+import argparse
 import json
+import math
+import re
 import sys
 
 DEFAULTS = {
@@ -53,13 +58,45 @@ EXAMPLE = {
 }
 
 
+NA = {"", "na", "n/a", "-", "—", "null"}
+
+
+def num(x):
+    """Number or None. Strings may carry $ £ €, thousands commas or a trailing %."""
+    if x is None or isinstance(x, bool):
+        return None
+    if isinstance(x, (int, float)):
+        return float(x) if math.isfinite(x) else None
+    if not isinstance(x, str):
+        return None
+    s = x.strip()
+    if s.lower() in NA:
+        return None
+    for ch in ",$£€":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return v if math.isfinite(v) else None
+
+
+def band_key(band):
+    """Normalise a band label so "31–90", "31 - 90" and "31-90" match."""
+    return re.sub(r"\s+", "", re.sub(r"[\u2010-\u2015\u2212]", "-", str(band)))
+
+
 def money(x, cur):
     if x is None:
         return "—"
-    if x >= 1_000_000:
-        return f"{cur}{x / 1_000_000:.1f}M"
-    if x >= 10_000:
-        return f"{cur}{round(x, -3) / 1000:.0f}k"
+    # Round first, then pick the unit, so 999,600 shows as 1.0M rather than 1000k.
+    if round(x / 1000) >= 1000:
+        return f"{cur}{round(x / 1_000_000, 1):,.1f}M"
+    if round(x) >= 10_000:
+        return f"{cur}{round(x / 1000):,.0f}k"
     return f"{cur}{x:,.0f}"
 
 
@@ -70,21 +107,28 @@ def count(n):
 
 
 def main(argv):
-    if len(argv) == 2 and argv[1] == "--example":
+    ap = argparse.ArgumentParser(description="Turn win-back EQL counts into a revenue-at-stake table (Markdown).",
+                                 epilog="Run with --example to see the input format.")
+    ap.add_argument("grid", nargs="?", help="JSON file of counts per recency band")
+    ap.add_argument("--example", action="store_true", help="print an example input file and exit")
+    args = ap.parse_args(argv[1:])
+    if args.example:
         print(json.dumps(EXAMPLE, indent=2))
         return 0
-    if len(argv) != 2:
-        print(__doc__)
-        return 2
-    with open(argv[1], encoding="utf-8") as f:
+    if not args.grid:
+        ap.error("give a grid JSON file, or --example")
+    with open(args.grid, encoding="utf-8") as f:
         data = json.load(f)
 
     a = dict(DEFAULTS)
     a.update(data.get("assumptions") or {})
     rates = dict(DEFAULTS["winback_rate"])
     rates.update((data.get("assumptions") or {}).get("winback_rate") or {})
+    rates = {band_key(k): num(v) for k, v in rates.items()}
     ov, oy = a["orders_for_value"], a["orders_per_year_if_retained"]
-    aov = float(data["aov"])
+    aov = num(data.get("aov"))
+    if aov is None:
+        sys.exit("aov is missing or not a number: ask the user for their average order value")
     cur = data.get("currency", "")
 
     print("| Days since last purchase | Customers | 1 order | 2–3 | 4+ | Avg historical value | "
@@ -96,9 +140,12 @@ def main(argv):
     warnings = []
     for row in data["bands"]:
         band = row["band"]
-        n = int(row["total"])
-        t23 = int(row.get("tier_2_3", 0))
-        t4 = int(row.get("tier_4_plus", 0))
+        n = int(num(row.get("total")) or 0)
+        t23 = int(num(row.get("tier_2_3")) or 0)
+        t4 = int(num(row.get("tier_4_plus")) or 0)
+        for key in ("total", "tier_2_3", "tier_4_plus"):
+            if num(row.get(key)) is None:
+                warnings.append(f"{band}: {key} is missing; counted as 0")
         t1 = n - t23 - t4
         all_buyers += n
         if t1 < 0:
@@ -107,7 +154,7 @@ def main(argv):
         active = band.strip().startswith("0")
         value = aov * (t1 * ov[0] + t23 * ov[1] + t4 * ov[2]) / n if n else None
         at_stake = None if active else aov * (t1 * oy[0] + t23 * oy[1] + t4 * oy[2])
-        rate = None if active else rates.get(band)
+        rate = None if active else rates.get(band_key(band))
         if not active and rate is None:
             warnings.append(f"{band}: no win-back rate given; add it under assumptions.winback_rate")
         recoverable = at_stake * rate if (at_stake is not None and rate is not None) else None

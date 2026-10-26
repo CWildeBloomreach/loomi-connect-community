@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery and/or Bloomreach Engagement). Python 3 is optional, for the bundled numbers script.
 metadata:
   author: bloomreach
-  version: "0.2.2"
+  version: "0.2.3"
   products: discovery,engagement
   access: read-only
 ---
@@ -39,7 +39,7 @@ This skill uses these Loomi Connect tools:
 | Health | `get_pixel_health_status`, `search_discovery_catalogs`, `search_discovery_catalog_jobs` |
 | Marketing | `list_cloud_organizations`, `list_projects`, `get_campaign_calendar`, `estimate_eql_cost`, `execute_analytics_eql` |
 
-`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it.
+`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it. Use read tools only: `search_tools` also returns write tools; never call them.
 
 ### Agree the scope
 
@@ -98,16 +98,16 @@ Make these calls with the same window, one at a time:
 | Queries | `get_discovery_query_performance` with `sort="browse_sessions"`, `page_size=100` |
 | Categories | `get_discovery_category_performance_table` with `sort="revenue"`, `page_size=100` |
 | Products | `get_discovery_product_performance_table` with `sort="revenue"`, `page_size=100` |
-| Brands | `get_discovery_brand_performance` with `sort="revenue"`, `page_size=100` |
+| Brands | `get_discovery_brand_performance` with `sort="revenue"`, `page_size=100`. If the window is 30 days rather than a week, work out brand changes from the product table instead: with `days=30` this tool has returned a wrong previous period |
 | Dead-end searches | `get_discovery_query_performance` with `filter_preset="no_search_results"`, then `"no_revenue"`, each with `sort="browse_sessions"`, `page_size=20`. You need both presets: `no_search_results` misses many dead ends. |
 
 Then run:
 
 ```bash
-python3 scripts/briefing_numbers.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --queries queries.json --categories categories.json --products products.json --brands brands.json --dead-ends no_results.json,no_revenue.json [--min-visits 100] [--min-sessions 30] [--top 3] [--list-top 10] [--issue-top 5]
+python3 <this skill's folder>/scripts/briefing_numbers.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --queries queries.json --categories categories.json --products products.json --brands brands.json --dead-ends no_results.json,no_revenue.json [--min-visits 100] [--min-sessions 30] [--top 3] [--list-top 10] [--issue-top 5]
 ```
 
-It prints the KPI table values, the top and issue lists, and the movers.
+It prints the KPI table values, the top and issue lists, and the movers. If any value was missing or `NA`, `missing_values` lists it (counted as 0): say so next to the affected numbers.
 
 **Top and issues** (`top_and_issues` in the output), for searches and for categories:
 

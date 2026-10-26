@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server with Bloomreach Engagement, and optionally Bloomreach Discovery. Python 3 is optional, for the bundled date and weekly-peak scripts. Web search is optional, for checking moving holiday dates.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery,engagement
   access: read-only
 ---
@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Discovery account | `list_discovery_accounts`, `list_discovery_sites` |
 | Demand | `get_discovery_search_performance`, `get_discovery_query_performance`, `get_discovery_trend`, `get_discovery_category_performance_table` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use `call_tool` for **read** tools only.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use `call_tool` for **read** tools only: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -76,7 +76,7 @@ Read [references/retail-calendar.md](references/retail-calendar.md). It has a **
 If you can run Python, generate the list for the window instead:
 
 ```bash
-python3 scripts/retail_dates.py --market <codes> --from <window start> --weeks <N> --json --out moments.json
+python3 <this skill's folder>/scripts/retail_dates.py --market <codes> --from <window start> --weeks <N> --json --out moments.json
 ```
 
 It keeps a moment if **either the moment or its promotion start** falls in the window, so you also catch moments you need to start promoting now (for example Christmas gift guides in early November). It works for any year. Dates marked `verify` are provisional (moon sighting, regional calendars, announced retailer events); `look up` means the date isn't known yet.
@@ -99,7 +99,7 @@ Use the **same window last year**, aligned by weekday (subtract 364 days). For m
 2. **Purchases and revenue by day** (pattern 1 in the reference). Save the response and run:
 
    ```bash
-   python3 scripts/weekly_peaks.py purchases.json --label Purchases --moments moments_last_year.json
+   python3 <this skill's folder>/scripts/weekly_peaks.py purchases.json --label Purchases --moments moments_last_year.json
    ```
 
    Make `moments_last_year.json` by running `retail_dates.py` for last year's window. The script rolls days into weeks, gives each week an **index** against the median week, and tags the moments in each week. Without Python, add up the days into weeks by hand.

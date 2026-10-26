@@ -23,6 +23,22 @@ import argparse
 import json
 import sys
 
+MARKDOWN = False  # set from --markdown: errors print as text to stderr
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            if MARKDOWN:
+                print(msg, file=sys.stderr)
+            else:
+                print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
+
 
 def unwrap(data):
     if isinstance(data, dict) and isinstance(data.get("result"), dict):
@@ -32,7 +48,7 @@ def unwrap(data):
 
 def load(path):
     with open(path, encoding="utf-8") as f:
-        grid = unwrap(json.load(f))
+        grid = unwrap(check(json.load(f), path))
     cats = {}
     for fc in (grid.get("facet_counts") or {}).get("facets", []) or []:
         if fc.get("name") == "category":
@@ -52,6 +68,8 @@ def main():
     ap.add_argument("--min-products", type=int, default=10)
     ap.add_argument("--markdown", action="store_true")
     a = ap.parse_args()
+    global MARKDOWN
+    MARKDOWN = a.markdown
 
     total, all_c = load(a.all)
     total_new, new_c = load(a.new)

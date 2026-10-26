@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery). Python 3 is optional, for the bundled breakdown script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery
   access: read-only
 ---
@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Tests | `search_discovery_experiments` |
 | Data health | `get_pixel_health_status`, `search_discovery_catalogs`, `search_discovery_catalog_jobs` |
 
-`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it.
+`search_discovery_catalog_jobs` is usually not listed directly: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Do the same for any other tool you can't see. Check each tool's parameters before calling it. Use read tools only: `search_tools` also returns write tools; never call them.
 
 **You need:** the account (and site, if it has sites), the metric (default revenue), and the period. If the user says "last week" or "this week", use the **last 7 days** (`days=7`); for "this month", `days=30`. For specific dates, pass `start_date` and `end_date` (`YYYY-MM-DD`); the tools compare with the equal-length period just before. To compare with a different period (for example the same week last year), also pass `compare_start_date` and `compare_end_date`.
 
@@ -100,18 +100,23 @@ Make these calls one at a time with the same period, and save each response:
 
 Every row has current and `prev_*` values for revenue, visits and conversions. **Don't sort by `change_*`:** that puts tiny rows first.
 
+**Brands over 30 days:** `get_discovery_brand_performance` with `days=30` has returned a wrong previous period, which inflates brand trends. For monthly periods, work out brand changes from the product table (group products by brand) instead. With `days=7` the figures matched.
+
 Then run the breakdown script. Pass every file you saved; several files for one table are merged:
 
 ```bash
-python3 scripts/decompose_change.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --table queries=queries.json --table categories=categories.json --table products=products_rev.json,products_prev.json --table brands=brands.json --trend trend.json --top 8
+python3 <this skill's folder>/scripts/decompose_change.py --overall overall.json --search search.json --category category.json --device desktop=desktop.json --device mobile=mobile.json --device tablet=tablet.json --table queries=queries.json --table categories=categories.json --table products=products_rev.json,products_prev.json --table brands=brands.json --trend trend.json --offset-days <N> --top 8
 ```
+
+Set `--offset-days` to the number of days in the period (7 for `days=7`, 30 for `days=30`, or the days from `start_date` to `end_date` inclusive), or, if you passed custom comparison dates, to the days between `start_date` and `compare_start_date`. It pairs each day with the right comparison day even when the first or last day is missing from the trend.
 
 It prints JSON with:
 
 - `overall.parts`: the revenue change split into `traffic`, `conversion` and `order_value`, adding up exactly to the change, plus each part's share of the change;
 - `channels` and `devices`: the change by search / category / other and by device, each with its own traffic / conversion / order-value split;
 - `tables.<name>`: the biggest fallers and risers with their share of the parent change (queries → search, categories → category, products and brands → overall), each row's main driver, and the `long_tail_remainder` that the fetched rows don't cover;
-- `trend`: the daily gaps aligned by date, any `data_gaps` (missing or zero days), the `shape` of the change (a step from a date, concentrated on a few days, one-off days, or spread evenly), and `change_vs_noise`, the change compared with normal day-to-day wobble. If you passed custom comparison dates, add `--offset-days <days between the periods>`.
+- `trend`: the daily gaps aligned by date, any `data_gaps` (missing or zero days), the `shape` of the change (a step from a date, concentrated on a few days, one-off days, or spread evenly), and `change_vs_noise`, the change compared with normal day-to-day wobble;
+- `missing_values` (only when some value was missing or `NA`): which values were counted as 0.
 
 If you can't run scripts, do the same maths by hand using [references/breakdown-maths.md](references/breakdown-maths.md). Don't fall back to percentage changes that don't add up.
 
@@ -196,6 +201,6 @@ Keep the whole answer to about one screen. Round money to the nearest thousand, 
 
 This skill is **read-only**. It never creates, changes, enables, disables or deletes rules, experiments, catalogs or anything else, and it never re-runs jobs.
 
-If the user asks to fix something (for example roll back a rule), hand over to the relevant skill. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs. Show exactly what would change and wait for an explicit "yes" before any write tool is used.
+This skill never uses a write tool, even if asked. If the user asks to fix something (for example roll back a rule), give the exact change (what, where and the values) for them to make in the Bloomreach Discovery dashboard, or hand off to a skill that writes, such as `discovery-experiment-setup` to test a ranking change. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs.
 
 Don't repeat email addresses from rule or experiment lists, or user IDs, cookies or IP addresses from pixel samples.

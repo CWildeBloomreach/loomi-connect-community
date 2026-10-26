@@ -1,0 +1,79 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "rows": [
+    {
+     "query": "plus size dress",
+     "browse_sessions": "100",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "track pants",
+     "browse_sessions": "101",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "mobile phone case",
+     "browse_sessions": "102",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "free people",
+     "browse_sessions": "103",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "size 10 shoes",
+     "browse_sessions": "104",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "track order",
+     "browse_sessions": "105",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "size guide",
+     "browse_sessions": "106",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "returns",
+     "browse_sessions": "107",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "klarna",
+     "browse_sessions": "108",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    },
+    {
+     "query": "contact us",
+     "browse_sessions": "109",
+     "bounce_rate": 40.0,
+     "product_page_views": 10,
+     "revenue": "$0.00"
+    }
+   ]
+  }
+ }
+}

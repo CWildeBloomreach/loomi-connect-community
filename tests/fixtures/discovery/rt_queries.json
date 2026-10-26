@@ -1,0 +1,38 @@
+{
+ "data": {
+  "rows": [
+   {
+    "query": "dress",
+    "browse_sessions": 100,
+    "prev_browse_sessions": 100,
+    "revenue": "$100.00",
+    "conversion_rate": 2.0
+   },
+   {
+    "query": "Dress ",
+    "browse_sessions": 40,
+    "prev_browse_sessions": 10,
+    "revenue": "$10.00",
+    "conversion_rate": 1.0
+   },
+   {
+    "query": "jeans",
+    "browse_sessions": 50,
+    "prev_browse_sessions": 50,
+    "revenue": "NA"
+   },
+   {
+    "query": "boots",
+    "browse_sessions": 80,
+    "prev_browse_sessions": 0,
+    "revenue": ""
+   },
+   {
+    "query": "scarf",
+    "browse_sessions": 10,
+    "prev_browse_sessions": 60,
+    "revenue": "$1,200.00"
+   }
+  ]
+ }
+}

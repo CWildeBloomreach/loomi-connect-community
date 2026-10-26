@@ -1,0 +1,25 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "categoryId": "brg_dyn_k3sneak",
+   "categoryName": "Sneaker Edit",
+   "conditionConfig": {
+    "operator": "AND",
+    "rules": [
+     {
+      "level": "PRODUCT",
+      "attribute": "product_type",
+      "operator": "ANY_MATCH",
+      "values": [
+       "sneakers",
+       "trainers"
+      ]
+     }
+    ]
+   },
+   "paths": [],
+   "productIds": []
+  }
+ }
+}

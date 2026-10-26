@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery
   access: read-only
 ---
@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Search traffic | `get_discovery_query_performance`, `get_discovery_search_performance` |
 | Conflicts | `list_synonyms_user`, `list_synonyms_br_generated`, `list_site_search_ranking_rules`, `list_site_search_media_rules` |
 
-All of these are normally listed directly. If one isn't available in your client, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
+All of these are normally listed directly. If one isn't available in your client, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 You need the account, and optionally a site. The default traffic window is the last 90 days. If the user names particular queries or redirects, start with those.
 
@@ -99,7 +99,7 @@ How well the destination page performs (exits, bounces) isn't available here. Su
 Run:
 
 ```
-python3 scripts/redirect_checks.py --redirects <list file> --redirects <detail file> [...] --queries <query file> [...] --synonyms <file> [...] --rules <file> [...] [--min-sessions 50]
+python3 <this skill's folder>/scripts/redirect_checks.py --redirects <list file> --redirects <detail file> [...] --queries <query file> [...] --synonyms <file> [...] --rules <file> [...] [--min-sessions 50]
 ```
 
 It prints a findings table and a list of navigational searches without a redirect. If you can't run scripts, apply the checks in [references/redirect-checks.md](references/redirect-checks.md) by hand.
@@ -165,10 +165,11 @@ Suggested destinations for new redirects are guesses from the query (for example
 
 This skill is **read-only**. It never creates, changes, disables or deletes redirects, synonyms or rules.
 
-If the user asks to apply a fix:
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 
-1. Warn them that **Discovery changes go live immediately**: a wrong redirect URL sends every matching search to that page at once, and deletes can't be undone.
-2. Check for a running A/B test on the redirect (`isAbTestLive`). It can't be changed until the test ends.
-3. Show exactly what will change: the rule, its queries and match type, the old and new URL, and the site or account scope.
-4. Wait for an explicit "yes" before using any write tool, and ask again for each separate change.
-5. After a change, run the product grid for the affected queries and check `keywordRedirect`.
+If the user asks to apply a fix, hand it off. This skill never uses a write tool, even if asked.
+
+1. Give the exact change for them to make in the Bloomreach Discovery dashboard: the rule, its queries and match type, the old and new URL, and the site or account scope.
+2. Warn them that **Discovery changes go live immediately**: a wrong redirect URL sends every matching search to that page at once, and deletes can't be undone.
+3. Check for a running A/B test on the redirect (`isAbTestLive`). It can't be changed until the test ends.
+4. Once they've made the change, run the product grid for the affected queries and check `keywordRedirect`.

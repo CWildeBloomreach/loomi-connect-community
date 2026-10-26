@@ -30,6 +30,17 @@ import json
 import sys
 
 
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
+
+
 def unwrap(data):
     if isinstance(data, dict) and isinstance(data.get("result"), dict):
         data = data["result"]
@@ -42,7 +53,7 @@ def load_new(paths):
         with open(path, encoding="utf-8") as f:
             text = f.read()
         try:
-            data = unwrap(json.loads(text))
+            data = unwrap(check(json.loads(text), path))
             out |= {str(d["pid"]) for d in data.get("response", {}).get("docs", []) if d.get("pid") is not None}
         except (ValueError, AttributeError):
             out |= {line.split(",")[0].strip() for line in text.splitlines() if line.strip()}
@@ -60,7 +71,7 @@ def main():
     a = ap.parse_args()
 
     with open(a.grid, encoding="utf-8") as f:
-        grid = unwrap(json.load(f))
+        grid = unwrap(check(json.load(f), a.grid))
     new = load_new(a.new)
     docs = grid.get("response", {}).get("docs", []) or []
     num_found = grid.get("response", {}).get("numFound") or 0

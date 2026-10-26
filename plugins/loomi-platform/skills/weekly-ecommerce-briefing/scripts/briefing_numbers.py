@@ -28,18 +28,44 @@ import math
 import sys
 
 
-def num(v):
-    if v is None:
-        return 0.0
+def number(v):
+    """A number from a tool value ("$1,000.00", "2.50%"), or None when missing or not a number."""
+    if v is None or isinstance(v, bool):
+        return None
     if isinstance(v, (int, float)):
-        return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
-    return float(s) if s else 0.0
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip().translate({ord(c): None for c in "$£€,"})
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    try:
+        x = float(s)
+    except ValueError:
+        return None
+    return x if math.isfinite(x) else None
+
+
+MISSING = set()
+
+
+def num(v, where=None):
+    """number(v), with a missing value counted as 0; `where` names it in the output's missing_values."""
+    x = number(v)
+    if x is None:
+        if where:
+            MISSING.add(where)
+        return 0.0
+    return x
 
 
 def load(path):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
+    for d in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            print(json.dumps({"ok": False, "error": f"{path}: Loomi Connect returned an error: "
+                              f"{d.get('error') or d.get('message') or 'no error text'}. This check couldn't run; "
+                              "don't treat it as 'nothing found'."}))
+            sys.exit(1)
     if isinstance(data, dict) and "result" in data and "data" not in data:
         data = data["result"]
     return data.get("data", data) if isinstance(data, dict) else data
@@ -66,9 +92,9 @@ def kpi_block(rev, visits, orders, prev_rev, prev_visits, prev_orders):
 def card(path):
     d = load(path)
     c, p = d["current"], d["previous"]
-    return (num(c.get("revenue")), num(c.get("visits")), num(c.get("conversions")),
-            num(p.get("revenue")), num(p.get("visits")), num(p.get("conversions")),
-            d.get("trends", {}))
+    vals = tuple(num(x.get(k), f"{path} {when}.{k}") for when, x in (("current", c), ("previous", p))
+                 for k in ("revenue", "visits", "conversions"))
+    return vals + (d.get("trends", {}),)
 
 
 def rows_of(paths, idkey):
@@ -86,7 +112,8 @@ def money_movers(rows, label, min_visits, top, extra=()):
         v, v0 = num(r.get("visits")), num(r.get("prev_visits"))
         if max(v, v0) < min_visits:
             continue
-        r1, r0 = num(r.get("revenue")), num(r.get("prev_revenue"))
+        where = f"{label} {r.get(label)!r}"
+        r1, r0 = num(r.get("revenue"), where), num(r.get("prev_revenue"), where)
         item = {"name": r.get(label), "revenue": r1, "prev_revenue": r0, "delta": round(r1 - r0, 2),
                 "change_pct": pct(r1, r0), "visits": int(v), "prev_visits": int(v0),
                 "conversion_rate": r.get("conversion_rate"), "prev_conversion_rate": r.get("prev_conversion_rate")}
@@ -144,15 +171,17 @@ def top_and_issues(rows, label, vol_key, min_vol, top, issue_top, dead_end_names
         visits = num(r.get("visits")) or vol
         items.append({
             "name": r.get(label), "id": r.get("cat_id"), "volume": int(vol), "prev_volume": int(vol0),
-            "revenue": num(r.get("revenue")), "prev_revenue": num(r.get("prev_revenue")),
-            "conversion_pct": num(r.get("conversion_rate")), "bounce_pct": num(r.get("bounce_rate")),
+            "revenue": num(r.get("revenue"), f"{label} {r.get(label)!r}"),
+            "prev_revenue": num(r.get("prev_revenue"), f"{label} {r.get(label)!r}"),
+            "conversion_pct": number(r.get("conversion_rate")), "bounce_pct": number(r.get("bounce_rate")),
             "views_per_visit": round(num(r.get("product_page_views")) / visits, 2) if visits else 0.0,
             "aov": num(r.get("aov")), "rpv": num(r.get("rpv")),
         })
     if not items:
         return {"considered": 0, "top": [], "issues": []}
     peers = sorted(items, key=lambda i: -i["volume"])[:20]
-    base = {k: median([p[k] for p in peers]) for k in ("conversion_pct", "bounce_pct", "views_per_visit", "rpv")}
+    base = {k: median([p[k] for p in peers if p[k] is not None])
+            for k in ("conversion_pct", "bounce_pct", "views_per_visit", "rpv")}
     base_aov = median([p["aov"] for p in peers if p["aov"]])
     dead = {str(n).lower() for n in dead_end_names}
 
@@ -162,19 +191,20 @@ def top_and_issues(rows, label, vol_key, min_vol, top, issue_top, dead_end_names
             continue  # only the previous period had volume
         reasons = []
         at_stake = 0.0
-        if str(i["name"]).lower() in dead or (i["views_per_visit"] == 0 and i["bounce_pct"] >= 90):
+        conv, bounce = i["conversion_pct"], i["bounce_pct"]
+        if str(i["name"]).lower() in dead or (i["views_per_visit"] == 0 and bounce is not None and bounce >= 90):
             reasons.append("dead end: no product views" + (", no results" if str(i["name"]).lower() in dead else ""))
             at_stake = i["volume"] * base["rpv"]
         else:
             if i["revenue"] == 0:
                 reasons.append("no revenue")
-            if base["conversion_pct"] and i["conversion_pct"] < 0.75 * base["conversion_pct"]:
-                reasons.append(f"conversion {i['conversion_pct']:.1f}% vs {base['conversion_pct']:.1f}% typical")
-            if i["bounce_pct"] > 1.25 * base["bounce_pct"] and i["bounce_pct"] - base["bounce_pct"] >= 10:
-                reasons.append(f"bounce {i['bounce_pct']:.0f}% vs {base['bounce_pct']:.0f}% typical")
+            if conv is not None and base["conversion_pct"] and conv < 0.75 * base["conversion_pct"]:
+                reasons.append(f"conversion {conv:.1f}% vs {base['conversion_pct']:.1f}% typical")
+            if bounce is not None and bounce > 1.25 * base["bounce_pct"] and bounce - base["bounce_pct"] >= 10:
+                reasons.append(f"bounce {bounce:.0f}% vs {base['bounce_pct']:.0f}% typical")
             if i["prev_revenue"] and i["revenue"] < 0.75 * i["prev_revenue"] and i["prev_revenue"] - i["revenue"] >= 1000:
                 reasons.append(f"revenue {pct(i['revenue'], i['prev_revenue'])}% vs last week")
-            gap = max(base["conversion_pct"] - i["conversion_pct"], 0) / 100
+            gap = max(base["conversion_pct"] - conv, 0) / 100 if conv is not None else 0.0
             at_stake = i["volume"] * gap * (i["aov"] or base_aov)
             if i["prev_revenue"] > i["revenue"]:
                 at_stake = max(at_stake, i["prev_revenue"] - i["revenue"])
@@ -273,7 +303,12 @@ def main():
         lists["categories"] = top_and_issues(rows_of(a.categories, "cat_id"), "category", "visits", a.min_visits,
                                              a.list_top, a.issue_top)
 
-    json.dump({"kpis": kpis, "movers": movers, "top_and_issues": lists}, sys.stdout, indent=2)
+    out = {"kpis": kpis, "movers": movers, "top_and_issues": lists}
+    if MISSING:
+        out["missing_values"] = {"counted_as_zero": sorted(MISSING)[:50], "count": len(MISSING),
+                                 "note": "these values were missing or not numbers (e.g. NA) and were counted as 0; "
+                                         "missing conversion and bounce rates were left out of the medians and checks"}
+    json.dump(out, sys.stdout, indent=2)
     print()
 
 

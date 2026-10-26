@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Discovery).
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: discovery
   access: read-only
 ---
@@ -16,7 +16,7 @@ metadata:
 
 Summarises how category pages (product listing pages) perform on one Bloomreach Discovery account or site, finds the categories most worth fixing by comparing each with **like-for-like peers**, checks that dynamic categories actually contain products, reviews the rules applied to categories, and looks for strong products buried low on key category pages.
 
-This skill only diagnoses and recommends. It never changes anything.
+This skill only diagnoses and recommends. It never changes anything. For a deeper review of dynamic category rules (what they wrongly include or miss), use `discovery-dynamic-category-review`.
 
 ## Before you start
 
@@ -30,7 +30,7 @@ This skill uses these Loomi Connect tools:
 | Live category pages | `search_discovery_product_grid_insights` with `search_by="category"` |
 | Rules and tests | `list_category_ranking_rules`, `get_ranking_rule`, `list_category_facets`, `list_category_media_rules`, `search_discovery_experiments` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it. Don't guess parameter names.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it. Don't guess parameter names.
 
 You need the account, and optionally a site and a date range. The default is the last 30 days.
 
@@ -75,7 +75,7 @@ A category is only underperforming compared with categories of the same kind. A 
 Run [scripts/category_baseline.py](scripts/category_baseline.py) on the saved table and category files:
 
 ```
-python3 scripts/category_baseline.py --categories categories.json table.json
+python3 <this skill's folder>/scripts/category_baseline.py --categories categories.json table.json
 ```
 
 It groups categories into peers (**dynamic** collections, **top-level** departments, and **sub**-categories), works out each group's median for conversion, bounce, RPV, add-to-cart rate and product views per visit, and flags categories more than 25% from their group median. It also lists big period swings, new categories, same-named categories, categories in the tree with no traffic, and tracking problems. If you can't run scripts, do the same comparison by hand.
@@ -124,7 +124,7 @@ Pick the 2–3 categories with the most sessions among the underperformers (or t
 4. Run [scripts/buried_products.py](scripts/buried_products.py):
 
    ```
-   python3 scripts/buried_products.py --grid grid.json products.json
+   python3 <this skill's folder>/scripts/buried_products.py --grid grid.json products.json
    ```
 
    It reports the brand mix and repeated titles in the first 24 positions, brands with many products in the category but none in the first 24, products ranked below position 48 that earn at least as much per visit as the median top-24 product, and top-24 products that convert much worse than their neighbours.
@@ -185,10 +185,10 @@ Rank recommendations by impact, then by effort. Put tracking problems first if t
 
 This skill is **read-only**. It never creates, changes or deletes categories, rules, facets or anything else.
 
-If the user asks to apply a fix:
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 
-1. Warn them that **Discovery changes go live immediately**, and that deletes can't be undone.
-2. Tell them about any running A/B test. Changes are blocked while one runs.
-3. Show exactly what will be created or changed: the rule type, the category path and ID, products or attributes, and the site or account scope.
-4. Wait for an explicit "yes" before using any write tool.
-5. Suggest trying large ranking changes as an A/B test first.
+If the user asks to apply a fix, hand it off. This skill never uses a write tool, even if asked.
+
+1. Give the exact change for them to make in the Bloomreach Discovery dashboard: the rule type, the category path and ID, products or attributes, and the site or account scope.
+2. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs.
+3. To try a ranking change as an A/B test first, hand off to `discovery-experiment-setup`.

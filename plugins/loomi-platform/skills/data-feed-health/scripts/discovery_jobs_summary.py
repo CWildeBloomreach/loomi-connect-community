@@ -22,9 +22,16 @@ FAILED = {"failure", "failed", "killed"}
 
 
 def ts(v):
+    """ISO date or time; a time with no offset (or a date alone) is taken as UTC."""
     if not v:
         return None
-    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+    t = datetime.fromisoformat(str(v).strip().replace("Z", "+00:00"))
+    return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+
+
+def fail(msg):
+    print(json.dumps({"ok": False, "error": msg}))
+    sys.exit(1)
 
 
 def load(paths):
@@ -32,6 +39,10 @@ def load(paths):
     for p in paths:
         with open(p, encoding="utf-8") as f:
             data = json.load(f)
+        for d in (data, data.get("result") if isinstance(data, dict) else None):
+            if isinstance(d, dict) and d.get("success") is False:
+                fail(f"{p}: Loomi Connect returned an error: {d.get('error') or d.get('message') or 'no error text'}. "
+                     "This check couldn't run; don't treat it as 'nothing found'.")
         if isinstance(data.get("result"), dict):
             data = data["result"]
         for j in data.get("data") or []:
@@ -55,7 +66,10 @@ def main():
     ap.add_argument("--now", help="ISO timestamp to measure age against (default: current UTC time)")
     ap.add_argument("--stale-hours", type=float, default=48, help="age of last product feed or index that counts as red")
     a = ap.parse_args()
-    now = ts(a.now) if a.now else datetime.now(timezone.utc)
+    try:
+        now = ts(a.now) if a.now else datetime.now(timezone.utc)
+    except ValueError:
+        ap.error(f"--now must be an ISO date or time, like 2026-01-31 or 2026-01-31T12:00:00Z (got {a.now!r})")
 
     jobs = load(a.jobs)
     kinds = {}

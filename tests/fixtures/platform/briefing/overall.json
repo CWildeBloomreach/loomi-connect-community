@@ -1,0 +1,15 @@
+{
+ "success": true,
+ "data": {
+  "current": {
+   "revenue": "$100,000.00",
+   "visits": "20,000",
+   "conversions": "1000"
+  },
+  "previous": {
+   "revenue": "$90,000.00",
+   "visits": "19,000",
+   "conversions": "950"
+  }
+ }
+}

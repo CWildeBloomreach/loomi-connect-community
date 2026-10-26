@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server with Bloomreach Engagement, and optionally Bloomreach Discovery for trending searches. Python 3 is optional, for the bundled ranking script.
 metadata:
   author: bloomreach
-  version: "0.1.2"
+  version: "0.1.3"
   products: engagement,discovery
   access: read-only
 ---
@@ -38,7 +38,7 @@ This skill uses these Loomi Connect tools:
 | Existing coverage | `search_scenarios`, `search_scenario_nodes` (via `call_tool`), `search_email_campaigns`, `search_sms_campaigns` |
 | Demand (optional) | `list_discovery_accounts`, `list_discovery_sites`, `get_discovery_search_performance`, `get_discovery_query_performance` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
@@ -136,10 +136,10 @@ Use [references/value-and-ranking.md](references/value-and-ranking.md):
     reachable value = value × (reachable share + on-site share for the rest)
     score           = reachable value × coverage factor
 
-If you can run Python, save the inputs as JSON and run:
+If you can run Python, save the inputs as JSON (format in the script's docstring; give `discount_depth` for P4, and `avg_cart_value` for P6 or `category_aov` for P1 and P5 when you have them) and run:
 
 ```bash
-python3 scripts/rank_opportunities.py opportunities.json
+python3 <this skill's folder>/scripts/rank_opportunities.py opportunities.json
 ```
 
 Otherwise calculate by hand and show the working for the top opportunity. Label P4 as **margin protected** and P8 as **long-term**, so nobody adds them to revenue. Don't add up overlapping opportunities. Under about 100 customers, give the count but no value.
