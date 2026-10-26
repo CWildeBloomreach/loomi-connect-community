@@ -1,0 +1,34 @@
+{
+ "change": "Example ranking rule on an example category",
+ "metric": "revenue",
+ "days_before": 7,
+ "days_after": 6,
+ "treated": {
+  "label": "example category",
+  "before": {
+   "visits": 1400,
+   "orders": 150,
+   "revenue": "NA"
+  },
+  "after": {
+   "visits": 1300,
+   "orders": 140,
+   "revenue": "$6,400.00"
+  }
+ },
+ "controls": [
+  {
+   "label": "all other categories",
+   "before": {
+    "visits": 60000,
+    "orders": 20000,
+    "revenue": "$2,600,000.00"
+   },
+   "after": {
+    "visits": 52000,
+    "orders": 17000,
+    "revenue": "$2,200,000.00"
+   }
+  }
+ ]
+}

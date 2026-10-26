@@ -1,0 +1,20 @@
+[
+ {
+  "area": "Data",
+  "check": "Pixel",
+  "status": "NOT CHECKED",
+  "evidence": "no Discovery access"
+ },
+ {
+  "area": "Search",
+  "check": "\"big sale\" query",
+  "status": "not checked",
+  "evidence": "no Discovery access"
+ },
+ {
+  "area": "Marketing",
+  "check": "Event sends",
+  "status": "NOT CHECKED",
+  "evidence": "403"
+ }
+]

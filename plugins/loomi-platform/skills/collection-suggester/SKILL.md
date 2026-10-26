@@ -72,8 +72,8 @@ Shortlist about 15–25 queries: the top risers (7 and 30 days), the biggest und
 For each shortlisted query, call `search_discovery_product_grid_insights` with the query, `rows=1`, `fl="pid"` and facets **on**. One call at a time.
 
 - Read `data.response.numFound` and `data.facet_counts.facets`: category, colours, style, material, season, brand, gender, and whatever else the catalog has. Note the values held by 30% or more of the matching products.
-- If the response was saved to a file, run `python3 <this skill's folder>/scripts/preview_summary.py <file>`. It prints those dominant values and the overlap with existing dynamic categories.
-- Group queries that share **two or more** dominant values, such as the same leaf category plus a colour or style. With the profiles saved as JSON lines, run:
+- If the responses were saved to files, run `python3 <this skill's folder>/scripts/preview_summary.py <file> [<file> ...] --out profiles.jsonl`. It prints those dominant values and the overlap with existing dynamic categories, and saves them as JSON lines in `profiles.jsonl`.
+- Group queries that share **two or more** dominant values, such as the same leaf category plus a colour or style. With the profiles saved, run (pass the query files from **one** window only, the 30-day ones, to match `--baseline`):
 
   ```
   python3 <this skill's folder>/scripts/group_themes.py --baseline <30-day %> --queries <query files> --profiles profiles.jsonl

@@ -3,10 +3,11 @@
 as collection previews or query profiles.
 
 Usage:
-  python3 preview_summary.py [--thin 12] [--broad 500] [--dominant 0.3] grid1.json [grid2.json ...]
+  python3 preview_summary.py [--thin 12] [--broad 500] [--dominant 0.3] [--out profiles.jsonl] grid1.json [grid2.json ...]
 
 Each input is a product grid response saved by the client (the full tool envelope or
-just its `data` object). For each file, prints one JSON line with:
+just its `data` object). For each file, prints one JSON line (and, with --out, also writes
+the lines to that file, ready for group_themes.py --profiles) with:
 
   source        what was searched: the query or category ID, the search type and every fq
   numFound      products matching
@@ -40,6 +41,14 @@ LOW_SIGNAL = {"rating", "cluster", "product_size", "onSale", "released_since", "
 def load(path):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
+    for d in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            print(json.dumps({"ok": False, "error": f"{path}: Loomi Connect returned an error: "
+                              f"{d.get('error') or d.get('message') or 'no error text'}. This check couldn't run; "
+                              "don't treat it as 'nothing found'."}))
+            sys.exit(1)
+    if isinstance(data, dict) and isinstance(data.get("result"), dict) and "data" not in data:
+        data = data["result"]
     if isinstance(data, dict) and isinstance(data.get("data"), dict):
         return data["data"]
     return data if isinstance(data, dict) else {}
@@ -151,13 +160,19 @@ def main():
     ap.add_argument("--thin", type=int, default=12, help="fewer products than this is too thin (default 12)")
     ap.add_argument("--broad", type=int, default=500, help="more products than this is too broad (default 500)")
     ap.add_argument("--dominant", type=float, default=0.3, help="share of products for a dominant value (default 0.3)")
+    ap.add_argument("--out", help="also write the JSON lines to this file (e.g. profiles.jsonl for group_themes.py)")
     a = ap.parse_args()
+    lines = []
     for path in a.files:
         try:
             out = summarise(load(path), a.thin, a.broad, a.dominant)
-            print(json.dumps({"file": path, **out}, ensure_ascii=False))
+            lines.append(json.dumps({"file": path, **out}, ensure_ascii=False))
         except (OSError, ValueError) as e:
-            print(json.dumps({"file": path, "error": str(e)}))
+            lines.append(json.dumps({"file": path, "error": str(e)}))
+        print(lines[-1])
+    if a.out:
+        with open(a.out, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
     return 0
 
 

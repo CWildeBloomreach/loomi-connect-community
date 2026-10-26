@@ -1,0 +1,19 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "rows": [
+    {
+     "prod_id": "EX-1",
+     "revenue": "$1,000.00",
+     "visits": 500
+    },
+    {
+     "prod_id": "EX-2",
+     "revenue": true,
+     "visits": "NA"
+    }
+   ]
+  }
+ }
+}

@@ -39,6 +39,7 @@ import collections
 import heapq
 import html
 import json
+import math
 import os
 import re
 import shutil
@@ -131,11 +132,20 @@ def load(path):
     with open(path, encoding="utf-8") as f:
         text = f.read()
     try:
-        return json.loads(text)
+        data = json.loads(text)
     except json.JSONDecodeError:
         # some clients save a wrapper line before the JSON
         start = text.find("{")
-        return json.loads(text[start:])
+        data = json.loads(text[start:])
+    for d in (data, data.get("result") if isinstance(data, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            raise ToolError(f"{path}: Loomi Connect returned an error: {d.get('error') or d.get('message') or 'no error text'}. "
+                            "This check couldn't run; don't treat it as 'nothing found'.")
+    return data
+
+
+class ToolError(Exception):
+    """A saved response that says success: false."""
 
 
 def find_records(obj):
@@ -195,12 +205,19 @@ def words(s):
 
 
 def money(v):
-    if v is None:
-        return 0.0
+    """A number from a value ("$1,299.00", "12%"), or None when missing or not a number."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip().translate({ord(c): None for c in "$£€,"})
+    if s.endswith("%"):
+        s = s[:-1].strip()
     try:
-        return float(str(v).replace("$", "").replace(",", "").replace("%", "").strip() or 0)
+        x = float(s)
     except ValueError:
-        return 0.0
+        return None
+    return x if math.isfinite(x) else None
 
 
 def vertical_of(label, title):
@@ -371,8 +388,12 @@ def score_product(r, label, cat, perf, pct, queries, groups, min_desc):
     if not (get(r, "gtin") or get(r, "mpn")):
         add("S1")
     price, sale = money(get(r, "price")), money(get(r, "sale_price"))
-    if price <= 0 or (sale and sale > price):
-        add("S2", "no price" if price <= 0 else "sale price above price")
+    if price is None:
+        add("S2", "no price" if get(r, "price") is None else f"price is not a number ({get(r, 'price')!r})")
+    elif price <= 0:
+        add("S2", "price is 0" if price == 0 else "price below 0")
+    elif sale is not None and sale > price:
+        add("S2", "sale price above price")
     if cat.has_avail and get(r, "availability") is None:
         add("S3")
 
@@ -445,18 +466,21 @@ def main():
             spooled.append(path)
         specs.append((label, path, name))
 
-    perf = {}
+    perf, perf_missing = {}, 0
     for path in a.performance:
         for row in find_records(load(path)):
             pid = str(row.get("prod_id") or row.get("pid") or "")
             if pid:
-                perf[pid] = (money(row.get("revenue")), money(row.get("visits")))
+                rev, vis = money(row.get("revenue")), money(row.get("visits"))
+                if rev is None or vis is None:
+                    perf_missing += 1
+                perf[pid] = (rev or 0.0, vis or 0.0)
     queries = collections.Counter()
     for path in a.queries:
         for row in find_records(load(path)):
             q = (row.get("query") or "").lower().strip()
             if q:
-                queries[q] += money(row.get("browse_sessions") or row.get("visits"))
+                queries[q] += money(row.get("browse_sessions") or row.get("visits")) or 0.0
     groups = DEFAULT_GROUPS
     if a.synonyms:
         with open(a.synonyms, encoding="utf-8") as f:
@@ -535,6 +559,9 @@ def main():
         "vocabulary_inconsistencies": inconsist[:20],
         "skipped_input": errors,
     }
+    if perf_missing:
+        summary["performance_rows_missing_values"] = {
+            "rows": perf_missing, "note": "revenue or visits missing or not a number (e.g. NA); counted as 0"}
     for e in errors:
         print("SKIPPED " + e, file=sys.stderr)
     if not a.markdown:
@@ -570,4 +597,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ToolError as e:
+        if "--markdown" in sys.argv[1:]:
+            print(e, file=sys.stderr)
+        else:
+            print(json.dumps({"ok": False, "error": str(e)}), file=sys.__stdout__)
+        sys.exit(1)

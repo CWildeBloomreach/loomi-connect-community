@@ -170,6 +170,7 @@ It sorts blockers first, then AMBER by area, and prints the verdict. Otherwise s
 **Verdict rules:**
 - **NO-GO:** any RED in data, search for top event queries, landing pages, or "no event sends".
 - **GO WITH FIXES:** REDs only in lower-impact items, or AMBERs only.
+- **INCOMPLETE:** nothing RED or AMBER, but some items are NOT CHECKED. Never call it GO until they're checked.
 - **GO:** all GREEN, or AMBERs the user has accepted.
 
 Say how many days remain and which fixes need a lead time (feed changes, new segments, template approvals) versus same-day fixes (rule dates, redirects).
@@ -180,7 +181,7 @@ Say how many days remain and which fixes need a lead time (feed changes, new seg
 ## Peak readiness: <event>, <start> to <end> (<timezone>)
 Checked <date>; <n> days to go. Scope: <Discovery account/site>, <Engagement project>.
 
-**Verdict:** NO-GO / GO WITH FIXES / GO: <one sentence: the biggest blocker and the fix>
+**Verdict:** NO-GO / GO WITH FIXES / INCOMPLETE / GO: <one sentence: the biggest blocker and the fix>
 
 ### Blockers (fix before the event)
 | # | Area | Check | Evidence | Fix | Owner |
