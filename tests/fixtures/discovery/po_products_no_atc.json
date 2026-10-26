@@ -1,0 +1,85 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "total_rows": 5,
+   "rows": [
+    {
+     "prod_id": "P200",
+     "product_title": "Sample product P200",
+     "brand": "Northwind",
+     "visits": 100,
+     "prev_visits": 90,
+     "atc": 0,
+     "conversions": 0,
+     "revenue": "$0.00",
+     "prev_revenue": "$0.00",
+     "aov": "$0.00",
+     "prev_conversions": 0,
+     "atc_rate": 0.0,
+     "conversion_rate": 0.0
+    },
+    {
+     "prod_id": "P201",
+     "product_title": "Sample product P201",
+     "brand": "Northwind",
+     "visits": 101,
+     "prev_visits": 90,
+     "atc": 0,
+     "conversions": 0,
+     "revenue": "$0.00",
+     "prev_revenue": "$0.00",
+     "aov": "$0.00",
+     "prev_conversions": 0,
+     "atc_rate": 0.0,
+     "conversion_rate": 0.0
+    },
+    {
+     "prod_id": "P202",
+     "product_title": "Sample product P202",
+     "brand": "Northwind",
+     "visits": 102,
+     "prev_visits": 90,
+     "atc": 0,
+     "conversions": 0,
+     "revenue": "$0.00",
+     "prev_revenue": "$0.00",
+     "aov": "$0.00",
+     "prev_conversions": 0,
+     "atc_rate": 0.0,
+     "conversion_rate": 0.0
+    },
+    {
+     "prod_id": "P203",
+     "product_title": "Sample product P203",
+     "brand": "Northwind",
+     "visits": 103,
+     "prev_visits": 90,
+     "atc": 0,
+     "conversions": 0,
+     "revenue": "$0.00",
+     "prev_revenue": "$0.00",
+     "aov": "$0.00",
+     "prev_conversions": 0,
+     "atc_rate": 0.0,
+     "conversion_rate": 0.0
+    },
+    {
+     "prod_id": "P204",
+     "product_title": "Sample product P204",
+     "brand": "Northwind",
+     "visits": 104,
+     "prev_visits": 90,
+     "atc": 0,
+     "conversions": 0,
+     "revenue": "$0.00",
+     "prev_revenue": "$0.00",
+     "aov": "$0.00",
+     "prev_conversions": 0,
+     "atc_rate": 0.0,
+     "conversion_rate": 0.0
+    }
+   ]
+  }
+ }
+}

@@ -35,6 +35,7 @@ Treat every flag as a lead to check, not a verdict. Standard library only;
 no network access.
 """
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -48,27 +49,41 @@ HOG_MIN = 5
 WEAK_RATIO = 0.75  # flag when revenue per visit is under 75% of the variant's
 
 
-def money(value):
-    if value in (None, "", "N/A"):
+def num(v):
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
         return None
     try:
-        return float(str(value).replace("$", "").replace(",", ""))
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
 
 
-def pct(value):
-    if value in (None, "", "N/A"):
-        return None
-    try:
-        return float(str(value).rstrip("%"))
-    except ValueError:
-        return None
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
 
 
 def load_rows(path):
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+        data = check(json.load(f), path)
     if isinstance(data, dict) and isinstance(data.get("result"), dict):
         data = data["result"]
     if isinstance(data, dict):
@@ -87,21 +102,26 @@ def key(text):
     return "".join(words)
 
 
+def sessions(row):
+    s = num(row.get("browse_sessions"))
+    return s if s is not None else num(row.get("visits"))
+
+
 def metrics(row):
     if not row:
         return None
     return {
-        "sessions": row.get("browse_sessions") or row.get("visits"),
-        "conversion_rate": pct(row.get("conversion_rate")),
-        "rpv": money(row.get("rpv")),
-        "revenue": money(row.get("revenue")),
+        "sessions": sessions(row),
+        "conversion_rate": num(row.get("conversion_rate")),
+        "rpv": num(row.get("rpv")),
+        "revenue": num(row.get("revenue")),
     }
 
 
 def main(argv):
-    if not argv:
+    if not argv or argv[0] in ("-h", "--help"):
         print(__doc__)
-        return 1
+        return 0 if argv else 1
     with open(argv[0], encoding="utf-8") as f:
         suggestions = json.load(f)
     rows = {}
@@ -121,9 +141,9 @@ def main(argv):
     for s in shown:
         shown_keys.setdefault(key(s), s)
     missing, untested = [], []
-    traffic = sorted(rows.items(), key=lambda kv: -(kv[1].get("browse_sessions") or 0))
+    traffic = sorted(rows.items(), key=lambda kv: -(num(kv[1].get("browse_sessions")) or 0))
     for q, row in traffic:
-        if (row.get("browse_sessions") or 0) == 0 or q in shown:
+        if (num(row.get("browse_sessions")) or 0) == 0 or q in shown:
             continue
         if key(q) in shown_keys:
             continue  # a near-duplicate wording is suggested; see near_duplicates

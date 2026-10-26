@@ -1,0 +1,17 @@
+{
+ "data": {
+  "response": {
+   "numFound": 1,
+   "docs": [
+    {
+     "pid": "S1",
+     "title": "Indoor court shoe",
+     "brand": "Proseware"
+    }
+   ]
+  },
+  "debug": {
+   "feUrl": "https://search.invalid/api?q=court shoes&query.search_mode=hybrid&auth_key=REDACTED&start=0"
+  }
+ }
+}

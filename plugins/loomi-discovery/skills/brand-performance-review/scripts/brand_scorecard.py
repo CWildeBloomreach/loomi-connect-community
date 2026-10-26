@@ -47,23 +47,49 @@ Standard library only; no network access.
 """
 import argparse
 import json
+import math
 import re
 import statistics
 import sys
 from collections import defaultdict
 from urllib.parse import parse_qs, urlparse
 
+MARKDOWN = False  # set from --markdown: errors print as text to stderr
+
 
 def num(v):
-    if v is None or v == "":
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
     try:
-        return float(s)
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            if MARKDOWN:
+                print(msg, file=sys.stderr)
+            else:
+                print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
 
 
 def unwrap(data):
@@ -76,7 +102,7 @@ def rows_of(paths):
     out = []
     for p in paths or []:
         with open(p, encoding="utf-8") as f:
-            out.extend(unwrap(json.load(f)).get("rows", []))
+            out.extend(unwrap(check(json.load(f), p)).get("rows", []))
     return out
 
 
@@ -102,6 +128,8 @@ def main():
     ap.add_argument("--limit", type=int, default=15)
     ap.add_argument("--markdown", action="store_true")
     a = ap.parse_args()
+    global MARKDOWN
+    MARKDOWN = a.markdown
     ignore = {key(x) for x in a.ignore.split(",") if x.strip()}
     warnings = []
 
@@ -182,7 +210,7 @@ def main():
         slots = defaultdict(float)
         for p in a.shelf:
             with open(p, encoding="utf-8") as f:
-                grid = unwrap(json.load(f))
+                grid = unwrap(check(json.load(f), p))
             qtext = grid_query(grid) or p
             w = sess.get(key(qtext), 0) or 1
             docs = grid.get("response", {}).get("docs", [])[:24]

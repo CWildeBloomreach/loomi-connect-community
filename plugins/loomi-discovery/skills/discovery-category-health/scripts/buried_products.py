@@ -20,21 +20,42 @@ Standard library only; no network access.
 """
 import argparse
 import json
+import math
 import statistics
 import sys
 from collections import Counter
 
 
 def num(v):
-    if v is None:
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
     try:
-        return float(s)
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
 
 
 def unwrap(data):
@@ -52,25 +73,28 @@ def main():
     a = ap.parse_args()
 
     with open(a.grid, encoding="utf-8") as f:
-        grid = unwrap(json.load(f))
+        grid = unwrap(check(json.load(f), a.grid))
     docs = grid.get("response", {}).get("docs", [])
     num_found = grid.get("response", {}).get("numFound")
     pos = {str(d.get("pid")): i + 1 for i, d in enumerate(docs)}
 
     top = docs[: a.top]
-    brand_top = Counter(d.get("brand") or "(none)" for d in top)
+    # Some brand names carry trailing spaces ("Pacific "); trim on both sides before comparing.
+    brand_top = Counter(str(d.get("brand") or "").strip() or "(none)" for d in top)
     repeated = {t: n for t, n in Counter(d.get("title") for d in top).items() if n > 1}
     brand_facet = {}
     for fc in grid.get("facet_counts", {}).get("facets", []):
         if fc.get("name") == "brand":
-            brand_facet = {v.get("name"): v.get("count") for v in fc.get("value", [])}
-    missing = sorted(([b, c] for b, c in brand_facet.items() if c and c >= 10 and b not in brand_top),
+            for v in fc.get("value", []):
+                b = str(v.get("name") or "").strip()
+                brand_facet[b] = brand_facet.get(b, 0) + (num(v.get("count")) or 0)
+    missing = sorted(([b, int(c)] for b, c in brand_facet.items() if b and c >= 10 and b not in brand_top),
                      key=lambda x: -x[1])[:10]
 
     perf = {}
     for p in a.products:
         with open(p, encoding="utf-8") as f:
-            for r in unwrap(json.load(f)).get("rows", []):
+            for r in unwrap(check(json.load(f), p)).get("rows", []):
                 perf[str(r.get("prod_id"))] = r
 
     matched = []
@@ -79,16 +103,20 @@ def main():
         if not r:
             continue
         visits = num(r.get("visits")) or 0
-        matched.append({"rank": rank, "pid": pid, "title": r.get("product_title"), "brand": r.get("brand"),
+        matched.append({"rank": rank, "pid": pid, "title": r.get("product_title"),
+                        "brand": str(r.get("brand") or "").strip() or None,
                         "visits": visits, "revenue": num(r.get("revenue")),
                         "rpv": num(r.get("rpv")), "conversion_rate": num(r.get("conversion_rate"))})
     matched.sort(key=lambda x: x["rank"])
     in_top = [m for m in matched if m["rank"] <= a.top]
-    med_rpv = statistics.median([m["rpv"] for m in in_top if m["rpv"] is not None]) if in_top else None
-    med_cvr = statistics.median([m["conversion_rate"] for m in in_top if m["conversion_rate"] is not None]) if in_top else None
+    rpvs = [m["rpv"] for m in in_top if m["rpv"] is not None]
+    cvrs = [m["conversion_rate"] for m in in_top if m["conversion_rate"] is not None]
+    med_rpv = statistics.median(rpvs) if rpvs else None
+    med_cvr = statistics.median(cvrs) if cvrs else None
 
-    buried = [m for m in matched if m["rank"] > a.fold and m["visits"] >= 50 and med_rpv is not None
-              and ((m["rpv"] or 0) >= med_rpv or (m["conversion_rate"] or 0) >= (med_cvr or 0))]
+    buried = [m for m in matched if m["rank"] > a.fold and m["visits"] >= 50
+              and ((med_rpv is not None and m["rpv"] is not None and m["rpv"] >= med_rpv)
+                   or (med_cvr is not None and m["conversion_rate"] is not None and m["conversion_rate"] >= med_cvr))]
     weak_top = [m for m in in_top if m["visits"] >= 50 and med_cvr and (m["conversion_rate"] or 0) < 0.75 * med_cvr]
 
     json.dump({
@@ -98,7 +126,9 @@ def main():
         "brands_missing_from_top": missing,
         "buried": buried[:20],
         "weak_top": weak_top,
-        "note": "Products without metrics are either new, low-traffic or outside the product report pages you passed.",
+        "note": "Products without metrics are either new, low-traffic or outside the product report pages you passed."
+                + ("" if med_rpv is not None or med_cvr is not None else
+                   " No top-window product had a revenue per visit or conversion rate, so buried products weren't judged."),
     }, sys.stdout, indent=2, ensure_ascii=False)
     print()
 

@@ -25,8 +25,9 @@ Groups (a product appears once, in the group with the most revenue at stake):
   over_exposed      high visits, add-to-cart normal, conversion rate well below the median
   hidden_gem        low visits, conversion rate well above the median
   declining_winner  a top earner last period whose revenue fell, after allowing for the
-                    account's overall trend
-  dead_weight       no views (in the catalog but not in the report, or 0 visits)
+                    account's overall trend (checked whatever its visits now, even 0)
+  dead_weight       no views (in the catalog but not in the report, or 0 visits and not a
+                    declining winner)
 
 "Well below/above" means at least --gap (15%) from the median AND the 90% Wilson interval for the
 product's rate excludes the median, so small products with noisy rates aren't flagged.
@@ -49,15 +50,35 @@ Z = 1.645  # 90% two-sided
 
 
 def num(v):
-    if v is None or v == "":
+    """A number from a Loomi Connect value ("$1,234.50", "12%", 7); None if missing or unreadable."""
+    if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return float(v)
-    s = str(v).replace("$", "").replace(",", "").replace("%", "").strip()
+    s = str(v).strip()
+    for ch in "$£€,":
+        s = s.replace(ch, "")
+    s = s.strip()
+    if s.endswith("%"):
+        s = s[:-1].strip()
+    if s.lower() in ("", "na", "n/a", "-", "—", "null"):
+        return None
     try:
-        return float(s)
+        f = float(s)
     except ValueError:
         return None
+    return f if math.isfinite(f) else None
+
+
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of rows."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}), file=sys.__stdout__)
+            sys.exit(1)
+    return doc
 
 
 def unwrap(data):
@@ -89,7 +110,7 @@ def load_catalog(path):
     with open(path, encoding="utf-8") as f:
         text = f.read()
     try:
-        data = unwrap(json.loads(text))
+        data = unwrap(check(json.loads(text), path))
         docs = data.get("response", {}).get("docs", [])
         return {str(d.get("pid")) for d in docs if d.get("pid") is not None}
     except (ValueError, AttributeError):
@@ -114,14 +135,16 @@ def main():
     if a.out:
         sys.stdout = open(a.out, "w", encoding="utf-8")
 
-    rows, seen = [], set()
+    rows, seen, incomplete = [], set(), 0
     for p in a.products:
         with open(p, encoding="utf-8") as f:
-            for r in unwrap(json.load(f)).get("rows", []):
+            for r in unwrap(check(json.load(f), p)).get("rows", []):
                 pid = str(r.get("prod_id"))
                 if pid in seen:
                     continue
                 seen.add(pid)
+                if any(num(r.get(k)) is None for k in ("visits", "prev_visits", "revenue", "prev_revenue")):
+                    incomplete += 1
                 rows.append({
                     "pid": pid, "title": r.get("product_title"), "brand": (r.get("brand") or "").strip() or "(none)",
                     "visits": num(r.get("visits")) or 0, "prev_visits": num(r.get("prev_visits")) or 0,
@@ -147,7 +170,8 @@ def main():
     med_atc = statistics.median([r["atc_rate"] for r in judged]) if judged else 0
     med_cr = statistics.median([r["cr"] for r in judged]) if judged else 0
     med_rpv = statistics.median([r["rpv"] for r in judged]) if judged else 0
-    orders_per_atc = statistics.median([r["conversions"] / r["atc"] for r in judged if r["atc"]]) if judged else 0
+    otc_list = [r["conversions"] / r["atc"] for r in judged if r["atc"]]
+    orders_per_atc = statistics.median(otc_list) if otc_list else 0
     visits_list = [r["visits"] for r in judged]
     hi_v = pct(visits_list, a.high_pct)
     lo_v = pct(visits_list, a.low_pct)
@@ -158,21 +182,24 @@ def main():
         return r["aov"] or (r["revenue"] / r["conversions"] if r["conversions"] else 0)
 
     candidates = []
-    for r in judged:
+    # Rates are judged only on products with --min-visits visits; a former winner is checked
+    # for decline whatever its visits now (a best seller that dropped to 0 visits is the worst case).
+    for r in rows:
         v = r["visits"]
+        is_judged = v >= a.min_visits
         flags = []
         atc_lo, atc_hi = wilson(r["atc"], v)
         cr_lo, cr_hi = wilson(r["conversions"], v)
-        if v >= hi_v and r["atc_rate"] <= lo_gap * med_atc and atc_hi < med_atc:
+        if is_judged and v >= hi_v and r["atc_rate"] <= lo_gap * med_atc and atc_hi < med_atc:
             otc = r["conversions"] / r["atc"] if r["atc"] else orders_per_atc
             stake = v * (med_atc - r["atc_rate"]) * otc * aov(r)
             flags.append(("fix_product_page", stake,
                           f"{v:.0f} visits x ({med_atc:.1%} - {r['atc_rate']:.1%}) ATC x {otc:.2f} orders/ATC x ${aov(r):,.2f}"))
-        elif v >= hi_v and r["cr"] <= lo_gap * med_cr and cr_hi < med_cr:
+        elif is_judged and v >= hi_v and r["cr"] <= lo_gap * med_cr and cr_hi < med_cr:
             stake = v * (med_cr - r["cr"]) * aov(r)
             flags.append(("over_exposed", stake,
                           f"{v:.0f} visits x ({med_cr:.1%} - {r['cr']:.1%}) CR x ${aov(r):,.2f}"))
-        if v <= lo_v and r["conversions"] >= 5 and r["cr"] >= hi_gap * med_cr and cr_lo > med_cr:
+        if is_judged and v <= lo_v and r["conversions"] >= 5 and r["cr"] >= hi_gap * med_cr and cr_lo > med_cr:
             blended = (r["cr"] + med_cr) / 2
             stake = max(target_v - v, 0) * blended * aov(r)
             flags.append(("hidden_gem", stake,
@@ -215,7 +242,8 @@ def main():
                 "also": [f[0] for f in flags[1:]],
             })
 
-    dead = [r for r in rows if r["visits"] == 0]
+    declining = {c["pid"] for c in candidates if c["group"] == "declining_winner"}
+    dead = [r for r in rows if r["visits"] == 0 and r["pid"] not in declining]
     missing = []
     catalog_size = None
     if a.catalog_pids:
@@ -224,7 +252,7 @@ def main():
             cat |= load_catalog(path)
         catalog_size = len(cat)
         missing = sorted(cat - seen)
-    near_dead = sorted([r for r in rows if 0 < r["visits"] < 0.1 * (statistics.median(visits_list) if visits_list else 0)],
+    near_dead = sorted([r for r in rows if r["pid"] not in declining and 0 < r["visits"] < 0.1 * (statistics.median(visits_list) if visits_list else 0)],
                        key=lambda r: r["visits"])
 
     groups = {}
@@ -244,6 +272,9 @@ def main():
 
     out = {
         "products_in_report": len(rows), "products_judged": len(judged), "catalog_size": catalog_size,
+        "rows_with_missing_figures": incomplete,
+        "missing_figures_note": (f"{incomplete} rows had a missing or unreadable visits or revenue figure, "
+                                 "counted as 0." if incomplete else None),
         "baselines": {
             "median_atc_rate": round(med_atc, 4), "median_conversion_rate": round(med_cr, 4),
             "median_rpv": round(med_rpv, 2), "median_orders_per_atc": round(orders_per_atc, 3),
@@ -295,6 +326,8 @@ def print_markdown(out):
     print(f"### Dead weight: {d['count']} products with no views; {d['near_dead_count']} with under 10% of median visits\n")
     if d["note"]:
         print(d["note"] + "\n")
+    if out["missing_figures_note"]:
+        print(out["missing_figures_note"] + "\n")
 
 
 if __name__ == "__main__":

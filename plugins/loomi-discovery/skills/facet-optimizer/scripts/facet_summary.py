@@ -25,7 +25,9 @@ Flags:
   internal_name    the field name looks internal (scores, margin, cluster ...)
   code_values      most values look like codes (c12, c69 ...)
   merge_candidates values that differ only by case, spacing or punctuation,
-                   or are known variants (gray/grey)
+                   or are known variants (gray/grey); not checked on the
+                   category facet, where same names in different branches
+                   (men/pants, women/pants) are different categories
   test_values      values that look like test or internal data
   single_value     only one value: the facet can't narrow anything
   low_coverage     the values add up to under 20% of the results, so most
@@ -51,9 +53,20 @@ TEST_RE = re.compile(r"(test|demo|example|xyz|dummy|sample|landing page|do not u
 KNOWN_VARIANTS = [{"gray", "grey"}, {"colour", "color"}, {"denim", "denium"}]
 
 
+def check(doc, path):
+    """Stop when Loomi Connect returned an error as data (success: false) instead of results."""
+    for d in (doc, doc.get("result") if isinstance(doc, dict) else None):
+        if isinstance(d, dict) and d.get("success") is False:
+            msg = (f"{path}: Loomi Connect returned an error: {d.get('error') or 'no error text'}. "
+                   "This check couldn't run; don't treat it as 'nothing found'.")
+            print(json.dumps({"ok": False, "error": msg}))
+            sys.exit(1)
+    return doc
+
+
 def load(path):
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+        data = check(json.load(f), path)
     if isinstance(data, dict) and "result" in data and isinstance(data["result"], dict):
         data = data["result"]  # some clients wrap tool output once more
     return data.get("data", data) if isinstance(data, dict) else {}
@@ -113,7 +126,7 @@ def flag_facet(facet, num_found):
     names = [value_name(v) for v in values]
     if names and sum(1 for x in names if CODE_RE.match(str(x))) / len(names) > 0.6 and ftype != "number":
         flags.append("code_values")
-    if ftype != "number":
+    if ftype != "number" and name != "category":
         merges, trailing = merge_candidates(values)
         if merges or trailing:
             flags.append("merge_candidates")
@@ -187,7 +200,7 @@ def summarise(path):
 
 def attribute_report(path, seen):
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+        data = check(json.load(f), path)
     if isinstance(data, dict) and "result" in data:
         data = data["result"]
     attrs = data.get("data", data) if isinstance(data, dict) else data
@@ -202,6 +215,9 @@ def attribute_report(path, seen):
 
 
 def main(argv):
+    if argv and argv[0] in ("-h", "--help"):
+        print(__doc__)
+        return 0
     attrs = None
     files = []
     it = iter(argv)

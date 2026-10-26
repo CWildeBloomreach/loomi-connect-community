@@ -1,0 +1,29 @@
+{
+ "result": {
+  "success": true,
+  "data": {
+   "response": {
+    "numFound": 42,
+    "start": 0,
+    "docs": []
+   },
+   "facet_counts": {
+    "facets": [
+     {
+      "name": "category",
+      "type": "text",
+      "value": [
+       {
+        "cat_id": "womens-sneakers",
+        "cat_name": "Sneakers",
+        "count": 42,
+        "crumb": "Women/Sneakers",
+        "tree_path": "/w,Women/womens-sneakers,Sneakers"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}
