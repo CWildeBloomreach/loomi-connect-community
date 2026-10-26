@@ -54,9 +54,9 @@ This reference is drawn from the Loomi Connect tool schemas. The write calls the
 **Pattern 2: Rule A vs rule B** (which configuration is better?). Use it when an enabled rule already exists for the query, so the control is "today's rule".
 
 1. `create_ranking_rule_variant` with `base_rule_id` = the existing rule → variant ID (starts disabled).
-2. The tool description says to enable the variant with `update_ranking_rule(rule_id=<variant>, enabled=true)` before creating the test. **Unverified:** whether enabling a variant makes it serve outside a test. Ask the user to confirm in the Dashboard first, or start the test immediately afterwards.
-3. `create_discovery_experiment` with `control: true` on the existing rule's ID and `control: false` on the variant's ID.
-4. `start_discovery_experiment`.
+2. `create_discovery_experiment` with `control: true` on the existing rule's ID and `control: false` on the variant's ID. If this fails, stop: tell the user the variant's ID and state, and how to disable it.
+3. Enable the variant with `update_ranking_rule(rule_id=<variant>, enabled=true)`, with its own "yes". The tool description says to enable it before creating the test, but this skill **never enables a rule before the experiment exists**. **Unverified:** whether enabling a variant makes it serve outside a test, so treat it as possibly live for all shoppers of the query.
+4. `start_discovery_experiment`, straight afterwards.
 
 ## Payload templates
 

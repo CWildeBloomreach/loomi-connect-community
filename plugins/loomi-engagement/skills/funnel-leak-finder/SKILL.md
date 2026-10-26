@@ -22,7 +22,7 @@ Measures how many customers move from viewing a product to adding to cart, (wher
 
 The answer is a short list of the biggest leaks, each with the revenue at stake and the next step, plus the missing or weak recovery flows, with hand-offs to `engagement-segment-builder` (to define the recovery audience) and `engagement-scenario-explainer` (to inspect an existing flow).
 
-It uses aggregate counts only. It never reads individual customers and never changes anything.
+It uses aggregate counts only. It never reads individual customers and never changes anything. To see how an existing recovery flow performs step by step, use `engagement-scenario-performance`. For campaign results across a period, use `engagement-campaign-digest`.
 
 ## Before you start
 
@@ -36,7 +36,7 @@ This skill uses these Loomi Connect tools:
 | Counts | `estimate_eql_cost`, `execute_analytics_eql` |
 | Recovery flows | `search_scenarios`, `search_scenario_nodes` (not listed by default: find it with `search_tools`, run it with `call_tool`) |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 Ask the user for the **window** (default: last 30 days) and the **conversion window** between steps (default: 7 days; use 1 day for fast-moving or low-price catalogs). Ask for a **recovery rate** assumption if they have one from their own flows; otherwise use the defaults in [references/revenue-at-stake.md](references/revenue-at-stake.md) and label them as assumptions.
 

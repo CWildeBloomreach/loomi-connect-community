@@ -24,6 +24,8 @@ Every readout ends with one of **Call the winner**, **Keep running** (with an es
 
 Engagement has no A/B report tool in Loomi Connect, so the numbers come from **aggregate EQL counts** and the statistics are worked out by this skill. It never reads individual customers and never changes anything.
 
+For Discovery tests (search and category ranking rules), use `discovery-experiment-readout`. For a change made without a test, use `change-impact-tracker`.
+
 ## Before you start
 
 This skill uses these Loomi Connect tools:
@@ -36,7 +38,7 @@ This skill uses these Loomi Connect tools:
 | Counts | `estimate_eql_cost`, then `execute_analytics_eql` |
 | Saved evaluation (optional) | `search_reports`, `calculate_report`, `search_dashboards` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 You need the project, and either a test name or ID, or a scope ("running tests", "tests in the last 90 days"). If the user gives neither, list the candidate tests (step 2) and ask which to read out.
 

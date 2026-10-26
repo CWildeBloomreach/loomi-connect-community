@@ -21,7 +21,7 @@ Audits one Engagement project's tracking and returns a prioritised list of probl
 - **data quality:** properties that are often empty, and values that have drifted or moved into the wrong field;
 - **schema oddities:** the same property with different types, misspelt duplicates, and identifiers stored as numbers.
 
-It uses aggregate counts only. It never reads individual customers or events, and it never changes anything.
+It uses aggregate counts only. It never reads individual customers or events, and it never changes anything. For the Discovery pixel, catalog feeds and Data Hub jobs, use `data-feed-health`.
 
 ## Before you start
 
@@ -34,11 +34,11 @@ This skill uses these Loomi Connect tools:
 | Counts | `estimate_eql_cost`, `execute_analytics_eql` |
 | Context (optional) | `search_trends`, `search_reports` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 
-- **Make calls one at a time.** Engagement allows about 3 requests per second. **EQL is stricter: about one query every 3 seconds per project.** If you get HTTP 429 or "Too many requests", wait 3–5 seconds and retry once.
+- **Make calls one at a time.** Engagement allows about 3 requests per second. **EQL is stricter: about one query every 3 seconds, shared across the whole Engagement instance** (other users' queries and cost estimates count too). If you get HTTP 429 or "Too many requests", wait 3–5 seconds and retry once.
 - **Estimate before every EQL query.** Call `estimate_eql_cost` first. If the level is `high` or `very_high`, tell the user before running it, and run only the high-cost checks they agree to. The estimator doesn't credit short date windows, so a 7-day event query can still say "high".
 - **Aggregate only.** Never call `list_customers`, `get_customer_properties`, `list_customer_events` or `list_customers_in_segment`. Never break down by free-text, URL, email, phone or ID properties: the values can contain personal data.
 - **Schemas are large.** On big projects `get_event_schema` can exceed 200,000 characters. If the client saves it to a file, extract what you need with `jq` or Python rather than reading it all.

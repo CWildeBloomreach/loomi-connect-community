@@ -40,7 +40,7 @@ This skill uses these Loomi Connect tools:
 | Measure | `get_discovery_query_performance`, `get_discovery_category_performance_table`, `get_discovery_product_performance_table`, `get_discovery_search_performance`, `get_discovery_category_performance`, `get_discovery_overall_performance`, `get_discovery_trend` |
 | Campaigns (Engagement) | `list_cloud_organizations`, `list_projects`, `get_campaign_calendar`, `search_scenarios`, `search_email_campaigns`, `estimate_eql_cost`, `execute_analytics_eql` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it.
 
 **You need:** the account (and site, if it has sites) or the Engagement project, and the change. If the user doesn't name the change, find candidates (step 2) and ask.
 
@@ -212,6 +212,7 @@ Keep it to about one screen. Round money to the nearest $100 below $10k, and to 
 
 This skill is **read-only**. It never creates, changes, enables, disables or deletes rules, synonyms, redirects, facets, banners, categories, experiments, campaigns or scenarios.
 
-- If the user wants to roll back or change something, hand over to the relevant skill. Warn them that **Discovery changes go live immediately**, deletes can't be undone, and changes are blocked while an A/B test runs. Show exactly what would change and wait for an explicit "yes" before any write tool is used. Prefer disabling to deleting.
+- This skill never uses a write tool, even if asked. If the user wants to roll back or change something, give the exact change (what, where and the values) for them to make in the Bloomreach UI, or hand off to a skill that writes, such as `discovery-experiment-setup` to test a ranking change. Warn them that **Discovery changes go live immediately**, deletes can't be undone, and changes are blocked while an A/B test runs. Prefer disabling to deleting.
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 - For Engagement, use only aggregate EQL, run `estimate_eql_cost` first, and never run a `very_high` query. Never call `list_customers`, `get_customer_properties`, `list_customer_events` or `list_customers_in_segment`.
 - Don't repeat editors' names or email addresses from rule, synonym or experiment lists.

@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Activation | `search_scenarios`, `search_scenario_nodes` (via `search_tools` and `call_tool`), `search_email_campaigns`, `search_sms_campaigns`, `search_banners` |
 | Reporting | `search_reports`, `search_dashboards` |
 
-`search_scenario_nodes` isn't in the default tool list: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. If any other tool here isn't visible, do the same. Only ever use read tools (`search_*`, `list_*`, `get_*`).
+`search_scenario_nodes` isn't in the default tool list: find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. If any other tool here isn't visible, do the same. Only ever use read tools (`search_*`, `list_*`, `get_*`): `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 

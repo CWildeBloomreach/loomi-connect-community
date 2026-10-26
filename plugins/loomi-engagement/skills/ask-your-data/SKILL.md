@@ -1,6 +1,6 @@
 ---
 name: ask-your-data
-description: Answers a plain-English analytics question about a Bloomreach Engagement project by writing and running an EQL query with Loomi Connect, then explains the answer and shows the exact query and assumptions. It checks the event and customer schema so the query uses real names, estimates the query cost first, and asks before running anything expensive. Use when the user asks how many, how much, what share, which top values, conversion between two events, or a trend over time in Engagement data, for example "how many customers bought last month", "revenue by currency this week", "top search terms", or "what share of visitors purchased".
+description: Answers a plain-English analytics question about a Bloomreach Engagement project by writing and running an EQL query with Loomi Connect, then explains the answer and shows the exact query and assumptions. It checks the event and customer schema so the query uses real names, estimates the query cost first, and asks before running anything expensive. Use when the user asks how many, how much, what share, which top values, conversion between two events, or a trend over time in Engagement data, for example "how many customers bought last month", "revenue by currency this week", "top products bought", or "what share of visitors purchased".
 license: Apache-2.0
 compatibility: Requires the Loomi Connect MCP server (Bloomreach Engagement). Python 3 is optional, for the bundled result-summary script.
 metadata:
@@ -34,7 +34,7 @@ This skill uses these Loomi Connect tools, all normally listed directly:
 | Data model | `get_event_schema`, `get_customer_property_schema` |
 | Query | `estimate_eql_cost`, then `execute_analytics_eql` |
 
-If one of these isn't available in the client, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools.
+If one of these isn't available in the client, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 

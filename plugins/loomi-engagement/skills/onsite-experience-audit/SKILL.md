@@ -41,7 +41,7 @@ This skill uses these Loomi Connect tools:
 | Performance (optional) | `get_event_schema`, `estimate_eql_cost`, `execute_analytics_eql` |
 | Discovery placements (optional) | `get_discovery_weblayer_customizations` |
 
-If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. There's no separate "weblayer" tool in Engagement: web layers are **banners**. Only ever use read tools.
+If a tool isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. There's no separate "weblayer" tool in Engagement: web layers are **banners**. Only ever use read tools: `search_tools` also returns write tools; never call them.
 
 ### Rules for calling the tools
 

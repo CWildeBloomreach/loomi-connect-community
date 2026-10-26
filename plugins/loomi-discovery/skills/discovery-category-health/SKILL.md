@@ -16,7 +16,7 @@ metadata:
 
 Summarises how category pages (product listing pages) perform on one Bloomreach Discovery account or site, finds the categories most worth fixing by comparing each with **like-for-like peers**, checks that dynamic categories actually contain products, reviews the rules applied to categories, and looks for strong products buried low on key category pages.
 
-This skill only diagnoses and recommends. It never changes anything.
+This skill only diagnoses and recommends. It never changes anything. For a deeper review of dynamic category rules (what they wrongly include or miss), use `discovery-dynamic-category-review`.
 
 ## Before you start
 
@@ -30,7 +30,7 @@ This skill uses these Loomi Connect tools:
 | Live category pages | `search_discovery_product_grid_insights` with `search_by="category"` |
 | Rules and tests | `list_category_ranking_rules`, `get_ranking_rule`, `list_category_facets`, `list_category_media_rules`, `search_discovery_experiments` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it. Don't guess parameter names.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it. Don't guess parameter names.
 
 You need the account, and optionally a site and a date range. The default is the last 30 days.
 
@@ -185,10 +185,10 @@ Rank recommendations by impact, then by effort. Put tracking problems first if t
 
 This skill is **read-only**. It never creates, changes or deletes categories, rules, facets or anything else.
 
-If the user asks to apply a fix:
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.
 
-1. Warn them that **Discovery changes go live immediately**, and that deletes can't be undone.
-2. Tell them about any running A/B test. Changes are blocked while one runs.
-3. Show exactly what will be created or changed: the rule type, the category path and ID, products or attributes, and the site or account scope.
-4. Wait for an explicit "yes" before using any write tool.
-5. Suggest trying large ranking changes as an A/B test first.
+If the user asks to apply a fix, hand it off. This skill never uses a write tool, even if asked.
+
+1. Give the exact change for them to make in the Bloomreach Discovery dashboard: the rule type, the category path and ID, products or attributes, and the site or account scope.
+2. Warn them that **Discovery changes go live immediately**, that deletes can't be undone, and that changes are blocked while an A/B test runs.
+3. To try a ranking change as an A/B test first, hand off to `discovery-experiment-setup`.

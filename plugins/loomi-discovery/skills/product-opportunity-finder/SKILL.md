@@ -37,7 +37,7 @@ This skill uses these Loomi Connect tools:
 | Main queries for a product | `get_discovery_query_performance` |
 | Where products rank | `search_discovery_product_grid_insights` |
 
-If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Check each tool's parameters before calling it.
+If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them. Check each tool's parameters before calling it.
 
 You need the account, and optionally a site and a date range. The default is the last 30 days.
 
@@ -164,3 +164,5 @@ Show the top 5–10 per group. Offer the full list as a file if the user wants i
 This skill is **read-only**. It never boosts, buries, creates rules or changes products.
 
 If the user asks to act on a recommendation, hand off to `discovery-experiment-setup` for a boost or bury test. That skill confirms every write. Never use a write tool from this skill.
+
+- **Never repeat** `auth_key` URLs from grid debug output (`feUrl`, `sqApiUrl`), editor emails (`lastModifiedBy` in synonyms), or internal commercial fields such as `margin` or `cost`.

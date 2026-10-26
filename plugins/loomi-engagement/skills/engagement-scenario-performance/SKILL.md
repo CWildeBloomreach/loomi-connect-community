@@ -21,7 +21,7 @@ Takes one scenario and a period (default: the last 30 days) and reports, for eac
 
 and, for each A/B split, how many customers were assigned to each variant. It ends with the two or three steps most worth fixing, and why.
 
-This is a descriptive readout. To decide whether a split's variants differ significantly, hand off to `engagement-experiment-readout`. To explain what the flow does, hand off to `engagement-scenario-explainer`.
+This is a descriptive readout. To decide whether a split's variants differ significantly, hand off to `engagement-experiment-readout`. To explain what the flow does, hand off to `engagement-scenario-explainer`. For all campaigns in a period, use `engagement-campaign-digest`. For funnel drop-off and missing recovery flows, use `funnel-leak-finder`.
 
 ## Before you start
 
@@ -32,6 +32,8 @@ This skill uses these Loomi Connect tools:
 | Project | `list_cloud_organizations`, `list_projects` |
 | The scenario | `search_scenarios`, `search_scenario_nodes` (find it with `search_tools`, run with `call_tool`, if not listed) |
 | Results | `estimate_eql_cost`, `execute_analytics_eql` |
+
+Use read tools only: `search_tools` also returns write tools; never call them.
 
 Call tools **one at a time**. EQL allows about one query every 3 seconds; on HTTP 429, wait and retry once. Run `estimate_eql_cost` before each new query shape. Don't run `very_high` queries, and ask before `high` ones on large projects; shorten the period instead.
 

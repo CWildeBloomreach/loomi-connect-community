@@ -19,7 +19,7 @@ Gives the user a short orientation to one Bloomreach Engagement project: what it
 ## Before you start
 
 - This skill uses these Loomi Connect tools: `list_cloud_organizations`, `list_projects`, `get_project_overview`, `get_customer_schema`, `get_event_schema`.
-- If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`.
+- If one of them isn't available, find it with the Loomi Connect `search_tools` tool and run it with `call_tool`. Use read tools only: `search_tools` also returns write tools; never call them.
 
 ## Steps
 
@@ -32,7 +32,7 @@ Gives the user a short orientation to one Bloomreach Engagement project: what it
    - Customer properties: group them (identity, contact and consent, behavioural, custom) and name the 5–10 that look most useful.
    - Events: name the main event types (for example purchase, view_item, session_start, campaign) and point out anything unusual or missing, such as no purchase event.
 
-Make calls one at a time. If a call returns a rate-limit error (HTTP 429), wait and retry.
+Make calls one at a time: Engagement allows about 3 requests per second per user, and `list_cloud_organizations` and `list_projects` about 1 per second. If a call returns a rate-limit error (HTTP 429), wait a few seconds and retry.
 
 ## Output
 

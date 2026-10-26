@@ -6,7 +6,7 @@ Checks what's scheduled to send in a Bloomreach Engagement project over a window
 |---|---|
 | **Products** | Engagement |
 | **Access** | Read-only |
-| **Loomi Connect tools** | `list_cloud_organizations`, `list_projects`, `get_campaign_calendar`, `search_scenarios`, `search_scenario_nodes`, `search_email_campaigns`, `search_sms_campaigns`, `search_segmentations`, `get_frequency_policies` |
+| **Loomi Connect tools** | `list_cloud_organizations`, `list_projects`, `get_campaign_calendar`, `search_scenarios`, `search_scenario_nodes`, `search_email_campaigns`, `search_sms_campaigns`, `search_segmentations`, `get_frequency_policies`; optionally `estimate_eql_cost`, `execute_analytics_eql` |
 | **Tested with** | Claude Code: each step run by hand against a live sandbox and a production project; script tested on illustrative data. Those projects had few scheduled message sends, so no real collision has been found with it yet. |
 | **Maintainer** | Bloomreach |
 

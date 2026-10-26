@@ -27,14 +27,14 @@ A 429 says how long to wait. Serialize calls rather than firing them in parallel
 
 | Tool | Use |
 |---|---|
-| `list_cloud_organizations` → `list_projects(cloud_organization_id, url_slug)` | resolve project (1/sec) |
+| `list_cloud_organizations` → `list_projects(cloud_organization_id, url_slug)` | resolve project (1/sec). If more than one org or project matches, ask the user which to use; never guess |
 | `get_mapping` | real names for first_name/email/…, main catalog id + column map, standard events, consent ids |
 | `get_customer_property_schema` | all properties; prefer `used: true` |
 | `get_event_schema` | events + properties (large — parse the saved file with Python) |
 | `get_consent_settings` | `enabled`, categories (pick the email/newsletter one), `general_consent.email` |
 | `list_project_variables` | `{{ project_variables.<reference> }}` candidates (company name, address, URLs) |
 | `search_catalogs`, `search_catalog_items(query=<id>)` | confirm event product IDs match catalog `_id` |
-| `list_customers`, `list_customer_events(event_types=[...])`, `get_customer_properties` | real data for render-check |
+| `list_customers`, `list_customer_events(event_types=[...])`, `get_customer_properties` | real data for render-check. Use the user's test profile, or `list_customers` with a query and `count` ≤ 5; never without a query |
 | `search_voucher_pools` | pools with `available > 0` |
 | `search_custom_rows`, `search_email_blocks`, `search_snippets` | client's existing headers/footers/blocks (optional reuse) |
 | `search_scenarios` → `search_scenario_nodes(…, node_id, include_design=true)` | copy sender + `provider` from an existing email |
