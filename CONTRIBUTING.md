@@ -62,7 +62,7 @@ Or select **Sync fork** on your fork's GitHub page.
 - A maintainer's own PR can be merged once CI passes, without a second reviewer.
 - A skill that **writes** data gets a closer review, whoever wrote it. That covers creating campaigns or scenarios, changing Discovery rules, starting experiments, and similar actions. Before merging, check that its Safety section lists every write, each write asks for an explicit yes first, and `agents/openai.yaml` sets `allow_implicit_invocation: false`.
 - Reviewers check correctness, safety, clarity, and that the skill works across clients.
-- CI runs `scripts/validate_skills.py` and the unit tests on every PR. Both must pass.
+- CI runs `scripts/validate_skills.py` and the unit tests on every PR, and checks that every commit is signed off. All must pass.
 
 Once a PR is merged, the contributor is credited in the skill's `metadata.author` and README.
 
