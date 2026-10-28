@@ -31,14 +31,14 @@ If you're not sure something fits, [open an issue](../../issues/new/choose) befo
    claude plugin validate .        # if you have Claude Code installed
    ```
 6. **Test it** against a real or sandbox Bloomreach project, in at least one Claude client and one OpenAI client if you can. Say which ones you used in the PR.
-7. **Commit and push** to your fork. Add `tests/` as well if you added or changed scripts:
+7. **Commit and push** to your fork, signing off every commit with `-s` (see [Sign-off](#sign-off)). Add `tests/` as well if you added or changed scripts:
    ```bash
    git add plugins/<plugin>/skills/<skill-name> plugins/<plugin>/README.md docs/start-here.md
-   git commit -m "Add <skill-name> skill"
+   git commit -s -m "Add <skill-name> skill"
    git push origin skill/campaign-digest
    ```
 8. **Open a pull request** from your fork's branch to `main` in `bloomreach/loomi-connect-community`, and fill in the template. GitHub offers a **Compare & pull request** button after you push. With the GitHub CLI you can run `gh pr create` instead.
-9. **Respond to review.** Push further commits to the same branch; the pull request updates automatically.
+9. **Respond to review.** Push further commits to the same branch, also signed off; the pull request updates automatically.
 
 With the GitHub CLI, `gh repo fork bloomreach/loomi-connect-community --clone` does step 1's fork and clone in one go.
 
@@ -81,6 +81,16 @@ Bump `metadata.version` in the skill's frontmatter when you change a skill. Main
 ## License
 
 By contributing, you agree that your contribution is licensed under the [Apache 2.0 License](LICENSE).
+
+## Sign-off
+
+Every commit must carry a `Signed-off-by` line. It certifies the [Developer Certificate of Origin](https://developercertificate.org/): that you wrote the change, or otherwise have the right to submit it under the Apache 2.0 License. `git commit -s` adds the line, using the name and email in your git config:
+
+```
+Signed-off-by: Your Name <you@example.com>
+```
+
+Forgot it? Add it to your last commit with `git commit --amend -s --no-edit`, or to every commit on your branch with `git rebase --signoff main`, then `git push --force-with-lease`.
 
 ## Code of conduct
 
