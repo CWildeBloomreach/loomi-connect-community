@@ -15,6 +15,8 @@ If you're not sure something fits, [open an issue](../../issues/new/choose) befo
 
 **All submissions come in by forking the repository, making your changes in your fork, and opening a pull request.** This applies to everyone, including Bloomreach staff. Contributors don't get write access to this repository, and we can't accept changes sent any other way, such as by email, in an issue, or as a file attachment. Every change is reviewed in its pull request before it's merged.
 
+**Every commit must be signed off** with `git commit -s`. It's one line, not a key or a form. See [Sign-off](#sign-off).
+
 1. **Fork** the repository on GitHub (the **Fork** button), then clone your fork and create a branch:
    ```bash
    git clone https://github.com/<your-username>/loomi-connect-community.git
@@ -84,13 +86,49 @@ By contributing, you agree that your contribution is licensed under the [Apache 
 
 ## Sign-off
 
-Every commit must carry a `Signed-off-by` line. It certifies the [Developer Certificate of Origin](https://developercertificate.org/): that you wrote the change, or otherwise have the right to submit it under the Apache 2.0 License. `git commit -s` adds the line, using the name and email in your git config:
+Every commit in a pull request must be signed off. CI checks this, and a pull request with a commit that isn't signed off can't be merged.
+
+A sign-off isn't a cryptographic signature, and you don't need GPG or SSH keys. It's one line at the end of the commit message:
 
 ```
 Signed-off-by: Your Name <you@example.com>
 ```
 
-Forgot it? Add it to your last commit with `git commit --amend -s --no-edit`, or to every commit on your branch with `git rebase --signoff main`, then `git push --force-with-lease`.
+Adding it certifies the [Developer Certificate of Origin](https://developercertificate.org/): that you wrote the change, or otherwise have the right to submit it under the Apache 2.0 License.
+
+### How to sign off
+
+1. **Set your name and email once.** Git uses them for both the commit author and the sign-off, and they must match:
+   ```bash
+   git config --global user.name "Your Name"
+   git config --global user.email "you@example.com"
+   ```
+2. **Add `-s` when you commit:**
+   ```bash
+   git commit -s -m "Add campaign-digest skill"
+   ```
+   - **VS Code:** turn on the **Git: Always Sign Off** setting (`"git.alwaysSignOff": true`) and every commit you make from VS Code is signed off.
+   - **GitHub's website:** commits you make there, such as edits and accepted review suggestions, are signed off for you.
+   - **Other tools:** add the `Signed-off-by` line at the end of the commit message yourself.
+
+### If you forgot
+
+CI names each commit that's missing a sign-off. To fix them:
+
+- **Just the last commit:**
+  ```bash
+  git commit --amend -s --no-edit
+  git push --force-with-lease
+  ```
+- **Every commit on your branch:**
+  ```bash
+  git fetch upstream
+  git rebase --signoff upstream/main
+  git push --force-with-lease
+  ```
+  (If you haven't added `upstream`, see [Keeping your fork up to date](#keeping-your-fork-up-to-date).)
+
+Your pull request updates automatically, and CI runs again.
 
 ## Code of conduct
 

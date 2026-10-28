@@ -24,4 +24,4 @@
 - [ ] Writes (if any) show exactly what will change and wait for confirmation
 - [ ] README.md is filled in, and `metadata.version` is bumped
 - [ ] I agree that my contribution is licensed under Apache 2.0
-- [ ] Every commit is signed off (`git commit -s`), certifying the [Developer Certificate of Origin](https://developercertificate.org/)
+- [ ] Every commit is signed off (`git commit -s`), certifying the [Developer Certificate of Origin](https://developercertificate.org/). Forgot? The **Sign-off** section of CONTRIBUTING.md shows the fix.

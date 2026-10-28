@@ -59,7 +59,7 @@ The script symlinks the skills in your clone rather than copying them, so a `git
 
 ## Contributing
 
-We welcome contributions. **All submissions are handled by forking this repository, making your changes in your fork, and opening a pull request.** Maintainers review every pull request before it's merged. We can't accept changes sent any other way.
+We welcome contributions. **All submissions are handled by forking this repository, making your changes in your fork, and opening a pull request.** Maintainers review every pull request before it's merged. We can't accept changes sent any other way. Every commit must be signed off with `git commit -s`; [CONTRIBUTING.md](CONTRIBUTING.md#sign-off) explains how.
 
 Start with:
 
