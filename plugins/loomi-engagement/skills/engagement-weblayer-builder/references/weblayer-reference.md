@@ -1,8 +1,42 @@
 # Weblayer reference
 
-The platform parts of a Bloomreach Engagement weblayer: the parameter syntax, the `self` object, the JavaScript skeleton, the `utils` helper library and phone input. For Jinja that pulls in data (recommendations, aggregates, catalogs, reports, personalisation), use the `engagement-jinja-writer` skill.
+The platform parts of a Bloomreach Engagement weblayer: smart triggering, the parameter syntax, the `self` object, the JavaScript skeleton, the `utils` helper library and phone input. For Jinja that pulls in data (recommendations, aggregates, catalogs, reports, personalisation), use the `engagement-jinja-writer` skill.
 
-Checked against the Bloomreach documentation on 2026-10-30 (pages: using-template-parameters, weblayer-design, weblayer-reference, advanced-weblayers-use, exit-popup, web-tracking). The `utils` library, `self.inPreview` and the phone-input setup come from Bloomreach's built-in weblayer templates and aren't in the public docs.
+Checked against the Bloomreach documentation on 2026-10-30 (pages: smart-triggering-in-weblayers, configure-smart-triggering, using-template-parameters, weblayer-design, weblayer-reference, advanced-weblayers-use, exit-popup, web-tracking). The `utils` library, `self.inPreview` and the phone-input setup come from Bloomreach's built-in weblayer templates and aren't in the public docs; the `utils` methods below were checked against the published `/brstatic/utils.js` on the same date.
+
+## Smart triggering: when the weblayer appears
+
+**When** a weblayer appears is set in the weblayer's **Settings** tab, under **Smart triggering**, not in code. The Web SDK measures the visitor's engagement in the browser and runs the weblayer once the conditions are met. The weblayer's other settings (**Show on**, **Target devices**, **Audience**) still decide **whether** it appears at all. The same section is on the weblayer node in the scenario editor.
+
+| Condition | Measures | Operator and value |
+|---|---|---|
+| Active time on page | Time spent scrolling, clicking, typing or moving the mouse. Idle and background-tab time don't count | `>=` or `<`, seconds or minutes |
+| Total time on page | Time since the page loaded, idle included | `>=` or `<`, seconds or minutes |
+| Idle time | Time with no interaction | `>=` or `<`, seconds or minutes |
+| Click count | Clicks on the current page | `>=` or `<`, a number |
+| Scroll position | Furthest point scrolled, in pixels (never goes down) | `>=` or `<`, pixels |
+| Section in view | Whether one CSS selector has come into view | One selector |
+| Visitor returned | The visitor came back after switching tabs, minimising or locking the screen | Yes or no |
+| Exit intent | The cursor left toward the address bar or tabs. **Desktop only** | Yes or no |
+
+- Up to **four** conditions, each signal once, and **all** must be true at the same moment. There's no OR.
+- Signals reset on every page load, so nothing can span pages or sessions. Exit intent and Visitor returned fire at most once per page view.
+- Check the conditions can be true together: `Total time on page < 10` with `Active time on page >= 30` never shows.
+- The site needs **Web SDK v3.57.0 or later**. Older versions ignore the conditions and show the weblayer on page load.
+- Leave the section empty and the weblayer shows as soon as its other settings allow.
+
+**What this means for the code:** never put timing in the JavaScript. No trigger, delay or show-after parameters, no `setTimeout` before showing, and no exit-intent, scroll or idle listeners. A weblayer with both triggering code and smart triggering conditions behaves unpredictably. Give the user the conditions to set instead.
+
+Older weblayers (older built-in templates, saved assets and Use Case Center weblayers) still carry this code, often in a **Triggering** or **Behavior** parameter category. When you edit one, remove it and map it to conditions:
+
+| Old code | Smart triggering condition |
+|---|---|
+| `PARAM_trigger` "On entry" with `PARAM_showAfter` of N ms | Total time on page `>=` N/1000 seconds, or Active time on page if it should wait for attention. None if N is 0 |
+| "On exit", or a `mouseout` listener | Exit intent, ideally with Active time on page `>=` 10 to 20 seconds. Desktop only |
+| "On scroll", or a `scroll` listener | Scroll position `>=` a pixel value, or Section in view with a selector |
+| An idle or inactivity timer | Idle time `>=` N |
+
+Loomi Connect doesn't return smart triggering conditions: `search_banners` only shows page targeting under `trigger`. Ask the user what's set if it matters.
 
 ## Parameters
 
@@ -52,13 +86,11 @@ Put personalisation in the HTML as Jinja, not inside a parameter's default: Jinj
 
 ## JavaScript skeleton
 
-Every weblayer uses this structure. Build what you need inside `createBanner()`, and do all positioning in CSS.
+Every weblayer uses this structure. Build what you need inside `createBanner()`, and do all positioning in CSS. It has no timing code: smart triggering decides when the SDK runs it, and `utils.registerStartTrigger()` then shows the weblayer straight away.
 
 ```javascript
 let config = {
   PARAM_parentElement: "[[ {name: 'ParentElement', tooltip: 'CSS selector of the parent element', category: 'Layout', orderIndex: '1001', isJsonParam: true} : string | body ]]",
-  PARAM_trigger: "[[ {name: 'Trigger', tooltip: 'When to show', category: 'Behavior', orderIndex: '1005', isJsonParam: true} : enum(On entry,On exit,On scroll) | On entry ]]",
-  PARAM_showAfter: parseInt("[[ {name: 'ShowDelay', tooltip: 'Delay before showing (ms)', category: 'Behavior', orderIndex: '1006', isJsonParam: true} : number | 1000 ]]", 10),
   PARAM_removeAfter: parseInt("[[ {name: 'AutoRemove', tooltip: 'Remove after (ms), 0 = never', category: 'Behavior', orderIndex: '1007', isJsonParam: true} : number | 0 ]]", 10),
   PARAM_weblayerType: "[[ {name: 'WeblayerType', tooltip: 'Pop-up overlays the page, Inline sits in the content', category: 'Layout', orderIndex: '1000', isJsonParam: true} : enum(Pop-up,Inline) | Pop-up ]]"
 }
@@ -74,9 +106,7 @@ if (!self.inPreview) {
 let utilsSource = apiUrl + "/brstatic/utils.js"
 
 if (self.inPreview) {
-  config.PARAM_showAfter = 0
   config.PARAM_parentElement = "body"
-  config.PARAM_trigger = "On entry"
 }
 config.apiBaseURL = apiUrl
 
@@ -138,6 +168,9 @@ return { remove: removeBanner }
 ```
 
 - The section from `const self` to `config.apiBaseURL`, `loadScript()` and `removeBanner()` don't change between weblayers.
+- Don't add `PARAM_trigger` or `PARAM_showAfter`. `utils` still reads them, and if they're set it waits for them on top of the smart triggering conditions.
+- `PARAM_removeAfter` (auto-close) isn't triggering and can stay. Leave it out if the weblayer shouldn't close itself.
+- If `PARAM_parentElement` doesn't match an element on the page, `utils.attachBannerToDom()` silently does nothing.
 - `utils.registerStartTrigger(true)` when the weblayer has a phone input (see below).
 - The `.weblayer` and `.close-btn` class names are examples. Use your own, but keep the JavaScript and HTML in step.
 
@@ -148,12 +181,13 @@ return { remove: removeBanner }
 | Method | What it does |
 |---|---|
 | `utils.setConfig(config)` | Passes the config object. Call once |
-| `utils.registerStartTrigger(usePhone)` | Sets up the display trigger. `true` if the weblayer has a phone input |
-| `utils.attachBannerToDom(banner)` | Inserts the weblayer into the page. **Last line of `createBanner()`** |
-| `utils.handleCloseButtonClick()` | Closes and tracks the close. Bind it: `.onclick = utils.handleCloseButtonClick.bind(utils)` |
-| `utils.getEventProperties(action)` | Event properties with the weblayer's IDs filled in. **Always use this to track** |
-| `utils.trackLink(link, action, newTab)` | Tracks clicks on a link |
+| `utils.registerStartTrigger(usePhone)` | Loads the platform's weblayer CSS (and the phone-input files if `usePhone` is `true`), tracks the `show` event and calls `createBanner()`. Don't track `show` yourself |
+| `utils.attachBannerToDom(banner)` | Inserts the weblayer at the start of `PARAM_parentElement`. **Last line of `createBanner()`** |
+| `utils.handleCloseButtonClick(event)` | Removes the weblayer and tracks `close`. Bind it: `.onclick = utils.handleCloseButtonClick.bind(utils)` |
+| `utils.getEventProperties(action, interactive)` | Event properties with `banner_id`, `banner_name`, `banner_type`, `variant_id`, `variant_name` and `interaction` filled in. **Always use this to track** |
+| `utils.trackLink(link, action, interactive)` | Tracks clicks on a link through `self.sdk.trackLink` |
 | `utils.validateEmail(email)` | Basic email check |
+| `utils.toggleInvalidState(invalid, banner, input, message)` | Shows or clears the browser's validation message on an input |
 | `utils.loadStylesheet(href)` | Loads external CSS. Returns a Promise |
 | `utils.loadScript(src)` | Loads external JavaScript. Returns a Promise |
 
@@ -173,7 +207,7 @@ self.sdk.identify({ email_id: email })
   - `self.sdk.identify(email)` with a plain string sets the default hard ID, `registered`. Only use it if the project stores email addresses in `registered`.
   - `self.sdk.identify({ email_id: email })` sets the `email_id` hard ID. Use the ID the project actually has, and ask the user if you don't know.
   - To set two IDs, pass both in one call, for example `{ registered: ..., email_id: ... }`. Separate calls can create a second profile.
-- The `email` on a `subscribe` event is stored on the event only, not as a customer attribute. Saving it to the profile needs a scenario, or the `identify` call above.
+- The `email` on a `subscribe` event is stored on the event only, not as a customer attribute, and `identify` only sets the ID. To save the attribute, also call `self.sdk.update({ email: email })`, or use a scenario triggered on the `subscribe` event.
 
 ## Phone input
 
