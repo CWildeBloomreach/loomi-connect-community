@@ -57,9 +57,11 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 1. **Pin down the job.** Confirm the channel, the data needed, and whether this is new code or a fix. For a fix, ask for the code and the error message or wrong output, if the user hasn't given them.
 2. **Look up real assets (optional, with Loomi Connect).**
    1. Resolve the project. If the user named one, use it. Otherwise call `list_cloud_organizations`, then `list_projects`. If there's more than one organisation or project, list them by name and **ask which to use**. Never guess.
-   2. Call only the tools for the data this code needs, using the table above. Find the asset the user means by name. If more than one matches, show the names and ask.
-   3. For a catalog, get its field names from the catalog definition or one item from `search_catalog_items`, so the code uses fields that exist (for example `title` versus `name`).
-   4. For customer attributes, check the exact names in `get_customer_property_schema`, including case and spaces.
+   2. Call only the tools for the data this code needs, using the table above. Lists can be long (100+ reports is normal), so match on the name the user gave. Names often repeat, for example copies made by initiatives, so if more than one matches, show each name with its ID and ask.
+   3. For an aggregate, fetch it by ID and read its `type` and `attribute`. They decide what the Jinja gets back. For example, a `last` aggregate on `cart_update.product_ids` returns that event's list of product IDs, not a list of objects with a `product_id` field. Write the loop for the shape you find.
+   4. For a catalog, get its field names from the catalog definition or one item from `search_catalog_items`, so the code uses fields that exist (for example `title` versus `name`).
+   5. For customer attributes, check the exact names in `get_customer_property_schema`, including case and spaces.
+   6. For project variables, use the `reference` from `list_project_variables` as `project_variables.reference` (plural, as in the Bloomreach docs, even though the tool's own description says `project_variable`). Values come back as text, for example `"false"`, so compare with `== 'true'` or cast with `| int`.
 3. **Write the code**, following the reference. Use its patterns where they fit. In particular:
    - Engine IDs and aggregate keys are string literals, or a quoted `recommendation` picker inline in the call.
    - `| list` after `recommendations(...)` and after any `select`, `reject`, `selectattr`, `rejectattr`, `map`, `batch` or `slice` before you index, slice or count.

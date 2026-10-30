@@ -8,7 +8,7 @@ Writes, fixes and explains Bloomreach Engagement Jinja for weblayers, emails, SM
 | **Access** | Read-only |
 | **Loomi Connect tools** | Optional: `list_cloud_organizations`, `list_projects`, `search_recommendations`, `search_aggregates`, `search_catalogs`, `search_catalog_items`, `search_reports`, `search_segmentations`, `get_customer_property_schema`, `list_project_variables` |
 | **Other requirements** | None. Works without Loomi Connect, using placeholders for IDs |
-| **Tested with** | Claude Code: the Jinja reference has been used day to day to build live weblayers. The Loomi Connect lookup steps have not been run yet. Not tested in an OpenAI client. |
+| **Tested with** | Claude Code: the Jinja reference has been used day to day to build live weblayers. Every lookup tool in the table was run read-only against a test project on 2026-10-30 (`search_recommendations`, `search_aggregates` list and detail, `search_catalogs` list and detail, `search_catalog_items`, `search_reports`, `search_segmentations`, `get_customer_property_schema`, `list_project_variables`), and the aggregate-shape and project-variable steps come from that run. Rendering isn't tested by the skill: Loomi Connect only previews existing campaigns. Not tested in an OpenAI client. |
 | **Maintainer** | @CWildeBloomreach |
 
 ## Example prompts

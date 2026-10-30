@@ -258,7 +258,17 @@ For a hard-coded engine instead of a picker:
 {% set shown = all[skip:skip + take] %}
 ```
 
-### Aggregate: collect IDs, then fetch them from the catalog in one call
+### Aggregate: get IDs, then fetch them from the catalog in one call
+
+What an aggregate returns depends on its type and attribute, so check its definition first. A `last` aggregate on a list property such as `cart_update.product_ids` returns that list of IDs directly:
+
+```jinja
+{% set raw = aggregates['your_cart_aggregate_id'] %}
+{% set ids = raw if raw and raw != 'None' else [] %}
+{% set items = catalogs['your_catalog_name'].items_by_id(ids[:100]) if ids else [] %}
+```
+
+An aggregate over whole objects, such as `cart_update.product_list`, returns a list of dicts. Collect the IDs first:
 
 ```jinja
 {% set cart = aggregates['your_cart_aggregate_id'] if aggregates['your_cart_aggregate_id'] else [] %}
