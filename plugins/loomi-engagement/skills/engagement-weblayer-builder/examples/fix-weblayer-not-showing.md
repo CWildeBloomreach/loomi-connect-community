@@ -6,13 +6,11 @@
 
 ---
 
-The assistant resolves the project, finds two weblayers named "Spring sign-up" with `search_banners`, and asks which one. The user picks `<banner_id>`. It reads the source `script` of the only variant, finds the cause, and returns the JavaScript block only, because the HTML and CSS don't change.
+The assistant resolves the project, finds two weblayers named "Spring sign-up" with `search_banners`, and asks which one. The user picks `<banner_id>`. It reads the source `script` of the only variant, finds the cause, and returns the JavaScript block only, because the HTML and CSS don't change. The script also had old triggering code (a `Trigger` parameter set to "On entry" and a 2-second `ShowDelay`), so that comes out too.
 
 ```javascript
 let config = {
   PARAM_parentElement: "[[ {name: 'ParentElement', tooltip: 'CSS selector of the parent element', category: 'Layout', orderIndex: '1001', isJsonParam: true} : string | body ]]",
-  PARAM_trigger: "[[ {name: 'Trigger', tooltip: 'When to show', category: 'Behavior', orderIndex: '1005', isJsonParam: true} : enum(On entry,On exit,On scroll) | On entry ]]",
-  PARAM_showAfter: parseInt("[[ {name: 'ShowDelay', tooltip: 'Delay before showing (ms)', category: 'Behavior', orderIndex: '1006', isJsonParam: true} : number | 2000 ]]", 10),
   PARAM_removeAfter: parseInt("[[ {name: 'AutoRemove', tooltip: 'Remove after (ms), 0 = never', category: 'Behavior', orderIndex: '1007', isJsonParam: true} : number | 0 ]]", 10)
 }
 
@@ -27,9 +25,7 @@ if (!self.inPreview) {
 let utilsSource = apiUrl + "/brstatic/utils.js"
 
 if (self.inPreview) {
-  config.PARAM_showAfter = 0
   config.PARAM_parentElement = "body"
-  config.PARAM_trigger = "On entry"
 }
 config.apiBaseURL = apiUrl
 
@@ -99,8 +95,10 @@ window["__exp_load_init-" + bannerSemiId]
 return { remove: removeBanner }
 ```
 
-**What was wrong:** `createBanner()` found the root with `document.querySelector(".su")`. The weblayer's HTML isn't in the page yet at that point, so it returned `null` and the next line failed (hard rule 2: query from the weblayer, not the document). It now uses `placeholder.querySelector(".su")`. Nothing else changed, so the parameter values the marketer set are kept.
+**What was wrong:** `createBanner()` found the root with `document.querySelector(".su")`. The weblayer's HTML isn't in the page yet at that point, so it returned `null` and the next line failed (hard rule 2: query from the weblayer, not the document). It now uses `placeholder.querySelector(".su")`. The other parameter values the marketer set are kept.
 
-**Parameters:** none added or changed.
+**Parameters:** removed `Trigger` and `ShowDelay` (Behavior). Their saved values are dropped.
+
+**Smart triggering:** set Total time on page `>=` 2 seconds in the weblayer's **Settings > Smart triggering** to keep the old delay. This needs Web SDK v3.57.0 or later on the site; older versions show the weblayer on page load.
 
 **How to test it:** paste the JavaScript into the weblayer in Bloomreach, check the editor preview, then load the site with the weblayer active for a test audience. The console should show no errors, and a `banner` event with `action: "show"` should be tracked.
