@@ -19,7 +19,7 @@ All IDs and names in the examples below are placeholders. Replace them with real
 | `time` | The current Unix timestamp in seconds (a number) |
 | `aggregates` | Aggregated datasets, keyed by aggregate ID. **Keys must be constant strings**: no variables, no template parameters |
 | `catalogs` | `catalogs['catalog_name'].item_by_id(id)` and `catalogs['catalog_name'].items_by_id(id_list)`. At most 100 IDs per call |
-| `recommendations(engine_id, size=10, fill_with_random=false, items={}, category_names=[], catalog_filter=[], cached=true)` | Returns a **generator** of recommended items. The engine ID must be a constant string or a `recommendation`-type template parameter (see hard limit 1). The first positional argument is the engine ID; the optional second positional argument is the count |
+| `recommendations(engine_id, size=10, fill_with_random=false, items={}, category_names=[], catalog_filter=[], cached=true)` | Returns the recommended items, which you can index directly: `recommendations('your_engine_id', 4)[0]`. The engine ID must be a constant string or a `recommendation`-type template parameter (see hard limit 1). The first positional argument is the engine ID; the optional second positional argument is the count |
 | `segmentations` | Keyed by segmentation ID; returns the customer's segment name |
 | `metrics` | Keyed by metric ID |
 | `reports` | Keyed by report ID. `reports['report_id'].rows` returns a nested array of rows |
@@ -68,7 +68,7 @@ Never assign the picker to a variable first, and never use it unquoted.
 {% set recs = recommendations('your_engine_id') %}
 
 {# OK: recommendation picker, inline and in double quotes #}
-{% set recs = recommendations("[[ { name: 'RecEngine', category: 'Recommendations', isJsonParam: true } : recommendation ]]", size=4, fill_with_random=true) | list %}
+{% set recs = recommendations("[[ { name: 'RecEngine', category: 'Recommendations', isJsonParam: true } : recommendation ]]", size=4, fill_with_random=true) %}
 
 {# NOT OK: unquoted picker. The { } and : break Jinja's tokenizer #}
 {% set recs = recommendations([[ { name: 'RecEngine', ... } : recommendation ]]) %}
@@ -107,21 +107,22 @@ To switch between aggregates based on a parameter, map each option to a constant
 
 **The general rule:** the first key used to access any list, tuple, string or dict must be constant. To access one dynamically, wrap it in an extra list first: `[myDict][0][dynamicKey]`.
 
-### 2. Generators: always `| list` before indexing, slicing or `| length`
+### 2. Filters that build lists return generators: add `| list` before indexing, slicing or `| length`
 
-These return **generators**, not lists:
+These filters return **generators**, not lists:
 
-- `recommendations(...)`
 - `selectattr`, `rejectattr`
 - `select`, `reject`
 - `map`
 - `batch`, `slice`
 
+`recommendations(...)` itself doesn't need `| list`. Index it directly:
+
 ```jinja
-{% set recs = recommendations('your_engine_id', size=4, fill_with_random=true) | list %}
-{% set priced = recs | selectattr('price', 'greaterthan', 0) | list %}
-{% set first_three = recs[:3] %}      {# only works after | list #}
-{% set count = recs | length %}       {# only works after | list #}
+{% set first = recommendations('your_engine_id', 4)[0] %}
+{% set recs = recommendations('your_engine_id', size=4, fill_with_random=true) %}
+{% set priced = recs | selectattr('price', 'greaterthan', 0) | list %}   {# the filter output needs | list #}
+{% set first_priced = priced[0] %}                                        {# only works after | list #}
 ```
 
 ### 3. Loops: accumulate with `{% append %}`, not `{% set %}`
@@ -226,7 +227,7 @@ Numbers come from `[[ ... : number ]]` parameters through `{% set %}`. The engin
 
 ```html
 {% set recCount = "[[ { name: 'RecCount', category: 'Recommendations', isJsonParam: true } : number | 4 ]]" | int %}
-{% set recs = recommendations("[[ { name: 'RecEngine', category: 'Recommendations', isJsonParam: true } : recommendation ]]", size=recCount, fill_with_random=true) | list %}
+{% set recs = recommendations("[[ { name: 'RecEngine', category: 'Recommendations', isJsonParam: true } : recommendation ]]", size=recCount, fill_with_random=true) %}
 
 {% if recs %}
   <div class="rec-grid">
@@ -246,15 +247,17 @@ Item fields (`url`, `image`, `title`, `price` above) come from the engine's cata
 For a hard-coded engine instead of a picker:
 
 ```jinja
-{% set recs = recommendations('your_engine_id', size=recCount, fill_with_random=true) | list %}
+{% set recs = recommendations('your_engine_id', size=recCount, fill_with_random=true) %}
 ```
+
+For a single item, index the call: `{% set rec1 = recommendations('your_engine_id', 4)[0] %}`.
 
 **Skip some, then take some:**
 
 ```jinja
 {% set skip = 3 %}
 {% set take = 5 %}
-{% set all = recommendations('your_engine_id', size=skip + take, fill_with_random=true) | list %}
+{% set all = recommendations('your_engine_id', size=skip + take, fill_with_random=true) %}
 {% set shown = all[skip:skip + take] %}
 ```
 

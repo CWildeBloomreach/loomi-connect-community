@@ -1,6 +1,6 @@
 # Bloomreach Jinja writer
 
-Writes, fixes and explains Bloomreach Engagement Jinja for weblayers, emails, SMS, push and scenarios. Bloomreach Jinja has rules that standard Jinja doesn't, such as constant-string engine and aggregate IDs, generators that need `| list`, loops that need `{% append %}`, and no Python datetime. This skill follows them and checks every snippet against a checklist before returning it. With Loomi Connect connected, it looks up the project's real recommendation engines, aggregates, catalogs, reports and customer attributes, so the code uses IDs and field names that exist.
+Writes, fixes and explains Bloomreach Engagement Jinja for weblayers, emails, SMS, push and scenarios. Bloomreach Jinja has rules that standard Jinja doesn't, such as constant-string engine and aggregate IDs, filter generators that need `| list`, loops that need `{% append %}`, and no Python datetime. This skill follows them and checks every snippet against a checklist before returning it. With Loomi Connect connected, it looks up the project's real recommendation engines, aggregates, catalogs, reports and customer attributes, so the code uses IDs and field names that exist.
 
 | | |
 |---|---|

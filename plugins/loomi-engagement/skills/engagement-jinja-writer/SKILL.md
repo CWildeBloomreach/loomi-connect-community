@@ -16,7 +16,7 @@ metadata:
 
 Writes Bloomreach Engagement Jinja that saves and renders first time, or fixes Jinja that doesn't. It covers personalization, recommendations, aggregates, catalogs, reports, segmentations, vouchers, HTML blocks and snippets, and weblayer template parameters, in weblayers, emails, SMS, push and scenarios.
 
-Bloomreach Jinja isn't standard Jinja. Engine and aggregate IDs must be constant strings, several functions return generators, variables set in loops don't persist, and Python datetime and some common filters don't exist. This skill follows those rules, checks the code against them, and returns the code with a list of the assets it uses and what to replace.
+Bloomreach Jinja isn't standard Jinja. Engine and aggregate IDs must be constant strings, several filters return generators, variables set in loops don't persist, and Python datetime and some common filters don't exist. This skill follows those rules, checks the code against them, and returns the code with a list of the assets it uses and what to replace.
 
 It never saves anything to Bloomreach. The user pastes the code in themselves.
 
@@ -64,7 +64,7 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
    6. For project variables, use the `reference` from `list_project_variables` as `project_variables.reference` (plural, as in the Bloomreach docs, even though the tool's own description says `project_variable`). Values come back as text, for example `"false"`, so compare with `== 'true'` or cast with `| int`.
 3. **Write the code**, following the reference. Use its patterns where they fit. In particular:
    - Engine IDs and aggregate keys are string literals, or a quoted `recommendation` picker inline in the call.
-   - `| list` after `recommendations(...)` and after any `select`, `reject`, `selectattr`, `rejectattr`, `map`, `batch` or `slice` before you index, slice or count.
+   - `| list` after any `select`, `reject`, `selectattr`, `rejectattr`, `map`, `batch` or `slice` before you index, slice or count. `recommendations(...)` doesn't need it: index it directly, for example `recommendations('your_engine_id', 4)[0]`.
    - `{% append %}` to build lists in loops.
    - `| default(...)` on every optional value, and type casts before maths.
    - `to_timestamp` and `from_timestamp` for dates.
@@ -77,7 +77,7 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 
 - [ ] Every `recommendations(...)` engine ID is a literal or a double-quoted picker written inline, never a variable
 - [ ] Every `aggregates[...]` key is a literal
-- [ ] Every generator is turned into a list before indexing, slicing or `| length`
+- [ ] Every list-building filter's output is turned into a list before indexing, slicing or `| length`
 - [ ] No `{% set %}` inside a loop that's expected to persist
 - [ ] No `strptime`, `strftime`, `datetime`, `dateformat`, `merge`, `update`, `groupby`, `max`, `min` or `tojson`
 - [ ] Every optional value has a `| default(...)`, and aggregates that can be `none` are guarded against the string `"None"`

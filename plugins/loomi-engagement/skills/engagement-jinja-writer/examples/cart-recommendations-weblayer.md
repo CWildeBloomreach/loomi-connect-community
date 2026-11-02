@@ -16,7 +16,7 @@
 {% set ids = raw if raw and raw != 'None' else [] %}
 {% set cartItems = catalogs['your_catalog_name'].items_by_id(ids[:3]) if ids else [] %}
 
-{% set recs = recommendations("[[ { name: 'RecEngine', category: 'Recommendations', isJsonParam: true } : recommendation ]]", size=recCount, fill_with_random=true) | list %}
+{% set recs = recommendations("[[ { name: 'RecEngine', category: 'Recommendations', isJsonParam: true } : recommendation ]]", size=recCount, fill_with_random=true) %}
 
 <div class="cart-recs">
   {% if cartItems %}
