@@ -237,3 +237,6 @@ Items marked **(bug?)** are worth reporting to the Loomi Connect team. <!-- TODO
 - Blank `text` components (a single space) are layout spacers. `metric` components (KPI tiles) can't be read, because there's no tool for saved metrics.
 - `calculate_report` returns `as_dict` keyed by row value. Time buckets are Unix seconds at local midnight in the project's time zone. Each value is a list with one number per metric, in `server.metrics[]` order, with no headers. Zero buckets came back even with `hide_null: true`.
 - A date filter with `enabled: false` still carries a `duration`, so a report or funnel can look windowed when it covers all time. A funnel with `duration_filter.enabled: false` has no conversion window.
+
+**Project variables**
+- **`list_project_variables` describes the Jinja syntax wrongly.** Its description says `{{ project_variable.reference }}`, but the Bloomreach docs use `{{ project_variables.reference }}` (plural). Values come back as strings, even ones that look like booleans or numbers (`"false"`, `"1"`).
