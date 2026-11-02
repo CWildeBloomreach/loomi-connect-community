@@ -177,7 +177,7 @@ Bloomreach Jinja has no automatic escaping (the filters docs say so under `safe`
 - Escaping doesn't stop a `javascript:` URL. In `href` and `src`, only use URLs that start with `https://`, or relative paths that start with a single `/`. Anything else falls back to `#` or is left out:
   ```jinja
   {% set url = item['url'] | default('', true) | string | trim %}
-  {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+  {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//') and not url.startswith('/\\')) else '#' %}
   <a href="{{ url | e }}">{{ item['title'] | default('', true) | e }}</a>
   ```
 - For JavaScript, see "JSON into JavaScript" below.
@@ -252,7 +252,7 @@ Numbers come from `[[ ... : number ]]` parameters through `{% set %}`. The engin
   <div class="rec-grid">
     {% for item in recs %}
       {% set url = item['url'] | default('', true) | string | trim %}
-      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//') and not url.startswith('/\\')) else '#' %}
       {% set img = item['image'] | default('', true) | string | trim %}
       <a href="{{ url | e }}" class="rec-card">
         {% if img.startswith('https://') %}<img src="{{ img | e }}" alt="{{ item['title'] | default('Product', true) | e }}">{% endif %}

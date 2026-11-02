@@ -23,7 +23,7 @@
     <h3>Still thinking about these?</h3>
     {% for item in cartItems %}
       {% set url = item['url'] | default('', true) | string | trim %}
-      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//') and not url.startswith('/\\')) else '#' %}
       <a href="{{ url | e }}">{{ item['title'] | default('Your item', true) | e }}</a>
     {% endfor %}
   {% endif %}
@@ -32,7 +32,7 @@
     <h3>You might also like</h3>
     {% for item in recs %}
       {% set url = item['url'] | default('', true) | string | trim %}
-      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//') and not url.startswith('/\\')) else '#' %}
       <a href="{{ url | e }}">{{ item['title'] | default('', true) | e }}</a>
     {% endfor %}
   {% endif %}
