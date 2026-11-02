@@ -97,6 +97,15 @@ return { remove: removeBanner }
 
 **What was wrong:** `createBanner()` found the root with `document.querySelector(".su")`. The weblayer's HTML isn't in the page yet at that point, so it returned `null` and the next line failed (hard rule 2: query from the weblayer, not the document). It now uses `placeholder.querySelector(".su")`. The other parameter values the marketer set are kept.
 
+**Existing code review:**
+
+- Scripts and stylesheets: `/brstatic/utils.js` from the platform (the skeleton). Nothing else.
+- `fetch`, XHR and `sendBeacon`: none. Tracking goes through `self.sdk.track`.
+- `document.cookie` and `localStorage`: none.
+- Nothing unexplained.
+
+**Consent:** the assistant asked how the project records newsletter consent before keeping the `subscribe` tracking and the `identify` call. The user confirmed a scenario triggered on `subscribe` adds the consent, so the weblayer doesn't track a consent event itself.
+
 **Parameters:** removed `Trigger` and `ShowDelay` (Behavior). Their saved values are dropped.
 
 **Smart triggering:** set Total time on page `>=` 2 seconds in the weblayer's **Settings > Smart triggering** to keep the old delay. This needs Web SDK v3.57.0 or later on the site; older versions show the weblayer on page load.

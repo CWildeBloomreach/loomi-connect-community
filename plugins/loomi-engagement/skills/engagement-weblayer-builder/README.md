@@ -26,9 +26,11 @@ See [examples/fix-weblayer-not-showing.md](examples/fix-weblayer-not-showing.md)
 
 ## Notes and limitations
 
-- The skill only returns code. Loomi Connect has no tool that creates or changes a weblayer, so the user pastes it into Bloomreach.
+- The skill only returns code and never calls a write tool. The user pastes the code into Bloomreach.
+- Weblayer code runs on live storefronts. The skill builds the page from data with `textContent` and `setAttribute`, never `innerHTML`, adds no endpoints the user didn't ask for, and lists every external load and network call when it edits an existing weblayer.
 - Loomi Connect calls weblayers **banners**. Each variant's source code (with parameters) and its rendered copy (with current values) are both returned; the skill edits the source.
 - Preview the weblayer in Bloomreach and on the site before it goes live. The skill can't render it.
 - The platform reference was checked against the Bloomreach documentation on 2026-10-30. The `utils` helper library, `self.inPreview` and the phone-input setup come from Bloomreach's built-in weblayer templates and aren't publicly documented.
 - Smart triggering needs Web SDK v3.57.0 or later on the site; older versions show the weblayer on page load. Loomi Connect doesn't return a weblayer's smart triggering conditions, so the skill asks what's set.
-- Identifying a customer depends on the project's hard ID: a plain string sets `registered`, so the skill asks which ID the project uses.
+- Identifying a customer depends on the project's hard ID: a plain string sets `registered`, so the skill asks which ID the project uses, and how the project records newsletter consent.
+- Phone input uses the platform's intl-tel-input v25.3.0, with its utilities loaded from jsDelivr pinned to the same version.

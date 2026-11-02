@@ -50,6 +50,7 @@ Parameters show up in the weblayer's **Parameters** panel, so a marketer can cha
 - Types: `string` (the default), `text` (multi-line copy), `number`, `color`, `image`, `boolean`, `enum(Option1,Option2)`, `date`, `time`, `datetime`, `metric` and `recommendation` (an engine picker, used through `engagement-jinja-writer`). There's no `url`, `html` or `font` type: use `string` for URLs and an `enum` for a choice of fonts.
 - Use `color` for every colour, so the panel shows a colour picker, and `image` for every image.
 - Parameters are swapped for their values as plain text **before** Jinja or JavaScript runs. In JavaScript, wrap them in quotes and cast numbers: `parseInt("[[ ... : number | 1000 ]]", 10)`.
+- Because the value goes in raw, a `string` or `text` value containing `"` ends the JavaScript string or the Jinja `{% set %}` early and breaks the code. Prefer `enum`, `number` and `color` where they fit, and keep defaults free of double quotes.
 - Keep a parameter's `name` unchanged when you edit a weblayer. The stored value is keyed on it.
 
 ### Reusing a parameter in CSS
@@ -167,7 +168,8 @@ window["__exp_load_init-" + bannerSemiId]
 return { remove: removeBanner }
 ```
 
-- The section from `const self` to `config.apiBaseURL`, `loadScript()` and `removeBanner()` don't change between weblayers.
+- The section from `const self` to `config.apiBaseURL`, `loadScript()` and `removeBanner()` don't change between weblayers. `loadScript()` uses `document.querySelector()` to find an existing `utils.js` tag: that's the one allowed use.
+- `self.html` and `self.style` are the only things that go through `insertAdjacentHTML`. See [Putting data into the page](#putting-data-into-the-page) for everything else.
 - Don't add `PARAM_trigger` or `PARAM_showAfter`. `utils` still reads them, and if they're set it waits for them on top of the smart triggering conditions.
 - `PARAM_removeAfter` (auto-close) isn't triggering and can stay. Leave it out if the weblayer shouldn't close itself.
 - If `PARAM_parentElement` doesn't match an element on the page, `utils.attachBannerToDom()` silently does nothing.
@@ -191,7 +193,28 @@ return { remove: removeBanner }
 | `utils.loadStylesheet(href)` | Loads external CSS. Returns a Promise |
 | `utils.loadScript(src)` | Loads external JavaScript. Returns a Promise |
 
+## Putting data into the page
+
+Weblayers run on live storefronts, so data from Jinja, a catalog, the page URL or a form field must never be parsed as HTML. Build elements and set text and attributes:
+
+```javascript
+const safeUrl = (u) => (/^https?:\/\//i.test(u || "") ? u : "#")
+const list = banner.querySelector(".recs")
+items.forEach((item) => {
+  const a = document.createElement("a")
+  a.setAttribute("href", safeUrl(item.url))
+  a.textContent = item.title
+  list.appendChild(a)
+})
+```
+
+- Never `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write` or `eval` with data, even if Jinja escaped it.
+- Check every link and image URL starts with `http://` or `https://`. A `javascript:` URL runs code.
+- Pass data from Jinja to JavaScript with `| json` (see `engagement-jinja-writer`), never by writing it into the script as code.
+
 ## Tracking and identifying
+
+Before you track an email address or identify the visitor, ask how the project records newsletter consent: a consent event tracked from the weblayer, or a scenario triggered on the `banner` event with `action` `subscribe` that adds it. Follow what the project already does.
 
 ```javascript
 const email = input.value.trim().toLowerCase()
@@ -211,9 +234,12 @@ self.sdk.identify({ email_id: email })
 
 ## Phone input
 
-Custom weblayers with a phone field use intl-tel-input v25. This is how the built-in templates do it; the library isn't in the public docs. The phone number is tracked as the `phone` attribute.
+Custom weblayers with a phone field use intl-tel-input. The platform serves **v25.3.0** from `/brstatic/intl/` (checked 2026-11-02). This is how the built-in templates do it; the library isn't in the public docs. The phone number is tracked as the `phone` attribute.
 
 - `utils.registerStartTrigger(true)` loads its CSS and JavaScript from the platform. Alternatively, load them yourself with `utils.loadStylesheet(...)` and `utils.loadScript(...)` in a promise chain before `createBanner()`.
-- Initialise: `banner.phoneInput = window.intlTelInput(input, { initialCountry, preferredCountries, loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.12.5/build/js/utils.js") })`. `loadUtils` must be an arrow function, not a string.
+- Initialise: `banner.phoneInput = window.intlTelInput(input, { initialCountry, countryOrder, loadUtils: () => import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js") })`. `loadUtils` must be an arrow function, not a string.
+- Use `countryOrder` for the countries listed first. `preferredCountries` was removed in v24 and is silently ignored.
+- Pin the `utils.js` import to the same version as the library (`@25.3.0`). Mismatched versions aren't supported. If you load the library yourself, pin both to one version.
+- The utilities come from a public CDN (jsDelivr), which is third-party code on the storefront. Say so in the output.
 - Validate with `banner.phoneInput.isValidNumber()`.
 - Never put `padding: ... !important` on `.iti input`: it breaks the country flag's position.
