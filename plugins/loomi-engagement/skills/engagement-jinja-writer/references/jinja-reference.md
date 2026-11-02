@@ -2,7 +2,7 @@
 
 Read this before writing or fixing any Bloomreach Engagement Jinja. It covers the data objects you can use, the hard limits that break a template, the filters and syntax that are safe, and patterns that work.
 
-Checked against the Bloomreach documentation on 2026-04-17 (pages: jinja, filters, jinjablocks, datastructures, personalization-using-jinja, useful-jinja-snippets, integration-of-recommendations, aggregates-and-running-aggregates, predictions, using-template-parameters, weblayer-design, jinja-syntax). The block and snippet sections were checked on 2026-10-30 against html-blocks, snippets and filters. `expressions` and direct `predictions(...)` calls aren't in the docs, but they work in practice.
+Checked against the Bloomreach documentation on 2026-04-17 (pages: jinja, filters, jinjablocks, datastructures, personalization-using-jinja, useful-jinja-snippets, integration-of-recommendations, aggregates-and-running-aggregates, predictions, using-template-parameters, weblayer-design, jinja-syntax). The block and snippet sections were checked on 2026-10-30 against html-blocks, snippets and filters. Reports, `default`, escaping and the filter list were checked on 2026-11-02 against filters and personalization-using-jinja. `expressions` and direct `predictions(...)` calls aren't in the docs, but they work in practice.
 
 All IDs and names in the examples below are placeholders. Replace them with real ones from the project.
 
@@ -15,15 +15,15 @@ All IDs and names in the examples below are placeholders. Replace them with real
 | Object | What it is |
 |---|---|
 | `customer` | Customer attributes. Prefer bracket notation: `customer['first_name']` |
-| `customer_ids` | Customer identifiers: `customer_ids.cookie`, `customer_ids.registered`, `customer_ids.email_id`, `customer_ids.phone_id` |
+| `customer_ids` | Customer identifiers: `customer_ids.cookie`, `customer_ids.registered`, `customer_ids.email_id`, `customer_ids.phone_id`. Don't render hard IDs, email or phone into weblayer HTML or JavaScript globals unless the feature needs them |
 | `time` | The current Unix timestamp in seconds (a number) |
 | `aggregates` | Aggregated datasets, keyed by aggregate ID. **Keys must be constant strings**: no variables, no template parameters |
 | `catalogs` | `catalogs['catalog_name'].item_by_id(id)` and `catalogs['catalog_name'].items_by_id(id_list)`. At most 100 IDs per call |
 | `recommendations(engine_id, size=10, fill_with_random=false, items={}, category_names=[], catalog_filter=[], cached=true)` | Returns the recommended items, which you can index directly: `recommendations('your_engine_id', 4)[0]`. The engine ID must be a constant string or a `recommendation`-type template parameter (see hard limit 1). The first positional argument is the engine ID; the optional second positional argument is the count |
 | `segmentations` | Keyed by segmentation ID; returns the customer's segment name |
 | `metrics` | Keyed by metric ID |
-| `reports` | Keyed by report ID. `reports['report_id'].rows` returns a nested array of rows |
-| `report_value_by_key(report_id, row_value, column_value, metric_order)` | Looks up one value in a report. Usually easier than `reports[...].rows` |
+| `reports('report_id')` | A whole report, called with round brackets: `reports('report_id').rows` returns a nested array of rows |
+| `report_value_by_key(report_id, row_value, column_value, metric_order)` | Looks up one value in a report. `row_value` and `column_value` are values of the report's row and column breakdowns, not metric names. Pass `''` for a breakdown the report doesn't have. `metric_order` is the metric's 0-based position in the report (default 0). Usually easier than `reports('report_id').rows` |
 | `project_variables` | Project variables by their Jinja reference name: `project_variables.JinjaReferenceName` (plural) |
 | `block('block_id', {'paramName': value})` | Renders an HTML block from the Asset Manager. Returns rendered **text**, not Jinja objects (see "Passing data back from a block or snippet") |
 | `snippet('snippet_id', {'paramName': value})` | Renders a snippet from the Asset Manager. Also returns rendered text |
@@ -159,15 +159,28 @@ Never use `merge()`, `update()`, `groupby()`, `max()`, `min()` or `tojson()`. Re
 
 ### 6. Code defensively
 
-- **Always** guard optional values with `| default(...)`:
+- **Always** guard optional values with `| default(x, true)`. Without `true`, `default` only replaces undefined values, not `None` or `''`, so a customer with an empty first name gets "Hi None":
   ```jinja
-  {{ customer['first_name'] | default('there') }}
-  {% set buyers = report_value_by_key('your_report_id', productId, 'purchase_count', 0) | default(0) | int %}
+  {{ customer['first_name'] | default('there', true) | e }}
+  {% set buyers = report_value_by_key('your_report_id', productId, '', 0) | default(0, true) | int %}
   ```
 - **Cast types** before maths or comparisons: `| int`, `| float`, `| string`.
 - **Check before you split** a string: `{% if 'key-' in s %}`.
 - **An aggregate that returns `none` renders as the string `"None"`**, which is truthy. Guard with `{% if x and x != 'None' %}`, not just `{% if x %}`.
 - **Prefer bracket notation** for attributes. `customer['first_name']` is safer than `customer.first_name`, because dot access fails on names that start with a digit, contain spaces or match a Python keyword.
+
+### 7. Escape values and check URLs: Bloomreach Jinja doesn't autoescape
+
+Bloomreach Jinja has no automatic escaping (the filters docs say so under `safe`), so a catalog title, report value or customer attribute containing `<script>` or a stray quote is written into the page as it is. A bad product feed then becomes stored XSS on a live storefront.
+
+- Use `| e` on every catalog, customer, report or aggregate value written into HTML text or an attribute.
+- Escaping doesn't stop a `javascript:` URL. In `href` and `src`, only use URLs that start with `https://`, or relative paths that start with a single `/`. Anything else falls back to `#` or is left out:
+  ```jinja
+  {% set url = item['url'] | default('', true) | string | trim %}
+  {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+  <a href="{{ url | e }}">{{ item['title'] | default('', true) | e }}</a>
+  ```
+- For JavaScript, see "JSON into JavaScript" below.
 
 ---
 
@@ -203,13 +216,19 @@ Never use `merge()`, `update()`, `groupby()`, `max()`, `min()` or `tojson()`. Re
 
 ## Filters you can use
 
-**Core:** `default`, `int`, `float`, `string`, `abs`, `round`
+This list follows the Bloomreach filters page. If a filter isn't here, check that page before telling the user it isn't supported.
 
-**Strings:** `lower`, `upper`, `capitalize`, `title`, `replace`, `trim`, `truncate`, `striptags`, `urlencode`, `urldecode`, `remove_accents`, `escape` / `e`, `format`
+**Core:** `default` / `d` (use `default(x, true)`), `int`, `float`, `string`, `abs`, `round`, `attr`, `filesizeformat`
 
-**Lists:** `list`, `unique`, `length` / `count`, `first`, `last`, `join`, `sort`, `reverse`, `shuffle`, `sum`, `map`, `select`, `reject`, `selectattr`, `rejectattr`, `batch`, `slice`, `random`
+**Strings:** `lower`, `upper`, `capitalize`, `title`, `center`, `indent`, `replace`, `trim`, `truncate`, `wordwrap`, `wordcount`, `striptags`, `urlencode`, `urldecode`, `urlize`, `remove_accents`, `escape` / `e`, `forceescape`, `format`, `xmlattr`
 
-**JSON:** `from_json`, and `json` to write safe JSON into JavaScript (use this, never `tojson`)
+**Encoding and hashing:** `b64encode`, `b64decode`, `hexencode`, `hexdecode`, `hash(hash_fn)` (md5, sha1, sha224, sha256, sha384, sha512), `hmac(msg=..., hash_fn=...)`
+
+**Lists and dicts:** `list`, `unique`, `length` / `count`, `first`, `last`, `join`, `sort`, `dictsort`, `reverse`, `shuffle`, `sum`, `map`, `select`, `reject`, `selectattr`, `rejectattr`, `batch`, `slice`, `random`
+
+**JSON:** `from_json`, and `json` to write data into JavaScript (use this, never `tojson`). `json` isn't documented to escape `</script>`, so see "JSON into JavaScript" below
+
+`safe` exists but does nothing, because nothing is autoescaped.
 
 **Dates:** `to_timestamp`, `from_timestamp`
 
@@ -232,10 +251,13 @@ Numbers come from `[[ ... : number ]]` parameters through `{% set %}`. The engin
 {% if recs %}
   <div class="rec-grid">
     {% for item in recs %}
-      <a href="{{ item['url'] }}" class="rec-card">
-        {% if item['image'] %}<img src="{{ item['image'] }}" alt="{{ item['title'] | default('Product') }}">{% endif %}
-        <div class="rec-name">{{ item['title'] | default('') }}</div>
-        <div class="rec-price">{{ item['price'] | default('') }}</div>
+      {% set url = item['url'] | default('', true) | string | trim %}
+      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+      {% set img = item['image'] | default('', true) | string | trim %}
+      <a href="{{ url | e }}" class="rec-card">
+        {% if img.startswith('https://') %}<img src="{{ img | e }}" alt="{{ item['title'] | default('Product', true) | e }}">{% endif %}
+        <div class="rec-name">{{ item['title'] | default('', true) | e }}</div>
+        <div class="rec-price">{{ item['price'] | default('', true) | e }}</div>
       </a>
     {% endfor %}
   </div>
@@ -274,39 +296,48 @@ What an aggregate returns depends on its type and attribute, so check its defini
 An aggregate over whole objects, such as `cart_update.product_list`, returns a list of dicts. Collect the IDs first:
 
 ```jinja
-{% set cart = aggregates['your_cart_aggregate_id'] if aggregates['your_cart_aggregate_id'] else [] %}
+{% set raw = aggregates['your_cart_aggregate_id'] %}
+{% set cart = raw if raw and raw != 'None' else [] %}
 
 {% set ids = [] %}
 {% for it in cart %}
   {% if it['product_id'] %}{% append it['product_id'] to ids %}{% endif %}
 {% endfor %}
 
-{% set items = catalogs['your_catalog_name'].items_by_id(ids) %}
+{% set items = catalogs['your_catalog_name'].items_by_id(ids[:100]) if ids else [] %}
 ```
 
 Use `items_by_id(list)` rather than `item_by_id` inside a loop. Remember the limit of 100 IDs per call.
 
 ### Report value (social proof)
 
+Read the report's definition first (with Loomi Connect, `search_reports` with its `report_id`): its row breakdown, column breakdown and metric order decide the arguments. This example assumes rows broken down by product ID, no column breakdown (so `''`), and the purchase count as the first metric (so `0`):
+
 ```jinja
 {% set productId = "[[ { name: 'ProductID', category: 'Social proof', isJsonParam: true } : string ]]" %}
-{% set buyers = report_value_by_key('your_report_id', productId, 'purchase_count', 0) | default(0) | int %}
+{% set buyers = report_value_by_key('your_report_id', productId, '', 0) | default(0, true) | int %}
 
 {% if buyers > 0 %}
   <p>{{ buyers }} people bought this today</p>
 {% endif %}
 ```
 
-### Safe JSON into JavaScript
+### JSON into JavaScript
 
-To pass data into a `<script>` block, use `| json`, never `tojson`:
+To pass data into a `<script>` block, use `| json`, never `tojson`. The docs don't say `json` escapes `</script>`, so a value containing it could end the script early. Replace `<` with its JSON escape, and pass only the fields the code needs, not whole catalog items:
 
 ```html
+{% set recData = [] %}
+{% for item in recs %}
+  {% append {'id': item['item_id'], 'title': item['title']} to recData %}
+{% endfor %}
 <script>
-  var recs = {{ recs | json }};
-  var cartIds = {{ ids | json }};
+  var recs = {{ recData | json | replace('<', '\\u003c') }};
+  var cartIds = {{ ids | json | replace('<', '\\u003c') }};
 </script>
 ```
+
+In the browser, write these values into the page with `textContent` or `setAttribute`, never `innerHTML`, and check links start with `https://` first.
 
 ### Passing data into a block or snippet
 
@@ -354,4 +385,4 @@ A block or snippet returns rendered text, not Jinja objects. If one builds data 
 
 ## When something isn't supported
 
-Don't invent filters, functions or objects that aren't in this file. If the user wants something this file doesn't cover, rewrite it with what's here. If that isn't possible, say plainly that Bloomreach Jinja doesn't support it, and explain the workaround you used.
+Don't invent filters, functions or objects. If one isn't in this file, check the Bloomreach filters and personalization docs before saying it's unsupported. If the user wants something this file doesn't cover, rewrite it with what's here. If that isn't possible, say plainly that Bloomreach Jinja doesn't support it, and explain the workaround you used.

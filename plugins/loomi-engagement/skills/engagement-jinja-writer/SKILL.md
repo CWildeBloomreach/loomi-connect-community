@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Works without Loomi Connect. With the Loomi Connect MCP server (Bloomreach Engagement) it can look up the project's real asset IDs and attribute names.
 metadata:
   author: CWildeBloomreach
-  version: "0.1.0"
+  version: "0.2.0"
   products: engagement
   access: read-only
 ---
@@ -59,16 +59,20 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
    1. Resolve the project. If the user named one, use it. Otherwise call `list_cloud_organizations`, then `list_projects`. If there's more than one organisation or project, list them by name and **ask which to use**. Never guess.
    2. Call only the tools for the data this code needs, using the table above. Lists can be long (100+ reports is normal), so match on the name the user gave. Names often repeat, for example copies made by initiatives, so if more than one matches, show each name with its ID and ask.
    3. For an aggregate, fetch it by ID and read its `type` and `attribute`. They decide what the Jinja gets back. For example, a `last` aggregate on `cart_update.product_ids` returns that event's list of product IDs, not a list of objects with a `product_id` field. Write the loop for the shape you find.
-   4. For a catalog, get its field names from the catalog definition or one item from `search_catalog_items`, so the code uses fields that exist (for example `title` versus `name`).
-   5. For customer attributes, check the exact names in `get_customer_property_schema`, including case and spaces.
-   6. For project variables, use the `reference` from `list_project_variables` as `project_variables.reference` (plural, as in the Bloomreach docs, even though the tool's own description says `project_variable`). Values come back as text, for example `"false"`, so compare with `== 'true'` or cast with `| int`.
+   4. For a catalog, get its field names from the catalog definition or one item from `search_catalog_items`, so the code uses fields that exist (for example `title` versus `name`). Read only the field names from the sample item, and never repeat its values: some catalogs hold personal data.
+   5. For a report, fetch it with `search_reports` and its `report_id`, and read its row breakdown, column breakdown and metric order. `report_value_by_key` takes a row value, a column value (`''` if there's no column breakdown) and the metric's 0-based position, never a metric name.
+   6. For customer attributes, check the exact names in `get_customer_property_schema`, including case and spaces.
+   7. For project variables, use the `reference` from `list_project_variables` as `project_variables.reference` (plural, as in the Bloomreach docs, even though the tool's own description says `project_variable`). Values come back as text, for example `"false"`, so compare with `== 'true'` or cast with `| int`.
 3. **Write the code**, following the reference. Use its patterns where they fit. In particular:
    - Engine IDs and aggregate keys are string literals, or a quoted `recommendation` picker inline in the call.
    - `| list` after any `select`, `reject`, `selectattr`, `rejectattr`, `map`, `batch` or `slice` before you index, slice or count. `recommendations(...)` doesn't need it: index it directly, for example `recommendations('your_engine_id', 4)[0]`.
    - `{% append %}` to build lists in loops.
-   - `| default(...)` on every optional value, and type casts before maths.
+   - `| default(x, true)` on every optional value (without `true`, `None` and `''` aren't replaced), and type casts before maths.
+   - `| e` on every catalog, customer, report or aggregate value written into HTML. Bloomreach Jinja doesn't autoescape.
+   - `href` and `src` only take URLs that start with `https://` or a single `/`. Anything else falls back to `#` or is left out.
    - `to_timestamp` and `from_timestamp` for dates.
-   - `| json` to pass data into JavaScript.
+   - `| json | replace('<', '\\u003c')` to pass data into JavaScript, with only the fields the code needs.
+   - No hard IDs, email or phone rendered into weblayer HTML or JavaScript globals unless the feature needs them.
    - Data passed back from a block or snippet is output as `| json` and parsed with `| from_json` where it's called.
 4. **For a fix,** find the cause first and name the rule it broke, then change only what's needed.
 5. **Check the code against the checklist below** before you return it. Fix anything that fails.
@@ -80,7 +84,12 @@ If a tool isn't available, find it with the Loomi Connect `search_tools` tool an
 - [ ] Every list-building filter's output is turned into a list before indexing, slicing or `| length`
 - [ ] No `{% set %}` inside a loop that's expected to persist
 - [ ] No `strptime`, `strftime`, `datetime`, `dateformat`, `merge`, `update`, `groupby`, `max`, `min` or `tojson`
-- [ ] Every optional value has a `| default(...)`, and aggregates that can be `none` are guarded against the string `"None"`
+- [ ] Every optional value has a `| default(x, true)`, and aggregates that can be `none` are guarded against the string `"None"`
+- [ ] Every catalog, customer, report or aggregate value written into HTML has `| e`
+- [ ] Every `href` and `src` built from data only allows `https://` or relative `/` URLs
+- [ ] Data passed into `<script>` uses `| json | replace('<', '\\u003c')` and only the fields the code needs
+- [ ] No hard IDs, email or phone in weblayer HTML or JavaScript globals unless the feature needs them
+- [ ] Every `report_value_by_key` call uses the report's real row and column values and metric position
 - [ ] Every filter, function and object used is in the reference
 - [ ] Any block or snippet that returns data outputs only `| json`, and the caller parses it with `| from_json` (plus `| striptags` first in a Visual Builder row)
 - [ ] Objects only used where they exist (no `event` in weblayers, no vouchers in weblayers)

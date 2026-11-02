@@ -22,14 +22,18 @@
   {% if cartItems %}
     <h3>Still thinking about these?</h3>
     {% for item in cartItems %}
-      <a href="{{ item['url'] }}">{{ item['title'] | default('Your item') }}</a>
+      {% set url = item['url'] | default('', true) | string | trim %}
+      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+      <a href="{{ url | e }}">{{ item['title'] | default('Your item', true) | e }}</a>
     {% endfor %}
   {% endif %}
 
   {% if recs %}
     <h3>You might also like</h3>
     {% for item in recs %}
-      <a href="{{ item['url'] }}">{{ item['title'] | default('') }}</a>
+      {% set url = item['url'] | default('', true) | string | trim %}
+      {% set url = url if url.startswith('https://') or (url.startswith('/') and not url.startswith('//')) else '#' %}
+      <a href="{{ url | e }}">{{ item['title'] | default('', true) | e }}</a>
     {% endfor %}
   {% endif %}
 </div>
